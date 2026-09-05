@@ -22,7 +22,37 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* InstantWay resilient Supabase loader: try multiple CDNs and never initialize auth before the client exists. */
+window.__instantWaySupabaseReady = (async function(){
+  if(window.supabase && typeof window.supabase.createClient === 'function') return window.supabase;
+  const sources = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+  ];
+  for(const src of sources){
+    try{
+      await new Promise((resolve,reject)=>{
+        const existing=[...document.scripts].find(x=>x.src===src);
+        if(existing){
+          if(window.supabase) return resolve();
+          existing.addEventListener('load',resolve,{once:true});
+          existing.addEventListener('error',reject,{once:true});
+          return;
+        }
+        const script=document.createElement('script');
+        script.src=src;
+        script.async=false;
+        script.onload=resolve;
+        script.onerror=()=>reject(new Error('Failed to load '+src));
+        document.head.appendChild(script);
+      });
+      if(window.supabase && typeof window.supabase.createClient === 'function') return window.supabase;
+    }catch(e){ console.warn('InstantWay Supabase CDN failed:',src,e); }
+  }
+  throw new Error('Supabase client failed to load. Please check your internet connection and refresh.');
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -3728,6 +3758,20 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLower
 
 /* ================= INIT ================= */
 async function init(){
+  try{
+    await window.__instantWaySupabaseReady;
+  }catch(e){
+    console.error(e);
+    const bootMsg = document.querySelector('#app, body');
+    if(bootMsg && !document.getElementById('supabaseBootError')){
+      const box=document.createElement('div');
+      box.id='supabaseBootError';
+      box.style='position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg,#0c0d12);color:var(--text,#fff);z-index:99999;font-family:system-ui,sans-serif;text-align:center';
+      box.innerHTML='<div style="max-width:420px"><div style="font-size:28px;margin-bottom:10px">InstantWay</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Connection library could not load</div><div style="font-size:13px;opacity:.75;margin-bottom:18px">The app could not reach its authentication library. Check your internet connection, then try again.</div><button onclick="location.reload()" style="border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer">Retry</button></div>';
+      document.body.appendChild(box);
+    }
+    return;
+  }
   if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('/sw.js'); }catch(e){} }
   const u = await currentUser();
   if(u){
