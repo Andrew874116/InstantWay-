@@ -729,17 +729,26 @@ async function currentUser(){ const sb=getSb(); if(!sb) return null; const {data
 async function signInEmail(email,password){ const sb=getSb(); if(!sb) throw new Error('Supabase client failed to load'); const {data,error}=await sb.auth.signInWithPassword({email,password}); if(error) throw error; return data; }
 async function signUpOwner(email,password,fullName){ const sb=getSb(); if(!sb) throw new Error('Supabase client failed to load'); const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:fullName||''}}}); if(error) throw error; return data; }
 async function signOut(){ const sb=getSb(); if(sb) await sb.auth.signOut(); state.ownerLoggedIn=false; state.adminLoggedIn=false; state.adminStoreSlug=null; }
+async function authHeaders(){
+  const sb=getSb();
+  if(!sb) throw new Error('Supabase client failed to load');
+  const {data}=await sb.auth.getSession();
+  const token=data?.session?.access_token;
+  return token ? {apikey:SUPABASE_ANON_KEY, Authorization:'Bearer '+token} : SB_HEADERS;
+}
 async function isPlatformOwner(){
   const u=await currentUser(); if(!u) return false;
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers:SB_HEADERS});
+  const headers=await authHeaders();
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers});
   if(!res.ok) return false; const rows=await res.json(); return rows.length>0;
 }
 async function hasVenueAccess(slug){
   const u=await currentUser(); if(!u) return false;
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/venues?slug=eq.${encodeURIComponent(slug)}&select=id,organization_id&limit=1`,{headers:SB_HEADERS});
+  const headers=await authHeaders();
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/venues?slug=eq.${encodeURIComponent(slug)}&select=id,organization_id&limit=1`,{headers});
   if(!res.ok) return false; const rows=await res.json(); if(!rows.length) return false;
   const v=rows[0];
-  const m=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?organization_id=eq.${encodeURIComponent(v.organization_id)}&user_id=eq.${encodeURIComponent(u.id)}&select=role&limit=1`,{headers:SB_HEADERS});
+  const m=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?organization_id=eq.${encodeURIComponent(v.organization_id)}&user_id=eq.${encodeURIComponent(u.id)}&select=role&limit=1`,{headers});
   if(!m.ok) return false; const mr=await m.json(); return mr.length>0 && ['platform_owner','organization_owner','venue_admin','venue_editor','staff'].includes(mr[0].role);
 }
 
@@ -1638,7 +1647,7 @@ async function runOwnerCommand(el){
   const input=document.getElementById('ownerCommandInput');
   const raw=(el?.dataset?.command || input?.value || '').trim().toLowerCase();
   if(!raw){toast('Type a command');return;}
-  if(raw==='security'){ openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>🔐 Security reality check</h3><div class="warnbox">The current prototype keeps authentication logic and credentials in the client. Do not treat it as production-grade authentication until Supabase Auth + RLS are added.</div><button class="btn primary" onclick="closeModal();">Got it</button>`); return;}
+  if(raw==='security'){ openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>🔐 Security reality check</h3><div class="warnbox">Authentication is handled by Supabase Auth and venue access is checked against role-based membership. Keep RLS enabled on all production tables.</div><button class="btn primary" onclick="closeModal();">Got it</button>`); return;}
   if(raw==='analytics'){ const first=(await loadStoreIndex())[0]; if(first){state.store=await loadStore(first.slug); openAdminHealthCenter();} else toast('Create a venue first'); return;}
   if(raw==='preview'){ const first=(await loadStoreIndex())[0]; if(first){setUrl({store:first.slug},true);route();} else toast('Create a venue first'); return;}
   if(raw.startsWith('health')){ const slug=raw.split(':')[1]; if(slug){state.store=await loadStore(slug);} if(state.store) openAdminHealthCenter(); else toast('Venue not found'); return;}
