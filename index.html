@@ -942,7 +942,7 @@ const state = {
     floorIdx:0, tool:'place', category:'general', shape:'point',
     selectedPointId:null, dragging:null, pathDraft:null, shapeDraft:null,
     imgCache:{}, saveTimer:null,
-    zoom:1, panX:0, panY:0
+    zoom:1, panX:0, panY:0, brushSize:2, gridVisualScale:1, gridOpacity:0.18, spacePan:false
   },
   customer:{
     locationNode:null, route:null, legIdx:0, shopList:[], imgCache:{}, animT:0,
@@ -2234,7 +2234,7 @@ function onCanvasDown(e){
   }
   if(state.builder.tool==='path'){
     state.builder.painting = true; state.builder.eraseMode = false; state.builder.lastPaintRel = rel;
-    paintCellsAlong(fl, rel, rel, false, 0);
+    paintCellsAlong(fl, rel, rel, false, Math.max(0, (state.builder.brushSize||2)-1));
     drawBuilderCanvas();
     return;
   }
@@ -2244,7 +2244,7 @@ function onCanvasDown(e){
     state.builder.eraseClickPoint = null;
     state.builder.eraseClickWall = findWallNear(fl, canvas, rel, 10);
     state.builder.painting = true; state.builder.eraseMode = true; state.builder.lastPaintRel = rel;
-    paintCellsAlong(fl, rel, rel, true, 0);
+    paintCellsAlong(fl, rel, rel, true, Math.max(0, (state.builder.brushSize||2)-1));
     drawBuilderCanvas();
   }
 }
@@ -2273,7 +2273,7 @@ function onCanvasMove(e){
   }
   if(state.builder.painting){
     const from = state.builder.lastPaintRel || downInfo.rel;
-    paintCellsAlong(fl, from, rel, state.builder.eraseMode, 0);
+    paintCellsAlong(fl, from, rel, state.builder.eraseMode, Math.max(0, (state.builder.brushSize||2)-1));
     state.builder.lastPaintRel = rel;
     drawBuilderCanvas();
     return;
@@ -3851,6 +3851,7 @@ init();
     const ensure=(label,icon,color)=>{ let c=store.categories.find(x=>x.label.toLowerCase()===label.toLowerCase()); if(!c){ c={id:uid('cat'),label,icon,color,kind:'amenity'}; store.categories.push(c); } return c; };
     ensure('Entrance','🚪','#22c55e'); ensure('Exit','🚪','#ef4444');
   }
+  window.ensureMvpData = ensureMvpData;
   const oldLoadStore=window.loadStore;
   window.loadStore=async function(slug){ const st=await oldLoadStore(slug); ensureMvpData(st); return st; };
   const oldNewStore=window.newStore;
@@ -4080,28 +4081,55 @@ init();
     const canvas=document.getElementById('builderCanvas'),wrap=document.getElementById('builderCanvasWrap'),fl=currentFloor();
     if(canvas&&wrap){
       getFloorImage(fl,(img)=>{
-        const pad=24, availW=Math.max(280,wrap.clientWidth-pad), availH=Math.max(260,wrap.clientHeight-pad);
-        let ratio=img&&img.width&&img.height?img.height/img.width:460/800;
-        let w=Math.min(availW,availH/ratio); let h=w*ratio;
-        if(!Number.isFinite(w)||w<280){w=Math.min(800,availW);h=w*ratio;}
-        canvas._targetCssW=Math.round(w);canvas._targetCssH=Math.round(h);drawBuilderCanvas();
+        const pad=36;
+        const availW=Math.max(320, wrap.clientWidth-pad);
+        const availH=Math.max(300, wrap.clientHeight-pad);
+        const ratio=(img&&img.width&&img.height)?img.height/img.width:(460/800);
+        let w=availW, h=w*ratio;
+        if(h>availH){h=availH;w=h/ratio;}
+        // Keep a useful working size even in a short/initially-unmeasured flex layout.
+        if(!Number.isFinite(w)||w<320){w=800;h=w*ratio;}
+        canvas._targetCssW=Math.round(w);canvas._targetCssH=Math.round(h);
+        canvas.style.setProperty('--iw-canvas-w',Math.round(w)+'px');
+        canvas.style.setProperty('--iw-canvas-h',Math.round(h)+'px');
+        drawBuilderCanvas();
       });
     }
     if(canvas&&!canvas._iwMousePan){
       canvas._iwMousePan=true;
-      canvas.addEventListener('mousedown',ev=>{if(ev.button===1 || state.builder.spacePan){ev.preventDefault();state.builder._iwPanning=true;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};}});
+      canvas.addEventListener('mousedown',ev=>{if(ev.button===1 || state.builder.spacePan){ev.preventDefault();state.builder._iwPanning=true;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};document.getElementById('builderCanvasWrap')?.classList.add('panning');}});
       window.addEventListener('mousemove',ev=>{if(!state.builder._iwPanning)return;const d=state.builder._iwPanLast;state.builder.panX+=ev.clientX-d.x;state.builder.panY+=ev.clientY-d.y;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};drawBuilderCanvas();});
-      window.addEventListener('mouseup',()=>{state.builder._iwPanning=false;state.builder._iwPanLast=null;});
+      window.addEventListener('mouseup',()=>{state.builder._iwPanning=false;state.builder._iwPanLast=null;document.getElementById('builderCanvasWrap')?.classList.remove('panning');});
       canvas.addEventListener('dblclick',()=>resetZoom('builder'));
       canvas.addEventListener('contextmenu',ev=>ev.preventDefault());
     }
   };
 
-  // Keyboard pan mode and a friendlier wheel experience.
-  document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&document.getElementById('view-builder')?.classList.contains('active')){state.builder.spacePan=true;document.body.style.cursor='grab';}},true);
-  document.addEventListener('keyup',e=>{if(e.code==='Space'){state.builder.spacePan=false;document.body.style.cursor='';}},true);
+  // Re-fit the map whenever the builder workspace changes size. This prevents the
+  // common "map stuck in a tiny corner" problem after loading an image or resizing the window.
+  if(!window.__iwBuilderResizeObserver){
+    const fitBuilderMap=()=>{
+      if(!document.getElementById('view-builder')?.classList.contains('active')) return;
+      const canvas=document.getElementById('builderCanvas'),wrap=document.getElementById('builderCanvasWrap'),fl=currentFloor();
+      if(!canvas||!wrap||!fl)return;
+      getFloorImage(fl,(img)=>{
+        const pad=36, aw=Math.max(320,wrap.clientWidth-pad), ah=Math.max(300,wrap.clientHeight-pad), ratio=img&&img.width&&img.height?img.height/img.width:460/800;
+        let w=aw,h=w*ratio;if(h>ah){h=ah;w=h/ratio;}
+        if(!Number.isFinite(w)||!Number.isFinite(h))return;
+        canvas._targetCssW=Math.round(w);canvas._targetCssH=Math.round(h);canvas.style.setProperty('--iw-canvas-w',Math.round(w)+'px');canvas.style.setProperty('--iw-canvas-h',Math.round(h)+'px');drawBuilderCanvas();
+      });
+    };
+    window.__iwFitBuilderMap=fitBuilderMap;
+    window.__iwBuilderResizeObserver=new ResizeObserver(fitBuilderMap);
+    setTimeout(()=>{const w=document.getElementById('builderCanvasWrap');if(w)window.__iwBuilderResizeObserver.observe(w);fitBuilderMap();},300);
+    window.addEventListener('resize',fitBuilderMap);
+  }
 
-  // Add simple grid controls to the builder without forcing users to type numbers.
+  // Keyboard pan mode and a friendlier wheel experience.
+  document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&document.getElementById('view-builder')?.classList.contains('active')){e.preventDefault();state.builder.spacePan=true;document.body.style.cursor='grab';document.getElementById('builderCanvasWrap')?.classList.add('panning');}},true);
+  document.addEventListener('keyup',e=>{if(e.code==='Space'){e.preventDefault();state.builder.spacePan=false;document.body.style.cursor='';document.getElementById('builderCanvasWrap')?.classList.remove('panning');}},true);
+
+  // Add simple grid + brush controls to the builder without forcing users to type numbers.
   const oldRenderBuilder=window.renderBuilder;
   window.renderBuilder=function(skipDraw){
     oldRenderBuilder(skipDraw);
@@ -4109,6 +4137,8 @@ init();
     const el=document.createElement('div');el.id='iwGridControls';el.className='iw-grid-controls';el.innerHTML=`<label>Grid</label><div class="iw-seg"><button data-iw-grid="0">Fine</button><button data-iw-grid="1">Normal</button><button data-iw-grid="2">Large</button></div><label>Guide</label><input class="iw-slider" id="iwGridOpacity" type="range" min="0" max="100" value="${Math.round(state.builder.gridOpacity*100)}" aria-label="Grid guide opacity"><span class="iw-muted" id="iwGridOpacityVal">${Math.round(state.builder.gridOpacity*100)}%</span>`;tb.appendChild(el);
     el.querySelectorAll('[data-iw-grid]').forEach(b=>{if(+b.dataset.iwGrid===state.builder.gridVisualScale-1)b.classList.add('active');b.onclick=()=>{state.builder.gridVisualScale=+b.dataset.iwGrid+1;el.querySelectorAll('[data-iw-grid]').forEach(x=>x.classList.toggle('active',x===b));drawBuilderCanvas();};});
     const op=document.getElementById('iwGridOpacity');op.oninput=()=>{state.builder.gridOpacity=Number(op.value)/100;document.getElementById('iwGridOpacityVal').textContent=op.value+'%';drawBuilderCanvas();};
+    const brush=document.createElement('div');brush.id='iwBrushControls';brush.className='iw-brush-controls';brush.innerHTML=`<label>Brush</label><div class="iw-brush-scale"><button data-iw-brush="1">Tiny</button><button data-iw-brush="2">Small</button><button data-iw-brush="3">Medium</button><button data-iw-brush="5">Large</button><button data-iw-brush="7">Wide</button></div>`;tb.appendChild(brush);
+    brush.querySelectorAll('[data-iw-brush]').forEach(b=>{b.classList.toggle('active',+b.dataset.iwBrush===state.builder.brushSize);b.onclick=()=>{state.builder.brushSize=+b.dataset.iwBrush;brush.querySelectorAll('[data-iw-brush]').forEach(x=>x.classList.toggle('active',x===b));drawBuilderCanvas();};});
   };
 
   // Overlay the visual guide only while path editing. Scale/opacity are visual controls; routing grid stays precise.
@@ -4137,5 +4167,37 @@ init();
   };
 })();
 </script>
+
+<style id="iw-map-ux-final">
+#builderCanvasWrap{
+  overflow:auto !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:0; min-height:0;
+  padding:18px !important;
+  box-sizing:border-box;
+  cursor:default;
+  background:#0a0a14;
+}
+#builderCanvas{
+  flex:0 0 auto !important;
+  max-width:none !important;
+  max-height:none !important;
+  width:var(--iw-canvas-w, 800px) !important;
+  height:var(--iw-canvas-h, 460px) !important;
+  object-fit:contain;
+}
+#builderCanvasWrap.panning,#builderCanvasWrap.panning #builderCanvas{cursor:grabbing !important;}
+#iwGridControls{margin-left:auto;}
+.iw-brush-controls{display:flex;align-items:center;gap:9px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;white-space:nowrap}
+.iw-brush-controls label{font-size:10px;text-transform:uppercase;font-weight:800;color:var(--text2)}
+.iw-brush-scale{display:flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden}
+.iw-brush-scale button{border:0;border-right:1px solid var(--border2);background:transparent;color:var(--text2);padding:6px 8px;font-size:11px;cursor:pointer}
+.iw-brush-scale button:last-child{border-right:0}
+.iw-brush-scale button.active{background:var(--accent);color:#fff}
+@media(max-width:900px){#builderCanvasWrap{align-items:flex-start;justify-content:flex-start}.iw-grid-controls,.iw-brush-controls{margin-left:0}}
+</style>
+
 </body>
 </html>
