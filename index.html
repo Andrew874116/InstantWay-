@@ -2606,13 +2606,53 @@ function renderAdminLogin(store){
   document.getElementById('adminLoginError').innerHTML='';
   const inp = document.getElementById('adminPwInput'); if(inp) inp.value='';
   state._pendingAdminStore = store;
+  setTimeout(bindAdminLogin, 0);
 }
+let adminLoginBusy=false;
 async function adminLogin(){
-  if(!loginAllowed('admin')) return;
-  const email=document.getElementById('adminEmailInput')?.value.trim(); const pw=document.getElementById('adminPwInput')?.value; const store=state._pendingAdminStore;
-  if(!email||!pw||!store){ document.getElementById('adminLoginError').innerHTML='<div class="errbox">Enter your email and password.</div>'; return; }
-  try{ await signInEmail(email,pw); if(!(await hasVenueAccess(store.slug))){ await signOut(); throw new Error('This account does not have access to this venue.'); } loginSucceeded('admin'); state.adminLoggedIn=true; state.adminStoreSlug=store.slug; setUrl({admin:'1',store:store.slug},true); route(); }
-  catch(e){ loginFailed('admin'); document.getElementById('adminLoginError').innerHTML=`<div class="errbox">${esc(e.message||'Sign-in failed')}</div>`; }
+  if(adminLoginBusy || !loginAllowed('admin')) return;
+  const errorEl=document.getElementById('adminLoginError');
+  const btn=document.querySelector('#view-admin-login [data-action="admin-login"]');
+  const email=document.getElementById('adminEmailInput')?.value.trim();
+  const pw=document.getElementById('adminPwInput')?.value;
+  const store=state._pendingAdminStore;
+  if(!email||!pw||!store){ if(errorEl) errorEl.innerHTML='<div class="errbox">Enter your email and password.</div>'; return; }
+  adminLoginBusy=true;
+  if(btn){ btn.disabled=true; btn.textContent='Signing in…'; }
+  if(errorEl) errorEl.innerHTML='<div class="infobox">Signing you in securely…</div>';
+  try{
+    await window.__instantWaySupabaseReady;
+    if(!getSb()) throw new Error('Authentication service is still loading. Please wait a moment and try again.');
+    const result=await signInEmail(email,pw);
+    if(!result?.user) throw new Error('Sign-in did not return an authenticated user.');
+    if(!(await hasVenueAccess(store.slug))){ await signOut(); throw new Error('This account does not have access to this venue.'); }
+    loginSucceeded('admin');
+    state.adminLoggedIn=true;
+    state.adminStoreSlug=store.slug;
+    setUrl({admin:'1',store:store.slug},true);
+    await route();
+  }catch(e){
+    console.error('InstantWay admin login failed:',e);
+    loginFailed('admin');
+    if(errorEl) errorEl.innerHTML=`<div class="errbox">${esc(e?.message||'Sign-in failed. Please try again.')}</div>`;
+  }finally{
+    adminLoginBusy=false;
+    if(btn){ btn.disabled=false; btn.textContent='Log in'; }
+  }
+}
+function bindAdminLogin(){
+  const btn=document.querySelector('#view-admin-login [data-action="admin-login"]');
+  if(btn && btn.dataset.loginBound!=='1'){
+    btn.dataset.loginBound='1';
+    btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();adminLogin();});
+  }
+  ['adminEmailInput','adminPwInput'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && el.dataset.loginKeyBound!=='1'){
+      el.dataset.loginKeyBound='1';
+      el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adminLogin();}});
+    }
+  });
 }
 
 const ADMIN_TABS = [
