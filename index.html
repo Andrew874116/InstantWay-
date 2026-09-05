@@ -3889,5 +3889,213 @@ init();
 })();
 </script>
 
+
+<!-- INSTANTWAY SIMPLE WORKFLOW + MAP UX PATCH -->
+<style>
+  .iw-flow{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+  .iw-flow .step{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--text2)}
+  .iw-flow .step.active{border-color:var(--accent);color:var(--text);background:rgba(255,107,53,.10)}
+  .iw-flow .num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--border2);font-weight:800;color:var(--text)}
+  .iw-section{border:1px solid var(--border);border-radius:12px;background:var(--bg2);padding:14px;margin-bottom:12px}
+  .iw-section h3{margin:0 0 5px;font-size:15px}.iw-section p{margin:0 0 12px}
+  .iw-cat-row{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(170px,1fr) 100px 110px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border)}
+  .iw-cat-row:first-child{border-top:0}.iw-cat-name{display:flex;align-items:center;gap:8px;font-weight:700}.iw-cat-name .ico{font-size:20px}.iw-muted{font-size:11px;color:var(--text2)}
+  .iw-actionbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .iw-qr-toggle{min-width:100px}.iw-qr-toggle.on{background:var(--accent);color:#fff;border-color:transparent}
+  .iw-progress{height:7px;border-radius:99px;background:var(--bg3);overflow:hidden}.iw-progress>span{display:block;height:100%;background:var(--accent);border-radius:99px}
+  .iw-grid-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px}
+  .iw-grid-controls label{font-size:10px;text-transform:uppercase;font-weight:800;color:var(--text2)}
+  .iw-seg{display:flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden}.iw-seg button{border:0;border-right:1px solid var(--border2);background:transparent;color:var(--text2);padding:6px 9px;font-size:11px;cursor:pointer}.iw-seg button:last-child{border-right:0}.iw-seg button.active{background:var(--accent);color:#fff}
+  .iw-slider{width:120px;accent-color:var(--accent)}
+  #builderCanvasWrap,#custCanvasWrap{touch-action:none;overscroll-behavior:contain;}
+  #builderCanvas{cursor:crosshair;user-select:none;-webkit-user-select:none}
+  @media(max-width:760px){.iw-cat-row{grid-template-columns:1fr 1fr}.iw-cat-row .iw-actions{grid-column:1/-1}.iw-flow .step{flex:1 1 140px}}
+</style>
+<script>
+(function(){
+  const iwOldRenderAdminDash = window.renderAdminDash;
+  const iwOldSetupBuilderCanvas = window.setupBuilderCanvas;
+  const iwOldDrawBuilderCanvas = window.drawBuilderCanvas;
+
+  state.builder.gridVisualScale = state.builder.gridVisualScale || 1;
+  state.builder.gridOpacity = state.builder.gridOpacity ?? 0.18;
+  state.builder.spacePan = false;
+
+  function iwCatalog(){ ensureMvpData(state.store); return state.store.catalog || (state.store.catalog=[]); }
+  function iwProductCount(cat){ return iwCatalog().filter(p=>String(p.category||'').trim().toLowerCase()===String(cat.label||'').trim().toLowerCase() || p.category===cat.id).length; }
+  function iwCategoryLocations(cat){
+    const out=[];
+    (state.store.floors||[]).forEach(fl=>(fl.points||[]).forEach(pt=>{
+      if(pt.category===cat.id) out.push({pt,fl});
+    }));
+    return out;
+  }
+  function iwBestLocation(cat){
+    const a=iwCategoryLocations(cat); return a[0]||null;
+  }
+  function iwFlow(active){
+    const steps=[['1','🗺️','Map'],['2','📦','Products'],['3','📍','Locations'],['4','▦','QR Codes'],['5','🚀','Publish']];
+    return `<div class="iw-flow">${steps.map(s=>`<div class="step ${active===s[0]?'active':''}"><span class="num">${s[0]}</span><span>${s[2]}</span></div>`).join('')}</div>`;
+  }
+  function iwLocationOptions(selected){
+    return `<option value="">Unmapped</option>`+(state.store.floors||[]).flatMap(fl=>(fl.points||[]).filter(pt=>isProductCategory(state.store,pt.category)).map(pt=>`<option value="${pt.id}" ${selected===pt.id?'selected':''}>${esc(fl.name)} · ${esc(pt.name)}</option>`)).join('');
+  }
+
+  window.adminProductsHtml=function(){
+    const catalog=iwCatalog();
+    const cats=(state.store.categories||[]).filter(c=>c.kind==='product');
+    const mapped=catalog.filter(p=>p.locationId).length;
+    return `${iwFlow('2')}
+      <div class="iw-section"><h3>📦 Products</h3>
+        <p class="sub">Import your spreadsheet here. Products stay separate from the map. Nothing you import can move or damage your floor plan.</p>
+        <div class="iw-actionbar">${adminImportButtonHtml()}<span class="tag">${catalog.length} products</span><span class="tag">${mapped} mapped</span><span class="tag">${catalog.length-mapped} waiting</span></div>
+      </div>
+      <div class="iw-section"><h3>📍 Category placement</h3>
+        <p class="sub">First map the real category areas. Then products can inherit those locations automatically. Individual products can still be moved later.</p>
+        ${cats.length?cats.map(cat=>{const loc=iwBestLocation(cat);const n=iwProductCount(cat);return `<div class="iw-cat-row"><div class="iw-cat-name"><span class="ico">${cat.icon}</span><span>${esc(cat.label)}</span></div><div>${loc?`<span class="tag">${esc(loc.fl.name)} · ${esc(loc.pt.name)}</span>`:`<span class="tag">Not mapped</span>`}</div><div class="iw-muted">${n} product${n===1?'':'s'}</div><div class="iw-actions"><button class="btn small" data-iw-open-builder="1">Open map</button></div></div>`;}).join(''):`<div class="hint">Create your store categories in the Map Builder first.</div>`}
+      </div>
+      <div class="iw-section"><h3>🧺 Product locations</h3>
+        <p class="sub">Use this only for exceptions. Most products should inherit their category's mapped area.</p>
+        ${catalog.length?`<table class="ptable"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Location</th></tr></thead><tbody>${catalog.map((it,i)=>`<tr><td><input data-iw-p="name" data-i="${i}" value="${esc(it.name||'')}"></td><td><input data-iw-p="category" data-i="${i}" value="${esc(it.category||'')}"></td><td><input data-iw-p="price" data-i="${i}" type="number" step="0.01" value="${it.price??''}" style="width:90px"></td><td><select data-iw-p="locationId" data-i="${i}">${iwLocationOptions(it.locationId)}</select></td></tr>`).join('')}</tbody></table><div class="iw-actionbar"><button class="btn primary" id="iwSaveProducts">Save product locations</button><span id="iwProductMsg" class="hint"></span></div>`:`<div class="hint">No products yet. Import your CSV/Excel list above.</div>`}
+      </div>`;
+  };
+
+  window.adminQrHtml=function(){
+    const rows=allQrEligiblePoints(); const selected=rows.filter(x=>x.pt.isQR).length;
+    return `${iwFlow('4')}
+      <div class="iw-section"><h3>▦ QR Locations</h3>
+        <p class="sub">Do not hunt for checkboxes. Click <b>Use for QR</b> on the locations you want visitors to scan. The map will show a QR badge on each selected location.</p>
+        <div class="iw-actionbar"><span class="tag">${selected} selected</span><span class="iw-muted">${rows.length} available locations</span></div>
+        ${rows.length?`<table class="ptable"><thead><tr><th>Floor</th><th>Location</th><th>Type</th><th>QR</th></tr></thead><tbody>${rows.map(({pt,fl})=>{const cat=catById(state.store,pt.category);return `<tr><td>${esc(fl.name)}</td><td><b>${esc(pt.name)}</b></td><td><span class="tag">${cat.icon} ${esc(cat.label)}</span></td><td><button class="btn small iw-qr-toggle ${pt.isQR?'on':''}" data-iw-qr="${pt.id}">${pt.isQR?'✓ QR selected':'Use for QR'}</button></td></tr>`;}).join('')}</tbody></table>`:`<div class="hint">Place locations on the map first.</div>`}
+        <div class="iw-actionbar"><button class="btn primary" data-iw-generate-qr="1">Create QR codes →</button><button class="btn" data-action="admin-qr-healthcheck">🩺 Check QR setup</button></div>
+      </div>`;
+  };
+
+  window.renderAdminDash=function(){
+    document.getElementById('adminDashStoreName').textContent=state.store.name;
+    const tabs=[
+      {id:'products',label:'📦 Products'},
+      {id:'qr',label:'▦ QR Codes'},
+      {id:'analytics',label:'📊 Analytics'},
+      {id:'ads',label:'📣 Ads'},
+      {id:'branding',label:'🎨 Branding'},
+      {id:'operations',label:'🛟 Operations'},
+      {id:'security',label:'🔐 Security'}
+    ];
+    document.getElementById('adminTabs').innerHTML=tabs.map(t=>`<button class="pill ${state.adminTab===t.id?'active':''}" data-action="admin-tab" data-tab="${t.id}" style="${state.adminTab===t.id?`background:${state.store.branding.primary};border-color:transparent;`:''}">${t.label}</button>`).join('');
+    const content=document.getElementById('adminContent');
+    if(state.adminTab==='products')content.innerHTML=adminProductsHtml();
+    else if(state.adminTab==='qr')content.innerHTML=adminQrHtml();
+    else if(state.adminTab==='analytics')content.innerHTML=adminAnalyticsHtml();
+    else if(state.adminTab==='ads')content.innerHTML=adminAdsHtml();
+    else if(state.adminTab==='branding')content.innerHTML=adminBrandingHtml();
+    else if(state.adminTab==='operations')content.innerHTML=adminOperationsHtml();
+    else if(state.adminTab==='security')content.innerHTML=adminSecurityHtml();
+    bindAdminTabEvents();
+  };
+
+  const iwOldBindAdmin=window.bindAdminTabEvents;
+  window.bindAdminTabEvents=function(){
+    iwOldBindAdmin();
+    const save=document.getElementById('iwSaveProducts');
+    if(save)save.onclick=async()=>{
+      const cat=iwCatalog();
+      document.querySelectorAll('[data-iw-p]').forEach(el=>{const it=cat[+el.dataset.i];if(!it)return;const f=el.dataset.iwP;it[f]=f==='price'?(el.value===''?null:Number(el.value)):el.value;it.updatedAt=Date.now();});
+      (state.store.floors||[]).forEach(fl=>(fl.points||[]).forEach(pt=>pt.products=[]));
+      cat.forEach(it=>{if(!it.locationId)return;const found=findPointById(it.locationId);if(found){found.pt.products=found.pt.products||[];if(!found.pt.products.includes(it.id))found.pt.products.push(it.id);}});
+      activity('product_locations_saved',cat.length+' catalog items'); await saveStore(state.store); const m=document.getElementById('iwProductMsg');if(m)m.textContent='Saved ✓';
+    };
+  };
+
+  document.addEventListener('click',async e=>{
+    const open=e.target.closest('[data-iw-open-builder]');
+    if(open){e.preventDefault();setUrl({owner:'1',store:state.store.slug},true);return route();}
+    const qr=e.target.closest('[data-iw-qr]');
+    if(qr){e.preventDefault();const id=qr.dataset.iwQr;const f=findPointById(id);if(f){f.pt.isQR=!f.pt.isQR;activity('qr_location_toggled',f.pt.name);await saveStore(state.store);renderAdminDash();toast(f.pt.isQR?'QR location selected':'QR location removed');}return;}
+    const gen=e.target.closest('[data-iw-generate-qr]');
+    if(gen){e.preventDefault();if(!allQrEligiblePoints().some(x=>x.pt.isQR)){toast('Select at least one QR location first');return;}openPrintModal();return;}
+  },true);
+
+  // Make imported category text resolve to the real category id where possible.
+  const oldRunImport=window.runImport;
+  window.runImport=async function(rows){
+    const before=JSON.stringify(state.store.catalog||[]);
+    await oldRunImport(rows);
+    const cats=state.store.categories||[];
+    (state.store.catalog||[]).forEach(it=>{
+      const hit=cats.find(c=>String(c.label).trim().toLowerCase()===String(it.category||'').trim().toLowerCase());
+      if(hit)it.category=hit.id;
+      if(!it.locationId && hit){
+        const loc=iwBestLocation(hit); if(loc)it.locationId=loc.pt.id;
+      }
+    });
+    await saveStore(state.store);
+    activity('catalog_category_resolution','Imported products linked to mapped category areas where available');
+    renderAdminDash();
+  };
+
+  // Responsive map fit: preserve the real aspect ratio and fit both width AND height.
+  window.setupBuilderCanvas=function(){
+    iwOldSetupBuilderCanvas();
+    const canvas=document.getElementById('builderCanvas'),wrap=document.getElementById('builderCanvasWrap'),fl=currentFloor();
+    if(canvas&&wrap){
+      getFloorImage(fl,(img)=>{
+        const pad=24, availW=Math.max(280,wrap.clientWidth-pad), availH=Math.max(260,wrap.clientHeight-pad);
+        let ratio=img&&img.width&&img.height?img.height/img.width:460/800;
+        let w=Math.min(availW,availH/ratio); let h=w*ratio;
+        if(!Number.isFinite(w)||w<280){w=Math.min(800,availW);h=w*ratio;}
+        canvas._targetCssW=Math.round(w);canvas._targetCssH=Math.round(h);drawBuilderCanvas();
+      });
+    }
+    if(canvas&&!canvas._iwMousePan){
+      canvas._iwMousePan=true;
+      canvas.addEventListener('mousedown',ev=>{if(ev.button===1 || state.builder.spacePan){ev.preventDefault();state.builder._iwPanning=true;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};}});
+      window.addEventListener('mousemove',ev=>{if(!state.builder._iwPanning)return;const d=state.builder._iwPanLast;state.builder.panX+=ev.clientX-d.x;state.builder.panY+=ev.clientY-d.y;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};drawBuilderCanvas();});
+      window.addEventListener('mouseup',()=>{state.builder._iwPanning=false;state.builder._iwPanLast=null;});
+      canvas.addEventListener('dblclick',()=>resetZoom('builder'));
+      canvas.addEventListener('contextmenu',ev=>ev.preventDefault());
+    }
+  };
+
+  // Keyboard pan mode and a friendlier wheel experience.
+  document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&document.getElementById('view-builder')?.classList.contains('active')){state.builder.spacePan=true;document.body.style.cursor='grab';}},true);
+  document.addEventListener('keyup',e=>{if(e.code==='Space'){state.builder.spacePan=false;document.body.style.cursor='';}},true);
+
+  // Add simple grid controls to the builder without forcing users to type numbers.
+  const oldRenderBuilder=window.renderBuilder;
+  window.renderBuilder=function(skipDraw){
+    oldRenderBuilder(skipDraw);
+    const tb=document.getElementById('builderToolbar');if(!tb||document.getElementById('iwGridControls'))return;
+    const el=document.createElement('div');el.id='iwGridControls';el.className='iw-grid-controls';el.innerHTML=`<label>Grid</label><div class="iw-seg"><button data-iw-grid="0">Fine</button><button data-iw-grid="1">Normal</button><button data-iw-grid="2">Large</button></div><label>Guide</label><input class="iw-slider" id="iwGridOpacity" type="range" min="0" max="100" value="${Math.round(state.builder.gridOpacity*100)}" aria-label="Grid guide opacity"><span class="iw-muted" id="iwGridOpacityVal">${Math.round(state.builder.gridOpacity*100)}%</span>`;tb.appendChild(el);
+    el.querySelectorAll('[data-iw-grid]').forEach(b=>{if(+b.dataset.iwGrid===state.builder.gridVisualScale-1)b.classList.add('active');b.onclick=()=>{state.builder.gridVisualScale=+b.dataset.iwGrid+1;el.querySelectorAll('[data-iw-grid]').forEach(x=>x.classList.toggle('active',x===b));drawBuilderCanvas();};});
+    const op=document.getElementById('iwGridOpacity');op.oninput=()=>{state.builder.gridOpacity=Number(op.value)/100;document.getElementById('iwGridOpacityVal').textContent=op.value+'%';drawBuilderCanvas();};
+  };
+
+  // Overlay the visual guide only while path editing. Scale/opacity are visual controls; routing grid stays precise.
+  window.drawBuilderCanvas=function(){
+    iwOldDrawBuilderCanvas();
+    const canvas=document.getElementById('builderCanvas');if(!canvas)return;
+    const fl=currentFloor();if(!fl)return;
+    if(!(state.builder.tool==='path'||state.builder.tool==='erase'))return;
+    const W=canvas._targetCssW||800,H=canvas._targetCssH||460,ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1,z=zoomState('builder');
+    ctx.save();ctx.setTransform(dpr*z.zoom,0,0,dpr*z.zoom,dpr*((W/2)*(1-z.zoom)+z.panX),dpr*((H/2)*(1-z.zoom)+z.panY));
+    const cols=GRID_COLS,rows=gridRowsForFloor(fl),step=Math.max(1,state.builder.gridVisualScale||1),cw=W/cols,ch=H/rows;
+    ctx.strokeStyle=`rgba(255,255,255,${Math.max(.01,state.builder.gridOpacity||.01)})`;ctx.lineWidth=1;
+    for(let c=0;c<=cols;c+=step){ctx.beginPath();ctx.moveTo(c*cw,0);ctx.lineTo(c*cw,H);ctx.stroke();}
+    for(let r=0;r<=rows;r+=step){ctx.beginPath();ctx.moveTo(0,r*ch);ctx.lineTo(W,r*ch);ctx.stroke();}
+    ctx.restore();
+  };
+
+  // Small semantic markers for entrance, exit and stairs, drawn on top of the existing marker.
+  const iwMarkerDraw=window.drawBuilderCanvas;
+  window.drawBuilderCanvas=function(){
+    iwMarkerDraw();
+    const canvas=document.getElementById('builderCanvas');if(!canvas)return;const fl=currentFloor();const W=canvas._targetCssW||800,H=canvas._targetCssH||460,dpr=window.devicePixelRatio||1,z=zoomState('builder'),ctx=canvas.getContext('2d');
+    ctx.save();ctx.setTransform(dpr*z.zoom,0,0,dpr*z.zoom,dpr*((W/2)*(1-z.zoom)+z.panX),dpr*((H/2)*(1-z.zoom)+z.panY));
+    (fl.points||[]).forEach(pt=>{const cat=catById(state.store,pt.category);const label=String(cat?.label||'').toLowerCase();let glyph=null;if(/entrance/.test(label))glyph='↘';else if(/exit/.test(label))glyph='↗';else if(/stair/.test(label))glyph='▥';else return;const x=pt.x*W,y=pt.y*H;ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle='#111';ctx.lineWidth=4;ctx.font='bold 20px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.strokeText(glyph,x,y);ctx.fillText(glyph,x,y);ctx.restore();});
+    ctx.restore();
+  };
+})();
+</script>
 </body>
 </html>
