@@ -745,11 +745,14 @@ async function isPlatformOwner(){
 async function hasVenueAccess(slug){
   const u=await currentUser(); if(!u) return false;
   const headers=await authHeaders();
+  // Platform owners manage the entire InstantWay platform, so they can open any venue.
+  const ownerRes=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers});
+  if(ownerRes.ok){ const owners=await ownerRes.json(); if(owners.length) return true; }
   const res=await fetch(`${SUPABASE_URL}/rest/v1/venues?slug=eq.${encodeURIComponent(slug)}&select=id,organization_id&limit=1`,{headers});
   if(!res.ok) return false; const rows=await res.json(); if(!rows.length) return false;
   const v=rows[0];
   const m=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?organization_id=eq.${encodeURIComponent(v.organization_id)}&user_id=eq.${encodeURIComponent(u.id)}&select=role&limit=1`,{headers});
-  if(!m.ok) return false; const mr=await m.json(); return mr.length>0 && ['platform_owner','organization_owner','venue_admin','venue_editor','staff'].includes(mr[0].role);
+  if(!m.ok) return false; const mr=await m.json(); return mr.length>0 && ['organization_owner','venue_admin','venue_editor','staff'].includes(mr[0].role);
 }
 
 /* ---------- storage layer (real hosted backend: Supabase) ---------- */
