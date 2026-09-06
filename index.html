@@ -22,7 +22,37 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* InstantWay resilient Supabase loader: try multiple CDNs and never initialize auth before the client exists. */
+window.__instantWaySupabaseReady = (async function(){
+  if(window.supabase && typeof window.supabase.createClient === 'function') return window.supabase;
+  const sources = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+  ];
+  for(const src of sources){
+    try{
+      await new Promise((resolve,reject)=>{
+        const existing=[...document.scripts].find(x=>x.src===src);
+        if(existing){
+          if(window.supabase) return resolve();
+          existing.addEventListener('load',resolve,{once:true});
+          existing.addEventListener('error',reject,{once:true});
+          return;
+        }
+        const script=document.createElement('script');
+        script.src=src;
+        script.async=false;
+        script.onload=resolve;
+        script.onerror=()=>reject(new Error('Failed to load '+src));
+        document.head.appendChild(script);
+      });
+      if(window.supabase && typeof window.supabase.createClient === 'function') return window.supabase;
+    }catch(e){ console.warn('InstantWay Supabase CDN failed:',src,e); }
+  }
+  throw new Error('Supabase client failed to load. Please check your internet connection and refresh.');
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -359,13 +389,10 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
   <div class="page">
     <div class="card">
       <h2>Platform Owner Login</h2>
-      <p class="sub">Build and manage every store on InstantWay.</p><div class="infobox">Secure sign-in powered by Supabase Auth. Your venue data is protected with role-based access.</div>
+      <p class="sub">Build and manage every store on InstantWay.</p><div class="infobox">Enter the platform owner password to continue.</div>
       <div id="ownerLoginError"></div>
-      <div class="field"><label>Email</label><input id="ownerEmailInput" type="email" autocomplete="email" placeholder="you@example.com"></div>
-      <div class="field"><label>Password</label><input id="ownerPwInput" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <div class="field"><label>Password</label><div class="pw-wrap"><input id="ownerPwInput" type="password" autocomplete="off" placeholder="Enter owner password"><button type="button" class="pw-toggle" data-pw-target="ownerPwInput" aria-label="Show password">Show</button></div></div>
       <button class="btn primary block" data-action="owner-login">Log in</button>
-      <button class="btn block" data-action="owner-signup" style="margin-top:8px;">Create owner account</button>
-      <p class="hint" style="margin-top:14px;">The first account can claim the InstantWay platform owner role.</p>
       <p style="margin-top:14px;"><a class="footer-link" href="#" data-action="go-home">← Back</a></p>
     </div>
   </div>
@@ -378,7 +405,6 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
     <div class="actions">
       <button class="theme-toggle" data-action="toggle-theme" title="Toggle light/dark">🌓</button>
       <span class="sub">Platform Owner</span>
-      <button class="btn small" data-action="owner-change-pw">Change password</button>
       <button class="btn small ghost" data-action="owner-logout">Log out</button>
     </div>
   </div>
@@ -419,7 +445,7 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
       <p class="sub" id="adminLoginSub">Manage your store's products and QR codes.</p>
       <div id="adminLoginError"></div>
       <div class="field"><label>Email</label><input id="adminEmailInput" type="email" autocomplete="email" placeholder="you@example.com"></div>
-      <div class="field"><label>Password</label><input id="adminPwInput" type="password" autocomplete="current-password" placeholder="••••••••"></div>
+      <div class="field"><label>Password</label><div class="pw-wrap"><input id="adminPwInput" type="password" autocomplete="current-password" placeholder="••••••••"><button type="button" class="pw-toggle" data-pw-target="adminPwInput" aria-label="Show password">Show</button></div></div>
       <button class="btn primary block" data-action="admin-login">Log in</button>
       <p style="margin-top:14px;"><a class="footer-link" href="#" data-action="go-home">← Back</a></p>
     </div>
@@ -699,18 +725,30 @@ async function currentUser(){ const sb=getSb(); if(!sb) return null; const {data
 async function signInEmail(email,password){ const sb=getSb(); if(!sb) throw new Error('Supabase client failed to load'); const {data,error}=await sb.auth.signInWithPassword({email,password}); if(error) throw error; return data; }
 async function signUpOwner(email,password,fullName){ const sb=getSb(); if(!sb) throw new Error('Supabase client failed to load'); const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:fullName||''}}}); if(error) throw error; return data; }
 async function signOut(){ const sb=getSb(); if(sb) await sb.auth.signOut(); state.ownerLoggedIn=false; state.adminLoggedIn=false; state.adminStoreSlug=null; }
+async function authHeaders(){
+  const sb=getSb();
+  if(!sb) throw new Error('Supabase client failed to load');
+  const {data}=await sb.auth.getSession();
+  const token=data?.session?.access_token;
+  return token ? {apikey:SUPABASE_ANON_KEY, Authorization:'Bearer '+token} : SB_HEADERS;
+}
 async function isPlatformOwner(){
   const u=await currentUser(); if(!u) return false;
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers:SB_HEADERS});
+  const headers=await authHeaders();
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers});
   if(!res.ok) return false; const rows=await res.json(); return rows.length>0;
 }
 async function hasVenueAccess(slug){
   const u=await currentUser(); if(!u) return false;
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/venues?slug=eq.${encodeURIComponent(slug)}&select=id,organization_id&limit=1`,{headers:SB_HEADERS});
+  const headers=await authHeaders();
+  // Platform owners manage the entire InstantWay platform, so they can open any venue.
+  const ownerRes=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers});
+  if(ownerRes.ok){ const owners=await ownerRes.json(); if(owners.length) return true; }
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/venues?slug=eq.${encodeURIComponent(slug)}&select=id,organization_id&limit=1`,{headers});
   if(!res.ok) return false; const rows=await res.json(); if(!rows.length) return false;
   const v=rows[0];
-  const m=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?organization_id=eq.${encodeURIComponent(v.organization_id)}&user_id=eq.${encodeURIComponent(u.id)}&select=role&limit=1`,{headers:SB_HEADERS});
-  if(!m.ok) return false; const mr=await m.json(); return mr.length>0 && ['platform_owner','organization_owner','venue_admin','venue_editor','staff'].includes(mr[0].role);
+  const m=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?organization_id=eq.${encodeURIComponent(v.organization_id)}&user_id=eq.${encodeURIComponent(u.id)}&select=role&limit=1`,{headers});
+  if(!m.ok) return false; const mr=await m.json(); return mr.length>0 && ['organization_owner','venue_admin','venue_editor','staff'].includes(mr[0].role);
 }
 
 /* ---------- storage layer (real hosted backend: Supabase) ---------- */
@@ -839,7 +877,30 @@ async function loadStore(slug){
   if(migrated._migrated){ delete migrated._migrated; await saveStore(migrated); }
   return migrated;
 }
-async function saveStore(store){ const clean=JSON.parse(JSON.stringify(store)); delete clean.adminPassword; return sSet('store:'+store.slug, clean); }
+async function saveStore(store){
+  if(!store) return false;
+  store.updatedAt = Date.now();
+  store.sync = store.sync || {};
+  store.sync.lastLocalSaveAt = store.updatedAt;
+  const clean=JSON.parse(JSON.stringify(store)); delete clean.adminPassword;
+  try{ localStorage.setItem('instantway-offline-'+store.slug, JSON.stringify({store:clean,cachedAt:Date.now()})); }catch(e){}
+  if(!navigator.onLine){
+    store.sync.pending = true;
+    try{ localStorage.setItem('instantway-pending-'+store.slug, JSON.stringify(clean)); }catch(e){}
+    updateOfflineIndicator();
+    return true;
+  }
+  const ok = await sSet('store:'+store.slug, clean);
+  if(ok){
+    store.sync.pending=false; store.sync.lastSyncedAt=Date.now();
+    try{ localStorage.removeItem('instantway-pending-'+store.slug); }catch(e){}
+  } else {
+    store.sync.pending=true;
+    try{ localStorage.setItem('instantway-pending-'+store.slug, JSON.stringify(clean)); }catch(e){}
+  }
+  updateOfflineIndicator();
+  return ok;
+}
 
 function newFloor(name){
   return { id: uid('fl'), name: name||'Ground Floor', image:null, gridRows:40, walk:[], points:[], walls:[] };
@@ -877,7 +938,7 @@ const state = {
     floorIdx:0, tool:'place', category:'general', shape:'point',
     selectedPointId:null, dragging:null, pathDraft:null, shapeDraft:null,
     imgCache:{}, saveTimer:null,
-    zoom:1, panX:0, panY:0
+    zoom:1, panX:0, panY:0, brushSize:2, gridVisualScale:1, gridOpacity:0.18, spacePan:false
   },
   customer:{
     locationNode:null, route:null, legIdx:0, shopList:[], imgCache:{}, animT:0,
@@ -1133,6 +1194,13 @@ async function route(){
   showView('view-home');
 }
 window.addEventListener('popstate', route);
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && document.getElementById('view-owner-login')?.classList.contains('active')){
+    e.preventDefault();
+    ownerLogin();
+  }
+});
+
 
 function renderStoreNotFound(){
   document.getElementById('view-home').querySelector('.page').innerHTML = `
@@ -1160,7 +1228,7 @@ async function handleAction(action, el, e){
     case 'go-owner': setUrl({owner:'1', admin:null, store:null, node:null}, true); return route();
     case 'go-owner-dash': setUrl({owner:'1', store:null}, true); return route();
     case 'owner-login': return ownerLogin();
-    case 'owner-logout': signOut(); setUrl({owner:null},true); return route();
+    case 'owner-logout': ownerLogout(); setUrl({owner:null},true); return route();
     case 'owner-change-pw': return openChangeOwnerPwModal();
     case 'owner-create-store': return ownerCreateStore();
     case 'owner-open-builder': setUrl({owner:'1', store:el.dataset.slug}, true); return route();
@@ -1497,35 +1565,39 @@ function loginAllowed(kind){const g=LOGIN_GUARD[kind];if(Date.now()<g.until){toa
 function loginFailed(kind){const g=LOGIN_GUARD[kind];g.fails++;if(g.fails>=5){g.until=Date.now()+30000;g.fails=0;}}
 function loginSucceeded(kind){LOGIN_GUARD[kind]={fails:0,until:0};}
 /* ================= OWNER ================= */
+const INSTANTWAY_OWNER_PASSWORD = 'instantway2026';
 function renderOwnerLogin(){
-  document.getElementById('ownerLoginError').innerHTML='';
-  const inp = document.getElementById('ownerPwInput'); if(inp) inp.value='';
+  const err=document.getElementById('ownerLoginError');
+  if(err) err.innerHTML='';
+  const inp=document.getElementById('ownerPwInput');
+  if(inp){ inp.value=''; setTimeout(()=>inp.focus(),80); }
+}
+function ownerLogout(){
+  state.ownerLoggedIn=false;
+  try{ sessionStorage.removeItem('instantway-owner-unlocked'); }catch(e){}
 }
 async function ownerLogin(){
   if(!loginAllowed('owner')) return;
-  const email=document.getElementById('ownerEmailInput')?.value.trim();
-  const pw=document.getElementById('ownerPwInput')?.value;
-  if(!email||!pw){ document.getElementById('ownerLoginError').innerHTML='<div class="errbox">Enter your email and password.</div>'; return; }
-  try{
-    await signInEmail(email,pw);
-    const existsRes=await fetch(`${SUPABASE_URL}/rest/v1/platform_state?id=eq.true&select=has_owner&limit=1`,{headers:SB_HEADERS});
-    const ownerRows=existsRes.ok ? await existsRes.json() : [{has_owner:true}];
-    const ownerExists=!!ownerRows[0]?.has_owner;
-    if(ownerExists && !(await isPlatformOwner())){ await signOut(); throw new Error('This account is not a platform owner. Use the venue admin login for venue-specific access.'); }
-    loginSucceeded('owner'); state.ownerLoggedIn=true; setUrl({owner:'1'},true); route();
-  }catch(e){ loginFailed('owner'); document.getElementById('ownerLoginError').innerHTML=`<div class="errbox">${esc(e.message||'Sign-in failed')}</div>`; }
-}
-async function ownerSignup(){
-  const email=document.getElementById('ownerEmailInput')?.value.trim(); const pw=document.getElementById('ownerPwInput')?.value;
-  if(!email||!pw||pw.length<8){ document.getElementById('ownerLoginError').innerHTML='<div class="errbox">Enter an email and a password of at least 8 characters.</div>'; return; }
-  try{
-    const status=await fetch(`${SUPABASE_URL}/rest/v1/platform_state?id=eq.true&select=has_owner&limit=1`,{headers:SB_HEADERS});
-    const platformReady=status.ok ? await status.json() : [{has_owner:true}];
-    if(platformReady[0]?.has_owner){ throw new Error('An owner account already exists. Please log in instead.'); }
-    const data=await signUpOwner(email,pw,email.split('@')[0]);
-    if(data.session){ state.ownerLoggedIn=true; setUrl({owner:'1'},true); route(); }
-    else document.getElementById('ownerLoginError').innerHTML='<div class="infobox">Account created. Check your email to confirm it, then return here and log in. The first venue you create will claim the platform owner role.</div>';
-  }catch(e){ document.getElementById('ownerLoginError').innerHTML=`<div class="errbox">${esc(e.message||'Could not create account')}</div>`; }
+  const err=document.getElementById('ownerLoginError');
+  const btn=document.querySelector('#view-owner-login [data-action="owner-login"]');
+  const pw=document.getElementById('ownerPwInput')?.value || '';
+  if(!pw){
+    if(err) err.innerHTML='<div class="errbox">Enter the owner password.</div>';
+    return;
+  }
+  if(pw !== INSTANTWAY_OWNER_PASSWORD){
+    loginFailed('owner');
+    if(err) err.innerHTML='<div class="errbox">Incorrect password.</div>';
+    const inp=document.getElementById('ownerPwInput');
+    if(inp){ inp.value=''; inp.focus(); }
+    return;
+  }
+  loginSucceeded('owner');
+  state.ownerLoggedIn=true;
+  try{ sessionStorage.setItem('instantway-owner-unlocked','1'); }catch(e){}
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Opening…'; }
+  setUrl({owner:'1'},true);
+  await route();
 }
 function openChangeOwnerPwModal(){
   openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>Change password</h3><p class="sub">Password changes are handled securely by Supabase Auth. Use the account recovery flow if you need to reset it.</p><button class="btn primary block" id="resetPwBtn">Send password reset email</button>`);
@@ -1585,7 +1657,7 @@ async function runOwnerCommand(el){
   const input=document.getElementById('ownerCommandInput');
   const raw=(el?.dataset?.command || input?.value || '').trim().toLowerCase();
   if(!raw){toast('Type a command');return;}
-  if(raw==='security'){ openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>🔐 Security reality check</h3><div class="warnbox">The current prototype keeps authentication logic and credentials in the client. Do not treat it as production-grade authentication until Supabase Auth + RLS are added.</div><button class="btn primary" onclick="closeModal();">Got it</button>`); return;}
+  if(raw==='security'){ openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>🔐 Security reality check</h3><div class="warnbox">Authentication is handled by Supabase Auth and venue access is checked against role-based membership. Keep RLS enabled on all production tables.</div><button class="btn primary" onclick="closeModal();">Got it</button>`); return;}
   if(raw==='analytics'){ const first=(await loadStoreIndex())[0]; if(first){state.store=await loadStore(first.slug); openAdminHealthCenter();} else toast('Create a venue first'); return;}
   if(raw==='preview'){ const first=(await loadStoreIndex())[0]; if(first){setUrl({store:first.slug},true);route();} else toast('Create a venue first'); return;}
   if(raw.startsWith('health')){ const slug=raw.split(':')[1]; if(slug){state.store=await loadStore(slug);} if(state.store) openAdminHealthCenter(); else toast('Venue not found'); return;}
@@ -1956,14 +2028,30 @@ function drawBuilderCanvas(){
     ctx.beginPath(); ctx.moveTo(w.x1*W, w.y1*H); ctx.lineTo(w.x2*W, w.y2*H); ctx.stroke();
   });
   ctx.setLineDash([]);
-  // painted walkway grid — brushed on freely, so it can bend/curve around real layout
+  // Walkable network: keep the grid internally for routing, but render it as a clean dashed path.
+  // This avoids the old shaded/unshaded checkerboard look while preserving precise pathfinding.
   const rows = gridRowsForFloor(fl);
   const cw = W/GRID_COLS, ch = H/rows;
-  ctx.fillStyle = 'rgba(0,230,180,0.42)';
+  const walkCells = new Set(fl.walk||[]);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0,230,180,0.82)';
+  ctx.lineWidth = Math.max(2.5, Math.min(cw,ch)*0.48);
+  ctx.lineCap='round';
+  ctx.setLineDash([7,8]);
+  ctx.lineDashOffset = -((Date.now()/90)%15);
   (fl.walk||[]).forEach(k=>{
     const [r,c] = k.split(',').map(Number);
-    ctx.fillRect(c*cw-0.5, r*ch-0.5, cw+1, ch+1);
+    const x=(c+.5)*cw, y=(r+.5)*ch;
+    [[0,1],[1,0],[1,1],[1,-1]].forEach(([dr,dc])=>{
+      const nk=(r+dr)+','+(c+dc);
+      if(!walkCells.has(nk)) return;
+      ctx.beginPath();
+      ctx.moveTo(x,y);
+      ctx.lineTo((c+dc+.5)*cw,(r+dr+.5)*ch);
+      ctx.stroke();
+    });
   });
+  ctx.restore();
   // faint grid guide lines while painting/erasing, so the brush feels precise
   if(state.builder.tool==='path' || state.builder.tool==='erase'){
     ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1;
@@ -2153,7 +2241,7 @@ function onCanvasDown(e){
   }
   if(state.builder.tool==='path'){
     state.builder.painting = true; state.builder.eraseMode = false; state.builder.lastPaintRel = rel;
-    paintCellsAlong(fl, rel, rel, false, 0);
+    paintCellsAlong(fl, rel, rel, false, Math.max(0, (state.builder.brushSize||2)-1));
     drawBuilderCanvas();
     return;
   }
@@ -2163,7 +2251,7 @@ function onCanvasDown(e){
     state.builder.eraseClickPoint = null;
     state.builder.eraseClickWall = findWallNear(fl, canvas, rel, 10);
     state.builder.painting = true; state.builder.eraseMode = true; state.builder.lastPaintRel = rel;
-    paintCellsAlong(fl, rel, rel, true, 0);
+    paintCellsAlong(fl, rel, rel, true, Math.max(0, (state.builder.brushSize||2)-1));
     drawBuilderCanvas();
   }
 }
@@ -2192,7 +2280,7 @@ function onCanvasMove(e){
   }
   if(state.builder.painting){
     const from = state.builder.lastPaintRel || downInfo.rel;
-    paintCellsAlong(fl, from, rel, state.builder.eraseMode, 0);
+    paintCellsAlong(fl, from, rel, state.builder.eraseMode, Math.max(0, (state.builder.brushSize||2)-1));
     state.builder.lastPaintRel = rel;
     drawBuilderCanvas();
     return;
@@ -2467,8 +2555,8 @@ function renderImportPreview(rows){
     <div class="field"><label>Name column</label><select id="impColName">${headers.map(h=>`<option ${h===guessName?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
     <div class="field"><label>Category column (optional)</label><select id="impColCat"><option value="">— none —</option>${headers.map(h=>`<option ${h===guessCat?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
     <div class="field"><label>Price column (optional)</label><select id="impColPrice"><option value="">— none —</option>${headers.map(h=>`<option ${h===guessPrice?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
-    <div class="field"><label>Aisle/location name column (optional — matched to existing map items by name, or auto-created)</label><select id="impColLoc"><option value="">— none —</option>${headers.map(h=>`<option ${h===guessLoc?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
-    <p class="hint" style="margin-bottom:10px;">Rows whose aisle/location doesn't exist on your map yet will be auto-created as a new point (unpositioned — drag it into place afterward in the map builder).</p>
+    <div class="field"><label>Aisle/location name column (optional — matched to existing map locations by name)</label><select id="impColLoc"><option value="">— none —</option>${headers.map(h=>`<option ${h===guessLoc?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
+    <p class="hint" style="margin-bottom:10px;">Rows whose aisle/location doesn't exist stay in the catalog as Unmapped. Your floor plan is never modified by a product import.</p>
     <button class="btn primary block" id="doImportBtn">Import ${rows.length} row(s)</button>
   `;
   document.getElementById('doImportBtn').onclick = ()=>runImport(rows);
@@ -2478,38 +2566,43 @@ async function runImport(rows){
   const catCol = document.getElementById('impColCat').value;
   const priceCol = document.getElementById('impColPrice').value;
   const locCol = document.getElementById('impColLoc').value;
-  const fl = state.store.floors[0];
-  let created=0, matched=0;
-  const defaultCat = productCats(state.store)[0] || (state.store.categories||[])[0];
+  state.store.catalog = state.store.catalog || [];
+  let mapped=0, unmapped=0, updated=0;
   rows.forEach(row=>{
-    const name = (row[nameCol]||'').trim();
-    if(!name) return;
-    const price = priceCol ? parseFloat(String(row[priceCol]).replace(/[^0-9.\-]/g,'')) : null;
-    const locName = locCol ? (row[locCol]||'').trim() : '';
-    let cat = defaultCat;
-    if(catCol && row[catCol]){
-      const wanted = row[catCol].trim().toLowerCase();
-      const found = (state.store.categories||[]).find(c=>c.label.toLowerCase()===wanted);
-      if(found) cat = found;
-    }
+    const name=(row[nameCol]||'').trim(); if(!name) return;
+    const rawPrice=priceCol ? parseFloat(String(row[priceCol]).replace(/[^0-9.\-]/g,'')) : null;
+    const price=Number.isFinite(rawPrice)?rawPrice:null;
+    const locName=locCol ? (row[locCol]||'').trim() : '';
+    const catName=catCol ? (row[catCol]||'').trim() : '';
+    let locationId=null;
     if(locName){
-      let existing = null;
-      state.store.floors.forEach(f=>{ const hit=f.points.find(p=>p.name.toLowerCase()===locName.toLowerCase()); if(hit) existing=hit; });
-      if(existing){
-        existing.product = name; existing.price = isNaN(price)?existing.price:price;
-        matched++; return;
+      for(const f of state.store.floors||[]){
+        const hit=(f.points||[]).find(p=>(p.name||'').trim().toLowerCase()===locName.toLowerCase());
+        if(hit){ locationId=hit.id; break; }
       }
     }
-    fl.points.push({
-      id: uid('pt'), category: cat.id, name: locName || name, shape:'point',
-      x:0.5, y:0.5, product:name, price:isNaN(price)?null:price,
-      isQR:false, scans:0, floorLink:null, direction:null, needsPositioning:true
-    });
-    created++;
+    const key=normOcr(name);
+    let item=state.store.catalog.find(x=>normOcr(x.name)===key);
+    if(item){
+      item.price=price; item.category=catName||item.category||''; item.locationId=locationId||item.locationId||null; item.updatedAt=Date.now(); updated++;
+    } else {
+      item={id:uid('prd'),name,price,category:catName||'',locationId,createdAt:Date.now(),updatedAt:Date.now()};
+      state.store.catalog.push(item);
+    }
+    if(locationId){
+      const found=findPointById(locationId);
+      if(found){
+        found.pt.products=found.pt.products||[];
+        if(!found.pt.products.includes(item.id)) found.pt.products.push(item.id);
+        if(!found.pt.product) found.pt.product=name;
+      }
+      mapped++;
+    } else unmapped++;
   });
+  logEvent(state.store,{type:'catalog_import',count:rows.length,mapped,unmapped});
   await saveStore(state.store);
   closeModal();
-  toast(`Imported: ${matched} matched to existing locations, ${created} new location(s) created — drag new pins into place.`);
+  toast(`Imported ${rows.length}: ${mapped} mapped, ${unmapped} waiting for a location. Map stayed untouched.`);
   if(document.getElementById('view-admin-dash').classList.contains('active')) renderAdminDash();
 }
 
@@ -2520,13 +2613,53 @@ function renderAdminLogin(store){
   document.getElementById('adminLoginError').innerHTML='';
   const inp = document.getElementById('adminPwInput'); if(inp) inp.value='';
   state._pendingAdminStore = store;
+  setTimeout(bindAdminLogin, 0);
 }
+let adminLoginBusy=false;
 async function adminLogin(){
-  if(!loginAllowed('admin')) return;
-  const email=document.getElementById('adminEmailInput')?.value.trim(); const pw=document.getElementById('adminPwInput')?.value; const store=state._pendingAdminStore;
-  if(!email||!pw||!store){ document.getElementById('adminLoginError').innerHTML='<div class="errbox">Enter your email and password.</div>'; return; }
-  try{ await signInEmail(email,pw); if(!(await hasVenueAccess(store.slug))){ await signOut(); throw new Error('This account does not have access to this venue.'); } loginSucceeded('admin'); state.adminLoggedIn=true; state.adminStoreSlug=store.slug; setUrl({admin:'1',store:store.slug},true); route(); }
-  catch(e){ loginFailed('admin'); document.getElementById('adminLoginError').innerHTML=`<div class="errbox">${esc(e.message||'Sign-in failed')}</div>`; }
+  if(adminLoginBusy || !loginAllowed('admin')) return;
+  const errorEl=document.getElementById('adminLoginError');
+  const btn=document.querySelector('#view-admin-login [data-action="admin-login"]');
+  const email=document.getElementById('adminEmailInput')?.value.trim();
+  const pw=document.getElementById('adminPwInput')?.value;
+  const store=state._pendingAdminStore;
+  if(!email||!pw||!store){ if(errorEl) errorEl.innerHTML='<div class="errbox">Enter your email and password.</div>'; return; }
+  adminLoginBusy=true;
+  if(btn){ btn.disabled=true; btn.textContent='Signing in…'; }
+  if(errorEl) errorEl.innerHTML='<div class="infobox">Signing you in securely…</div>';
+  try{
+    await window.__instantWaySupabaseReady;
+    if(!getSb()) throw new Error('Authentication service is still loading. Please wait a moment and try again.');
+    const result=await signInEmail(email,pw);
+    if(!result?.user) throw new Error('Sign-in did not return an authenticated user.');
+    if(!(await hasVenueAccess(store.slug))){ await signOut(); throw new Error('This account does not have access to this venue.'); }
+    loginSucceeded('admin');
+    state.adminLoggedIn=true;
+    state.adminStoreSlug=store.slug;
+    setUrl({admin:'1',store:store.slug},true);
+    await route();
+  }catch(e){
+    console.error('InstantWay admin login failed:',e);
+    loginFailed('admin');
+    if(errorEl) errorEl.innerHTML=`<div class="errbox">${esc(e?.message||'Sign-in failed. Please try again.')}</div>`;
+  }finally{
+    adminLoginBusy=false;
+    if(btn){ btn.disabled=false; btn.textContent='Log in'; }
+  }
+}
+function bindAdminLogin(){
+  const btn=document.querySelector('#view-admin-login [data-action="admin-login"]');
+  if(btn && btn.dataset.loginBound!=='1'){
+    btn.dataset.loginBound='1';
+    btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();adminLogin();});
+  }
+  ['adminEmailInput','adminPwInput'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && el.dataset.loginKeyBound!=='1'){
+      el.dataset.loginKeyBound='1';
+      el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adminLogin();}});
+    }
+  });
 }
 
 const ADMIN_TABS = [
@@ -2829,7 +2962,7 @@ function adminBrandingHtml(){
     <span id="brandSaveMsg" style="margin-left:10px;font-size:12px;color:var(--secondary);"></span>
     <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
     <h2 style="font-size:16px;">Store password</h2>
-    <div class="field"><label>New store admin password</label><input id="newStorePw" type="password" placeholder="••••••••"></div>
+    <div class="field"><label>New store admin password</label><div class="pw-wrap"><input id="newStorePw" type="password" placeholder="••••••••"><button type="button" class="pw-toggle" data-pw-target="newStorePw" aria-label="Show password">Show</button></div></div>
     <button class="btn" id="saveStorePwBtn">Update password</button>
   </div>`;
 }
@@ -3484,12 +3617,12 @@ function drawCustomerCanvas(){
     const leg = route.legs[state.customer.legIdx];
     if(leg.floorId===fl.id && leg.points.length>1){
       const pts = leg.points;
-      // base line
-      ctx.strokeStyle = brand; ctx.lineWidth=6; ctx.lineCap='round'; ctx.lineJoin='round';
+      // Investor-demo route: a single clean moving dashed line with a subtle halo.
+      ctx.lineCap='round'; ctx.lineJoin='round';
+      ctx.strokeStyle = brand+'55'; ctx.lineWidth=7; ctx.setLineDash([]);
       drawSmoothPath(ctx, pts, W, H);
-      // animated flow overlay
-      ctx.strokeStyle='#ffffff'; ctx.lineWidth=3;
-      ctx.setLineDash([12,14]); ctx.lineDashOffset = -(state.customer.animT*0.6)%26;
+      ctx.strokeStyle='#ffffff'; ctx.lineWidth=3.2;
+      ctx.setLineDash([5,11]); ctx.lineDashOffset = -(state.customer.animT*0.75)%16;
       drawSmoothPath(ctx, pts, W, H);
       ctx.setLineDash([]);
       // start pin
@@ -3684,15 +3817,395 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLower
 
 /* ================= INIT ================= */
 async function init(){
+  try{
+    await window.__instantWaySupabaseReady;
+  }catch(e){
+    console.error(e);
+    const bootMsg = document.querySelector('#app, body');
+    if(bootMsg && !document.getElementById('supabaseBootError')){
+      const box=document.createElement('div');
+      box.id='supabaseBootError';
+      box.style='position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg,#0c0d12);color:var(--text,#fff);z-index:99999;font-family:system-ui,sans-serif;text-align:center';
+      box.innerHTML='<div style="max-width:420px"><div style="font-size:28px;margin-bottom:10px">InstantWay</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Connection library could not load</div><div style="font-size:13px;opacity:.75;margin-bottom:18px">The app could not reach its authentication library. Check your internet connection, then try again.</div><button onclick="location.reload()" style="border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer">Retry</button></div>';
+      document.body.appendChild(box);
+    }
+    return;
+  }
   if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('/sw.js'); }catch(e){} }
-  const u = await currentUser();
-  if(u){
-    state.ownerLoggedIn = await isPlatformOwner();
+  try{
+    state.ownerLoggedIn = sessionStorage.getItem('instantway-owner-unlocked') === '1';
+  }catch(e){
+    state.ownerLoggedIn = false;
   }
   route();
 }
 init();
 </script>
+
+
+<style>
+.pw-wrap{position:relative;display:flex;align-items:center}.pw-wrap input{padding-right:64px}.pw-toggle{position:absolute;right:6px;border:0;background:transparent;color:var(--accent);font-weight:700;cursor:pointer;padding:7px 8px}
+.mvp-save-state{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);padding:4px 8px;border:1px solid var(--border);border-radius:999px}.mvp-save-state.pending{color:#ffc400}.mvp-save-state.ok{color:#00d69f}
+.mvp-quickbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:7px 10px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.mvp-quickbar .btn{font-size:11px;padding:6px 9px}.activity-row{padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}.activity-row:last-child{border-bottom:0}
+.map-sync-pill{position:fixed;right:14px;bottom:14px;z-index:1000;padding:7px 10px;border-radius:999px;background:#1e2430;color:#fff;font-size:11px;box-shadow:0 4px 16px rgba(0,0,0,.25);display:none}.map-sync-pill.show{display:block}.map-sync-pill.offline{background:#704f00}.map-sync-pill.syncing{background:#164d72}
+</style>
+<script>
+(function(){
+  function ensureMvpData(store){
+    if(!store) return;
+    store.catalog=store.catalog||[]; store.activity=store.activity||[]; store.sync=store.sync||{};
+    store.categories=store.categories||[];
+    const ensure=(label,icon,color)=>{ let c=store.categories.find(x=>x.label.toLowerCase()===label.toLowerCase()); if(!c){ c={id:uid('cat'),label,icon,color,kind:'amenity'}; store.categories.push(c); } return c; };
+    ensure('Entrance','🚪','#22c55e'); ensure('Exit','🚪','#ef4444');
+  }
+  window.ensureMvpData = ensureMvpData;
+  const oldLoadStore=window.loadStore;
+  window.loadStore=async function(slug){ const st=await oldLoadStore(slug); ensureMvpData(st); return st; };
+  const oldNewStore=window.newStore;
+  window.newStore=function(){ const st=oldNewStore.apply(this,arguments); ensureMvpData(st); return st; };
+
+  window.updateOfflineIndicator=function(){
+    let el=document.getElementById('mvpSyncPill'); if(!el){el=document.createElement('div');el.id='mvpSyncPill';el.className='map-sync-pill';document.body.appendChild(el);}
+    const pending=state.store&&state.store.sync&&state.store.sync.pending;
+    if(!navigator.onLine){el.textContent='● Offline · changes saved on this device';el.className='map-sync-pill show offline';}
+    else if(pending){el.textContent='↻ Waiting to sync…';el.className='map-sync-pill show syncing';}
+    else {el.textContent='✓ Saved online';el.className='map-sync-pill show';clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1700);}
+  };
+  async function flushPending(){
+    if(!navigator.onLine) return; updateOfflineIndicator();
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i); if(!k||!k.startsWith('instantway-pending-')) continue;
+      try{ const st=JSON.parse(localStorage.getItem(k)); const ok=await sSet('store:'+st.slug,st); if(ok) localStorage.removeItem(k); }catch(e){}
+    }
+    if(state.store){state.store.sync=state.store.sync||{};state.store.sync.pending=false;state.store.sync.lastSyncedAt=Date.now();}
+    updateOfflineIndicator();
+  }
+  window.addEventListener('online',flushPending); window.addEventListener('offline',updateOfflineIndicator);
+
+  function activity(action,detail){
+    if(!state.store) return; ensureMvpData(state.store); state.store.activity.push({action,detail:detail||'',ts:Date.now()}); if(state.store.activity.length>300)state.store.activity=state.store.activity.slice(-300);
+  }
+  document.addEventListener('click',e=>{
+    const pw=e.target.closest('[data-pw-target]'); if(pw){const inp=document.getElementById(pw.dataset.pwTarget);if(inp){const show=inp.type==='password';inp.type=show?'text':'password';pw.textContent=show?'Hide':'Show';pw.setAttribute('aria-label',show?'Hide password':'Show password');}return;}
+    const a=e.target.closest('[data-mvp-action]'); if(!a)return;
+    const act=a.dataset.mvpAction;
+    if(act==='undo') return mvpUndo(); if(act==='redo')return mvpRedo(); if(act==='history')return openMvpHistory(); if(act==='sync')return flushPending();
+  },true);
+
+  // Undo / redo works on map state only and never touches the imported catalog.
+  const hist={undo:[],redo:[],before:null};
+  function snap(){ if(!state.store)return null; return JSON.stringify({floors:state.store.floors,categories:state.store.categories}); }
+  function restore(raw){ if(!raw)return; const x=JSON.parse(raw);state.store.floors=x.floors;state.store.categories=x.categories;saveStore(state.store);renderBuilder(); }
+  window.mvpUndo=function(){ if(!hist.undo.length)return toast('Nothing to undo');hist.redo.push(snap());restore(hist.undo.pop());activity('undo'); };
+  window.mvpRedo=function(){ if(!hist.redo.length)return toast('Nothing to redo');hist.undo.push(snap());restore(hist.redo.pop());activity('redo'); };
+  document.addEventListener('pointerdown',e=>{if(e.target&&e.target.id==='builderCanvas')hist.before=snap();},true);
+  document.addEventListener('pointerup',e=>{if(hist.before&&document.getElementById('view-builder')?.classList.contains('active')){const now=snap();if(now!==hist.before){hist.undo.push(hist.before);if(hist.undo.length>60)hist.undo.shift();hist.redo=[];activity('map_edit');}hist.before=null;}},true);
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?mvpRedo():mvpUndo();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();mvpRedo();}},true);
+
+  window.openMvpHistory=function(){
+    const rows=((state.store&&state.store.activity)||[]).slice(-30).reverse();
+    openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>Recent activity</h3><p class="hint">Every key action is timestamped for your demo and audit trail.</p>${rows.length?rows.map(x=>`<div class="activity-row"><b>${esc(x.action.replace(/_/g,' '))}</b>${x.detail?` · ${esc(x.detail)}`:''}<br><span class="hint">${new Date(x.ts).toLocaleString()}</span></div>`).join(''):'<p class="hint">No activity yet.</p>'}`);
+  };
+
+  const oldRenderBuilder=window.renderBuilder;
+  window.renderBuilder=function(skipDraw){ ensureMvpData(state.store); oldRenderBuilder(skipDraw); let q=document.getElementById('mvpQuickbar'); if(!q){q=document.createElement('div');q.id='mvpQuickbar';q.className='mvp-quickbar';document.getElementById('builderToolbar').insertAdjacentElement('afterend',q);} const ts=state.store?.updatedAt?new Date(state.store.updatedAt).toLocaleTimeString(): 'not saved yet';q.innerHTML=`<button class="btn" data-mvp-action="undo">↶ Undo</button><button class="btn" data-mvp-action="redo">↷ Redo</button><button class="btn" data-mvp-action="history">🕒 History</button><button class="btn" data-mvp-action="sync">↻ Sync now</button><span class="mvp-save-state ${state.store?.sync?.pending?'pending':'ok'}">${navigator.onLine?(state.store?.sync?.pending?'Offline changes pending':'Saved · '+ts):'Offline · autosaving'}</span><span class="hint">Tip: Products are separate from the map. Import freely, then map only the locations you need.</span>`; };
+
+  // Catalog-first product admin. Imported products never mutate the floor plan.
+  window.adminProductsHtml=function(){
+    ensureMvpData(state.store); const catalog=state.store.catalog||[]; const locs=allQrEligiblePoints().filter(({pt})=>isProductCategory(state.store,pt.category));
+    const button=adminImportButtonHtml();
+    if(!catalog.length) return `<div class="card" style="max-width:none"><h2 style="font-size:16px">Products</h2><p class="sub">Import your product list first. It stays separate from the map, so shelves, paths and entrances remain fully editable.</p>${button}<div class="infobox">No products imported yet.</div></div>`;
+    return `<div class="card" style="max-width:none"><h2 style="font-size:16px">Products</h2><p class="sub">${catalog.length} catalog item(s). Assign a mapped shelf/location only when ready.</p>${button}<table class="ptable"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Mapped location</th><th>Updated</th></tr></thead><tbody>${catalog.map((it,i)=>`<tr><td><input data-cat-field="name" data-idx="${i}" value="${esc(it.name||'')}"></td><td><input data-cat-field="category" data-idx="${i}" value="${esc(it.category||'')}"></td><td><input data-cat-field="price" data-idx="${i}" type="number" step="0.01" value="${it.price??''}" style="width:90px"></td><td><select data-cat-field="locationId" data-idx="${i}"><option value="">Unmapped</option>${locs.map(({pt,fl})=>`<option value="${pt.id}" ${it.locationId===pt.id?'selected':''}>${esc(fl.name)} · ${esc(pt.name)}</option>`).join('')}</select></td><td class="hint">${it.updatedAt?new Date(it.updatedAt).toLocaleString():'—'}</td></tr>`).join('')}</tbody></table><button class="btn primary" id="saveCatalogBtn" style="margin-top:14px">Save product mapping</button><span id="catalogSaveMsg" class="hint" style="margin-left:8px"></span></div>`;
+  };
+  const oldBindAdmin=window.bindAdminTabEvents;
+  window.bindAdminTabEvents=function(){ oldBindAdmin(); const b=document.getElementById('saveCatalogBtn'); if(b)b.onclick=async()=>{const catalog=state.store.catalog||[];document.querySelectorAll('[data-cat-field]').forEach(inp=>{const it=catalog[+inp.dataset.idx];if(!it)return;const f=inp.dataset.catField;if(f==='price')it.price=inp.value===''?null:Number(inp.value);else it[f]=inp.value;it.updatedAt=Date.now();});(state.store.floors||[]).forEach(fl=>(fl.points||[]).forEach(pt=>{pt.products=[];}));catalog.forEach(it=>{if(!it.locationId)return;const found=findPointById(it.locationId);if(found){found.pt.products=found.pt.products||[];found.pt.products.push(it.id);if(!found.pt.product)found.pt.product=it.name;}});activity('product_mapping_saved',catalog.length+' items');await saveStore(state.store);document.getElementById('catalogSaveMsg').textContent='Saved ✓';}; };
+
+  // Search catalog, but route only items that have a mapped location.
+  window.onCustSearch=function(){
+    const q=document.getElementById('custSearchInput').value.trim().toLowerCase(), el=document.getElementById('custResults'); if(!q){el.style.display='none';el.innerHTML='';return;}
+    ensureMvpData(state.store); const catalog=(state.store.catalog||[]).filter(x=>(x.name||'').toLowerCase().includes(q)||(x.category||'').toLowerCase().includes(q)).slice(0,30);
+    if(!catalog.length) return (el.style.display='block',el.innerHTML=`<div class="result-item"><span class="meta">Not found in this venue</span></div>`);
+    el.style.display='block';el.innerHTML=catalog.map(it=>{const f=it.locationId?findPointById(it.locationId):null;return `<div class="result-item"><div><div class="name">${esc(it.name)}</div><div class="meta">${esc(it.category||'Product')} · ${f?esc(f.fl.name+' · '+f.pt.name):'Not mapped yet'}</div></div><div style="display:flex;gap:8px;align-items:center"><span class="price">${fmtPrice(it.price)}</span>${f?`<button class="btn small" data-nodeid="${f.pt.id}" data-role="add">+ List</button><button class="btn small primary" data-nodeid="${f.pt.id}" data-role="go">Go</button>`:`<span class="tag">Unmapped</span>`}</div></div>`;}).join('');el.querySelectorAll('[data-role="go"]').forEach(b=>b.onclick=()=>{routeToPoint(b.dataset.nodeid);el.style.display='none';document.getElementById('custSearchInput').value='';});el.querySelectorAll('[data-role="add"]').forEach(b=>b.onclick=()=>addToShopList(b.dataset.nodeid));
+  };
+
+  // More explicit entrance/exit labels in the customer location picker.
+  const oldPicker=window.renderLocationPicker;
+  window.renderLocationPicker=function(){ensureMvpData(state.store);oldPicker();};
+
+  document.addEventListener('click',e=>{const a=e.target.closest('[data-action]');if(a&&state.store&&!/modal-close|toggle-theme|zoom-|set-tool|set-category/.test(a.dataset.action||'')){activity(a.dataset.action);}},true);
+  window.addEventListener('load',()=>{updateOfflineIndicator();setTimeout(flushPending,600);});
+})();
+</script>
+
+
+<!-- INSTANTWAY SIMPLE WORKFLOW + MAP UX PATCH -->
+<style>
+  .iw-flow{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+  .iw-flow .step{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--text2)}
+  .iw-flow .step.active{border-color:var(--accent);color:var(--text);background:rgba(255,107,53,.10)}
+  .iw-flow .num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--border2);font-weight:800;color:var(--text)}
+  .iw-section{border:1px solid var(--border);border-radius:12px;background:var(--bg2);padding:14px;margin-bottom:12px}
+  .iw-section h3{margin:0 0 5px;font-size:15px}.iw-section p{margin:0 0 12px}
+  .iw-cat-row{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(170px,1fr) 100px 110px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border)}
+  .iw-cat-row:first-child{border-top:0}.iw-cat-name{display:flex;align-items:center;gap:8px;font-weight:700}.iw-cat-name .ico{font-size:20px}.iw-muted{font-size:11px;color:var(--text2)}
+  .iw-actionbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .iw-qr-toggle{min-width:100px}.iw-qr-toggle.on{background:var(--accent);color:#fff;border-color:transparent}
+  .iw-progress{height:7px;border-radius:99px;background:var(--bg3);overflow:hidden}.iw-progress>span{display:block;height:100%;background:var(--accent);border-radius:99px}
+  .iw-grid-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px}
+  .iw-grid-controls label{font-size:10px;text-transform:uppercase;font-weight:800;color:var(--text2)}
+  .iw-seg{display:flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden}.iw-seg button{border:0;border-right:1px solid var(--border2);background:transparent;color:var(--text2);padding:6px 9px;font-size:11px;cursor:pointer}.iw-seg button:last-child{border-right:0}.iw-seg button.active{background:var(--accent);color:#fff}
+  .iw-slider{width:120px;accent-color:var(--accent)}
+  #builderCanvasWrap,#custCanvasWrap{touch-action:none;overscroll-behavior:contain;}
+  #builderCanvas{cursor:crosshair;user-select:none;-webkit-user-select:none}
+  @media(max-width:760px){.iw-cat-row{grid-template-columns:1fr 1fr}.iw-cat-row .iw-actions{grid-column:1/-1}.iw-flow .step{flex:1 1 140px}}
+</style>
+<script>
+(function(){
+  const iwOldRenderAdminDash = window.renderAdminDash;
+  const iwOldSetupBuilderCanvas = window.setupBuilderCanvas;
+  const iwOldDrawBuilderCanvas = window.drawBuilderCanvas;
+
+  state.builder.gridVisualScale = state.builder.gridVisualScale || 1;
+  state.builder.gridOpacity = state.builder.gridOpacity ?? 0.18;
+  state.builder.spacePan = false;
+
+  function iwCatalog(){ ensureMvpData(state.store); return state.store.catalog || (state.store.catalog=[]); }
+  function iwProductCount(cat){ return iwCatalog().filter(p=>String(p.category||'').trim().toLowerCase()===String(cat.label||'').trim().toLowerCase() || p.category===cat.id).length; }
+  function iwCategoryLocations(cat){
+    const out=[];
+    (state.store.floors||[]).forEach(fl=>(fl.points||[]).forEach(pt=>{
+      if(pt.category===cat.id) out.push({pt,fl});
+    }));
+    return out;
+  }
+  function iwBestLocation(cat){
+    const a=iwCategoryLocations(cat); return a[0]||null;
+  }
+  function iwFlow(active){
+    const steps=[['1','🗺️','Map'],['2','📦','Products'],['3','📍','Locations'],['4','▦','QR Codes'],['5','🚀','Publish']];
+    return `<div class="iw-flow">${steps.map(s=>`<div class="step ${active===s[0]?'active':''}"><span class="num">${s[0]}</span><span>${s[2]}</span></div>`).join('')}</div>`;
+  }
+  function iwLocationOptions(selected){
+    return `<option value="">Unmapped</option>`+(state.store.floors||[]).flatMap(fl=>(fl.points||[]).filter(pt=>isProductCategory(state.store,pt.category)).map(pt=>`<option value="${pt.id}" ${selected===pt.id?'selected':''}>${esc(fl.name)} · ${esc(pt.name)}</option>`)).join('');
+  }
+
+  window.adminProductsHtml=function(){
+    const catalog=iwCatalog();
+    const cats=(state.store.categories||[]).filter(c=>c.kind==='product');
+    const mapped=catalog.filter(p=>p.locationId).length;
+    return `${iwFlow('2')}
+      <div class="iw-section"><h3>📦 Products</h3>
+        <p class="sub">Import your spreadsheet here. Products stay separate from the map. Nothing you import can move or damage your floor plan.</p>
+        <div class="iw-actionbar">${adminImportButtonHtml()}<span class="tag">${catalog.length} products</span><span class="tag">${mapped} mapped</span><span class="tag">${catalog.length-mapped} waiting</span></div>
+      </div>
+      <div class="iw-section"><h3>📍 Category placement</h3>
+        <p class="sub">First map the real category areas. Then products can inherit those locations automatically. Individual products can still be moved later.</p>
+        ${cats.length?cats.map(cat=>{const loc=iwBestLocation(cat);const n=iwProductCount(cat);return `<div class="iw-cat-row"><div class="iw-cat-name"><span class="ico">${cat.icon}</span><span>${esc(cat.label)}</span></div><div>${loc?`<span class="tag">${esc(loc.fl.name)} · ${esc(loc.pt.name)}</span>`:`<span class="tag">Not mapped</span>`}</div><div class="iw-muted">${n} product${n===1?'':'s'}</div><div class="iw-actions"><button class="btn small" data-iw-open-builder="1">Open map</button></div></div>`;}).join(''):`<div class="hint">Create your store categories in the Map Builder first.</div>`}
+      </div>
+      <div class="iw-section"><h3>🧺 Product locations</h3>
+        <p class="sub">Use this only for exceptions. Most products should inherit their category's mapped area.</p>
+        ${catalog.length?`<table class="ptable"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Location</th></tr></thead><tbody>${catalog.map((it,i)=>`<tr><td><input data-iw-p="name" data-i="${i}" value="${esc(it.name||'')}"></td><td><input data-iw-p="category" data-i="${i}" value="${esc(it.category||'')}"></td><td><input data-iw-p="price" data-i="${i}" type="number" step="0.01" value="${it.price??''}" style="width:90px"></td><td><select data-iw-p="locationId" data-i="${i}">${iwLocationOptions(it.locationId)}</select></td></tr>`).join('')}</tbody></table><div class="iw-actionbar"><button class="btn primary" id="iwSaveProducts">Save product locations</button><span id="iwProductMsg" class="hint"></span></div>`:`<div class="hint">No products yet. Import your CSV/Excel list above.</div>`}
+      </div>`;
+  };
+
+  window.adminQrHtml=function(){
+    const rows=allQrEligiblePoints(); const selected=rows.filter(x=>x.pt.isQR).length;
+    return `${iwFlow('4')}
+      <div class="iw-section"><h3>▦ QR Locations</h3>
+        <p class="sub">Do not hunt for checkboxes. Click <b>Use for QR</b> on the locations you want visitors to scan. The map will show a QR badge on each selected location.</p>
+        <div class="iw-actionbar"><span class="tag">${selected} selected</span><span class="iw-muted">${rows.length} available locations</span></div>
+        ${rows.length?`<table class="ptable"><thead><tr><th>Floor</th><th>Location</th><th>Type</th><th>QR</th></tr></thead><tbody>${rows.map(({pt,fl})=>{const cat=catById(state.store,pt.category);return `<tr><td>${esc(fl.name)}</td><td><b>${esc(pt.name)}</b></td><td><span class="tag">${cat.icon} ${esc(cat.label)}</span></td><td><button class="btn small iw-qr-toggle ${pt.isQR?'on':''}" data-iw-qr="${pt.id}">${pt.isQR?'✓ QR selected':'Use for QR'}</button></td></tr>`;}).join('')}</tbody></table>`:`<div class="hint">Place locations on the map first.</div>`}
+        <div class="iw-actionbar"><button class="btn primary" data-iw-generate-qr="1">Create QR codes →</button><button class="btn" data-action="admin-qr-healthcheck">🩺 Check QR setup</button></div>
+      </div>`;
+  };
+
+  window.renderAdminDash=function(){
+    document.getElementById('adminDashStoreName').textContent=state.store.name;
+    const tabs=[
+      {id:'products',label:'📦 Products'},
+      {id:'qr',label:'▦ QR Codes'},
+      {id:'analytics',label:'📊 Analytics'},
+      {id:'ads',label:'📣 Ads'},
+      {id:'branding',label:'🎨 Branding'},
+      {id:'operations',label:'🛟 Operations'},
+      {id:'security',label:'🔐 Security'}
+    ];
+    document.getElementById('adminTabs').innerHTML=tabs.map(t=>`<button class="pill ${state.adminTab===t.id?'active':''}" data-action="admin-tab" data-tab="${t.id}" style="${state.adminTab===t.id?`background:${state.store.branding.primary};border-color:transparent;`:''}">${t.label}</button>`).join('');
+    const content=document.getElementById('adminContent');
+    if(state.adminTab==='products')content.innerHTML=adminProductsHtml();
+    else if(state.adminTab==='qr')content.innerHTML=adminQrHtml();
+    else if(state.adminTab==='analytics')content.innerHTML=adminAnalyticsHtml();
+    else if(state.adminTab==='ads')content.innerHTML=adminAdsHtml();
+    else if(state.adminTab==='branding')content.innerHTML=adminBrandingHtml();
+    else if(state.adminTab==='operations')content.innerHTML=adminOperationsHtml();
+    else if(state.adminTab==='security')content.innerHTML=adminSecurityHtml();
+    bindAdminTabEvents();
+  };
+
+  const iwOldBindAdmin=window.bindAdminTabEvents;
+  window.bindAdminTabEvents=function(){
+    iwOldBindAdmin();
+    const save=document.getElementById('iwSaveProducts');
+    if(save)save.onclick=async()=>{
+      const cat=iwCatalog();
+      document.querySelectorAll('[data-iw-p]').forEach(el=>{const it=cat[+el.dataset.i];if(!it)return;const f=el.dataset.iwP;it[f]=f==='price'?(el.value===''?null:Number(el.value)):el.value;it.updatedAt=Date.now();});
+      (state.store.floors||[]).forEach(fl=>(fl.points||[]).forEach(pt=>pt.products=[]));
+      cat.forEach(it=>{if(!it.locationId)return;const found=findPointById(it.locationId);if(found){found.pt.products=found.pt.products||[];if(!found.pt.products.includes(it.id))found.pt.products.push(it.id);}});
+      activity('product_locations_saved',cat.length+' catalog items'); await saveStore(state.store); const m=document.getElementById('iwProductMsg');if(m)m.textContent='Saved ✓';
+    };
+  };
+
+  document.addEventListener('click',async e=>{
+    const open=e.target.closest('[data-iw-open-builder]');
+    if(open){e.preventDefault();setUrl({owner:'1',store:state.store.slug},true);return route();}
+    const qr=e.target.closest('[data-iw-qr]');
+    if(qr){e.preventDefault();const id=qr.dataset.iwQr;const f=findPointById(id);if(f){f.pt.isQR=!f.pt.isQR;activity('qr_location_toggled',f.pt.name);await saveStore(state.store);renderAdminDash();toast(f.pt.isQR?'QR location selected':'QR location removed');}return;}
+    const gen=e.target.closest('[data-iw-generate-qr]');
+    if(gen){e.preventDefault();if(!allQrEligiblePoints().some(x=>x.pt.isQR)){toast('Select at least one QR location first');return;}openPrintModal();return;}
+  },true);
+
+  // Make imported category text resolve to the real category id where possible.
+  const oldRunImport=window.runImport;
+  window.runImport=async function(rows){
+    const before=JSON.stringify(state.store.catalog||[]);
+    await oldRunImport(rows);
+    const cats=state.store.categories||[];
+    (state.store.catalog||[]).forEach(it=>{
+      const hit=cats.find(c=>String(c.label).trim().toLowerCase()===String(it.category||'').trim().toLowerCase());
+      if(hit)it.category=hit.id;
+      if(!it.locationId && hit){
+        const loc=iwBestLocation(hit); if(loc)it.locationId=loc.pt.id;
+      }
+    });
+    await saveStore(state.store);
+    activity('catalog_category_resolution','Imported products linked to mapped category areas where available');
+    renderAdminDash();
+  };
+
+  // Responsive map fit: preserve the real aspect ratio and fit both width AND height.
+  window.setupBuilderCanvas=function(){
+    iwOldSetupBuilderCanvas();
+    const canvas=document.getElementById('builderCanvas'),wrap=document.getElementById('builderCanvasWrap'),fl=currentFloor();
+    if(canvas&&wrap){
+      getFloorImage(fl,(img)=>{
+        const pad=36;
+        const availW=Math.max(320, wrap.clientWidth-pad);
+        const availH=Math.max(300, wrap.clientHeight-pad);
+        const ratio=(img&&img.width&&img.height)?img.height/img.width:(460/800);
+        let w=availW, h=w*ratio;
+        if(h>availH){h=availH;w=h/ratio;}
+        // Keep a useful working size even in a short/initially-unmeasured flex layout.
+        if(!Number.isFinite(w)||w<320){w=800;h=w*ratio;}
+        canvas._targetCssW=Math.round(w);canvas._targetCssH=Math.round(h);
+        canvas.style.setProperty('--iw-canvas-w',Math.round(w)+'px');
+        canvas.style.setProperty('--iw-canvas-h',Math.round(h)+'px');
+        drawBuilderCanvas();
+      });
+    }
+    if(canvas&&!canvas._iwMousePan){
+      canvas._iwMousePan=true;
+      canvas.addEventListener('mousedown',ev=>{if(ev.button===1 || state.builder.spacePan){ev.preventDefault();state.builder._iwPanning=true;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};document.getElementById('builderCanvasWrap')?.classList.add('panning');}});
+      window.addEventListener('mousemove',ev=>{if(!state.builder._iwPanning)return;const d=state.builder._iwPanLast;state.builder.panX+=ev.clientX-d.x;state.builder.panY+=ev.clientY-d.y;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};drawBuilderCanvas();});
+      window.addEventListener('mouseup',()=>{state.builder._iwPanning=false;state.builder._iwPanLast=null;document.getElementById('builderCanvasWrap')?.classList.remove('panning');});
+      canvas.addEventListener('dblclick',()=>resetZoom('builder'));
+      canvas.addEventListener('contextmenu',ev=>ev.preventDefault());
+    }
+  };
+
+  // Re-fit the map whenever the builder workspace changes size. This prevents the
+  // common "map stuck in a tiny corner" problem after loading an image or resizing the window.
+  if(!window.__iwBuilderResizeObserver){
+    const fitBuilderMap=()=>{
+      if(!document.getElementById('view-builder')?.classList.contains('active')) return;
+      const canvas=document.getElementById('builderCanvas'),wrap=document.getElementById('builderCanvasWrap'),fl=currentFloor();
+      if(!canvas||!wrap||!fl)return;
+      getFloorImage(fl,(img)=>{
+        const pad=36, aw=Math.max(320,wrap.clientWidth-pad), ah=Math.max(300,wrap.clientHeight-pad), ratio=img&&img.width&&img.height?img.height/img.width:460/800;
+        let w=aw,h=w*ratio;if(h>ah){h=ah;w=h/ratio;}
+        if(!Number.isFinite(w)||!Number.isFinite(h))return;
+        canvas._targetCssW=Math.round(w);canvas._targetCssH=Math.round(h);canvas.style.setProperty('--iw-canvas-w',Math.round(w)+'px');canvas.style.setProperty('--iw-canvas-h',Math.round(h)+'px');drawBuilderCanvas();
+      });
+    };
+    window.__iwFitBuilderMap=fitBuilderMap;
+    window.__iwBuilderResizeObserver=new ResizeObserver(fitBuilderMap);
+    setTimeout(()=>{const w=document.getElementById('builderCanvasWrap');if(w)window.__iwBuilderResizeObserver.observe(w);fitBuilderMap();},300);
+    window.addEventListener('resize',fitBuilderMap);
+  }
+
+  // Keyboard pan mode and a friendlier wheel experience.
+  document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&document.getElementById('view-builder')?.classList.contains('active')){e.preventDefault();state.builder.spacePan=true;document.body.style.cursor='grab';document.getElementById('builderCanvasWrap')?.classList.add('panning');}},true);
+  document.addEventListener('keyup',e=>{if(e.code==='Space'){e.preventDefault();state.builder.spacePan=false;document.body.style.cursor='';document.getElementById('builderCanvasWrap')?.classList.remove('panning');}},true);
+
+  // Add simple grid + brush controls to the builder without forcing users to type numbers.
+  const oldRenderBuilder=window.renderBuilder;
+  window.renderBuilder=function(skipDraw){
+    oldRenderBuilder(skipDraw);
+    const tb=document.getElementById('builderToolbar');if(!tb||document.getElementById('iwGridControls'))return;
+    const el=document.createElement('div');el.id='iwGridControls';el.className='iw-grid-controls';el.innerHTML=`<label>Grid</label><div class="iw-seg"><button data-iw-grid="0">Fine</button><button data-iw-grid="1">Normal</button><button data-iw-grid="2">Large</button></div><label>Guide</label><input class="iw-slider" id="iwGridOpacity" type="range" min="0" max="100" value="${Math.round(state.builder.gridOpacity*100)}" aria-label="Grid guide opacity"><span class="iw-muted" id="iwGridOpacityVal">${Math.round(state.builder.gridOpacity*100)}%</span>`;tb.appendChild(el);
+    el.querySelectorAll('[data-iw-grid]').forEach(b=>{if(+b.dataset.iwGrid===state.builder.gridVisualScale-1)b.classList.add('active');b.onclick=()=>{state.builder.gridVisualScale=+b.dataset.iwGrid+1;el.querySelectorAll('[data-iw-grid]').forEach(x=>x.classList.toggle('active',x===b));drawBuilderCanvas();};});
+    const op=document.getElementById('iwGridOpacity');op.oninput=()=>{state.builder.gridOpacity=Number(op.value)/100;document.getElementById('iwGridOpacityVal').textContent=op.value+'%';drawBuilderCanvas();};
+    const brush=document.createElement('div');brush.id='iwBrushControls';brush.className='iw-brush-controls';brush.innerHTML=`<label>Brush</label><div class="iw-brush-scale"><button data-iw-brush="1">Tiny</button><button data-iw-brush="2">Small</button><button data-iw-brush="3">Medium</button><button data-iw-brush="5">Large</button><button data-iw-brush="7">Wide</button></div>`;tb.appendChild(brush);
+    brush.querySelectorAll('[data-iw-brush]').forEach(b=>{b.classList.toggle('active',+b.dataset.iwBrush===state.builder.brushSize);b.onclick=()=>{state.builder.brushSize=+b.dataset.iwBrush;brush.querySelectorAll('[data-iw-brush]').forEach(x=>x.classList.toggle('active',x===b));drawBuilderCanvas();};});
+  };
+
+  // Overlay the visual guide only while path editing. Scale/opacity are visual controls; routing grid stays precise.
+  window.drawBuilderCanvas=function(){
+    iwOldDrawBuilderCanvas();
+    const canvas=document.getElementById('builderCanvas');if(!canvas)return;
+    const fl=currentFloor();if(!fl)return;
+    if(!(state.builder.tool==='path'||state.builder.tool==='erase'))return;
+    const W=canvas._targetCssW||800,H=canvas._targetCssH||460,ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1,z=zoomState('builder');
+    ctx.save();ctx.setTransform(dpr*z.zoom,0,0,dpr*z.zoom,dpr*((W/2)*(1-z.zoom)+z.panX),dpr*((H/2)*(1-z.zoom)+z.panY));
+    const cols=GRID_COLS,rows=gridRowsForFloor(fl),step=Math.max(1,state.builder.gridVisualScale||1),cw=W/cols,ch=H/rows;
+    ctx.strokeStyle=`rgba(255,255,255,${Math.max(.01,state.builder.gridOpacity||.01)})`;ctx.lineWidth=1;
+    for(let c=0;c<=cols;c+=step){ctx.beginPath();ctx.moveTo(c*cw,0);ctx.lineTo(c*cw,H);ctx.stroke();}
+    for(let r=0;r<=rows;r+=step){ctx.beginPath();ctx.moveTo(0,r*ch);ctx.lineTo(W,r*ch);ctx.stroke();}
+    ctx.restore();
+  };
+
+  // Small semantic markers for entrance, exit and stairs, drawn on top of the existing marker.
+  const iwMarkerDraw=window.drawBuilderCanvas;
+  window.drawBuilderCanvas=function(){
+    iwMarkerDraw();
+    const canvas=document.getElementById('builderCanvas');if(!canvas)return;const fl=currentFloor();const W=canvas._targetCssW||800,H=canvas._targetCssH||460,dpr=window.devicePixelRatio||1,z=zoomState('builder'),ctx=canvas.getContext('2d');
+    ctx.save();ctx.setTransform(dpr*z.zoom,0,0,dpr*z.zoom,dpr*((W/2)*(1-z.zoom)+z.panX),dpr*((H/2)*(1-z.zoom)+z.panY));
+    (fl.points||[]).forEach(pt=>{const cat=catById(state.store,pt.category);const label=String(cat?.label||'').toLowerCase();let glyph=null;if(/entrance/.test(label))glyph='↘';else if(/exit/.test(label))glyph='↗';else if(/stair/.test(label))glyph='▥';else return;const x=pt.x*W,y=pt.y*H;ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle='#111';ctx.lineWidth=4;ctx.font='bold 20px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.strokeText(glyph,x,y);ctx.fillText(glyph,x,y);ctx.restore();});
+    ctx.restore();
+  };
+})();
+</script>
+
+<style id="iw-map-ux-final">
+#builderCanvasWrap{
+  overflow:auto !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-width:0; min-height:0;
+  padding:18px !important;
+  box-sizing:border-box;
+  cursor:default;
+  background:#0a0a14;
+}
+#builderCanvas{
+  flex:0 0 auto !important;
+  max-width:none !important;
+  max-height:none !important;
+  width:var(--iw-canvas-w, 800px) !important;
+  height:var(--iw-canvas-h, 460px) !important;
+  object-fit:contain;
+}
+#builderCanvasWrap.panning,#builderCanvasWrap.panning #builderCanvas{cursor:grabbing !important;}
+#iwGridControls{margin-left:auto;}
+.iw-brush-controls{display:flex;align-items:center;gap:9px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;white-space:nowrap}
+.iw-brush-controls label{font-size:10px;text-transform:uppercase;font-weight:800;color:var(--text2)}
+.iw-brush-scale{display:flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden}
+.iw-brush-scale button{border:0;border-right:1px solid var(--border2);background:transparent;color:var(--text2);padding:6px 8px;font-size:11px;cursor:pointer}
+.iw-brush-scale button:last-child{border-right:0}
+.iw-brush-scale button.active{background:var(--accent);color:#fff}
+@media(max-width:900px){#builderCanvasWrap{align-items:flex-start;justify-content:flex-start}.iw-grid-controls,.iw-brush-controls{margin-left:0}}
+</style>
 
 </body>
 </html>
