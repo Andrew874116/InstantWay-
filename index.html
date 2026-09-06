@@ -15,6 +15,7 @@
 <title>InstantWay | Intelligent Indoor Wayfinding</title>
 <meta name="description" content="InstantWay is an intelligent indoor wayfinding, QR navigation, venue directory and operations platform.">
 <meta name="theme-color" content="#ff6b35">
+<link rel="manifest" href="/manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -358,11 +359,13 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
   <div class="page">
     <div class="card">
       <h2>Platform Owner Login</h2>
-      <p class="sub">Build and manage every store on InstantWay.</p>
+      <p class="sub">Build and manage every store on InstantWay.</p><div class="infobox">Secure sign-in powered by Supabase Auth. Your venue data is protected with role-based access.</div>
       <div id="ownerLoginError"></div>
-      <div class="field"><label>Password</label><input id="ownerPwInput" type="password" autocomplete="current-password" placeholder="Enter platform password"></div>
+      <div class="field"><label>Email</label><input id="ownerEmailInput" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="ownerPwInput" type="password" autocomplete="current-password" placeholder="••••••••"></div>
       <button class="btn primary block" data-action="owner-login">Log in</button>
-      <p class="hint" style="margin-top:14px;">Default password: <b>instantway2026</b></p>
+      <button class="btn block" data-action="owner-signup" style="margin-top:8px;">Create owner account</button>
+      <p class="hint" style="margin-top:14px;">The first account can claim the InstantWay platform owner role.</p>
       <p style="margin-top:14px;"><a class="footer-link" href="#" data-action="go-home">← Back</a></p>
     </div>
   </div>
@@ -415,7 +418,8 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
       <h2>Store Admin Login</h2>
       <p class="sub" id="adminLoginSub">Manage your store's products and QR codes.</p>
       <div id="adminLoginError"></div>
-      <div class="field"><label>Store password</label><input id="adminPwInput" type="password" autocomplete="current-password" placeholder="Enter store password"></div>
+      <div class="field"><label>Email</label><input id="adminEmailInput" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="adminPwInput" type="password" autocomplete="current-password" placeholder="••••••••"></div>
       <button class="btn primary block" data-action="admin-login">Log in</button>
       <p style="margin-top:14px;"><a class="footer-link" href="#" data-action="go-home">← Back</a></p>
     </div>
@@ -685,6 +689,30 @@ function applyVenueTemplate(store, templateKey){
   store.categories = tpl.categories.map(c=>({ id: uid('cat'), ...c }));
 }
 
+/* ---------- secure auth (Supabase Auth) ---------- */
+let sbClient = null;
+function getSb(){
+  if(!sbClient && window.supabase){ sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+  return sbClient;
+}
+async function currentUser(){ const sb=getSb(); if(!sb) return null; const {data}=await sb.auth.getUser(); return data?.user||null; }
+async function signInEmail(email,password){ const sb=getSb(); if(!sb) throw new Error('Supabase client failed to load'); const {data,error}=await sb.auth.signInWithPassword({email,password}); if(error) throw error; return data; }
+async function signUpOwner(email,password,fullName){ const sb=getSb(); if(!sb) throw new Error('Supabase client failed to load'); const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:fullName||''}}}); if(error) throw error; return data; }
+async function signOut(){ const sb=getSb(); if(sb) await sb.auth.signOut(); state.ownerLoggedIn=false; state.adminLoggedIn=false; state.adminStoreSlug=null; }
+async function isPlatformOwner(){
+  const u=await currentUser(); if(!u) return false;
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers:SB_HEADERS});
+  if(!res.ok) return false; const rows=await res.json(); return rows.length>0;
+}
+async function hasVenueAccess(slug){
+  const u=await currentUser(); if(!u) return false;
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/venues?slug=eq.${encodeURIComponent(slug)}&select=id,organization_id&limit=1`,{headers:SB_HEADERS});
+  if(!res.ok) return false; const rows=await res.json(); if(!rows.length) return false;
+  const v=rows[0];
+  const m=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?organization_id=eq.${encodeURIComponent(v.organization_id)}&user_id=eq.${encodeURIComponent(u.id)}&select=role&limit=1`,{headers:SB_HEADERS});
+  if(!m.ok) return false; const mr=await m.json(); return mr.length>0 && ['platform_owner','organization_owner','venue_admin','venue_editor','staff'].includes(mr[0].role);
+}
+
 /* ---------- storage layer (real hosted backend: Supabase) ---------- */
 const SUPABASE_URL = 'https://sktrjbinworqlxjbxawt.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_TI1AIENHyLyG__MaKv5Fbw_z9gwdCoB';
@@ -728,7 +756,7 @@ async function sList(prefix){ return []; /* not used */ }
 
 async function loadPlatformConfig(){
   let cfg = await sGet('platform:config');
-  if(!cfg){ cfg = { ownerPassword:'instantway2026' }; await sSet('platform:config', cfg); }
+  if(!cfg){ cfg = { ownerPassword:'owner123' }; await sSet('platform:config', cfg); }
   return cfg;
 }
 async function savePlatformConfig(cfg){ return sSet('platform:config', cfg); }
@@ -1132,7 +1160,7 @@ async function handleAction(action, el, e){
     case 'go-owner': setUrl({owner:'1', admin:null, store:null, node:null}, true); return route();
     case 'go-owner-dash': setUrl({owner:'1', store:null}, true); return route();
     case 'owner-login': return ownerLogin();
-    case 'owner-logout': state.ownerLoggedIn=false; setUrl({owner:null},true); return route();
+    case 'owner-logout': signOut(); setUrl({owner:null},true); return route();
     case 'owner-change-pw': return openChangeOwnerPwModal();
     case 'owner-create-store': return ownerCreateStore();
     case 'owner-open-builder': setUrl({owner:'1', store:el.dataset.slug}, true); return route();
@@ -1141,7 +1169,7 @@ async function handleAction(action, el, e){
     case 'owner-copy-link': return copyToClipboard(location.origin+location.pathname+'?store='+encodeURIComponent(el.dataset.slug));
 
     case 'admin-login': return adminLogin();
-    case 'admin-logout': state.adminLoggedIn=false; state.adminStoreSlug=null; setUrl({admin:null,store:null},true); return route();
+    case 'admin-logout': signOut(); setUrl({admin:null,store:null},true); return route();
     case 'admin-tab': state.adminTab = el.dataset.tab; return renderAdminDash();
     case 'admin-save-branding': return adminSaveBranding();
     case 'admin-change-storepw': return adminChangeStorePw();
@@ -1463,36 +1491,45 @@ function findOrphanPoints(store){
   return orphans;
 }
 
+
+const LOGIN_GUARD={owner:{fails:0,until:0},admin:{fails:0,until:0}};
+function loginAllowed(kind){const g=LOGIN_GUARD[kind];if(Date.now()<g.until){toast('Too many failed attempts. Try again in '+Math.ceil((g.until-Date.now())/1000)+'s');return false;}return true;}
+function loginFailed(kind){const g=LOGIN_GUARD[kind];g.fails++;if(g.fails>=5){g.until=Date.now()+30000;g.fails=0;}}
+function loginSucceeded(kind){LOGIN_GUARD[kind]={fails:0,until:0};}
 /* ================= OWNER ================= */
 function renderOwnerLogin(){
   document.getElementById('ownerLoginError').innerHTML='';
   const inp = document.getElementById('ownerPwInput'); if(inp) inp.value='';
 }
 async function ownerLogin(){
-  const pw = document.getElementById('ownerPwInput').value;
-  const cfg = await loadPlatformConfig();
-  if(pw === cfg.ownerPassword){
-    state.ownerLoggedIn = true;
-    setUrl({owner:'1'}, true);
-    route();
-  } else {
-    document.getElementById('ownerLoginError').innerHTML = `<div class="errbox">Incorrect password.</div>`;
-  }
+  if(!loginAllowed('owner')) return;
+  const email=document.getElementById('ownerEmailInput')?.value.trim();
+  const pw=document.getElementById('ownerPwInput')?.value;
+  if(!email||!pw){ document.getElementById('ownerLoginError').innerHTML='<div class="errbox">Enter your email and password.</div>'; return; }
+  try{
+    await signInEmail(email,pw);
+    const existsRes=await fetch(`${SUPABASE_URL}/rest/v1/platform_state?id=eq.true&select=has_owner&limit=1`,{headers:SB_HEADERS});
+    const ownerRows=existsRes.ok ? await existsRes.json() : [{has_owner:true}];
+    const ownerExists=!!ownerRows[0]?.has_owner;
+    if(ownerExists && !(await isPlatformOwner())){ await signOut(); throw new Error('This account is not a platform owner. Use the venue admin login for venue-specific access.'); }
+    loginSucceeded('owner'); state.ownerLoggedIn=true; setUrl({owner:'1'},true); route();
+  }catch(e){ loginFailed('owner'); document.getElementById('ownerLoginError').innerHTML=`<div class="errbox">${esc(e.message||'Sign-in failed')}</div>`; }
+}
+async function ownerSignup(){
+  const email=document.getElementById('ownerEmailInput')?.value.trim(); const pw=document.getElementById('ownerPwInput')?.value;
+  if(!email||!pw||pw.length<8){ document.getElementById('ownerLoginError').innerHTML='<div class="errbox">Enter an email and a password of at least 8 characters.</div>'; return; }
+  try{
+    const status=await fetch(`${SUPABASE_URL}/rest/v1/platform_state?id=eq.true&select=has_owner&limit=1`,{headers:SB_HEADERS});
+    const platformReady=status.ok ? await status.json() : [{has_owner:true}];
+    if(platformReady[0]?.has_owner){ throw new Error('An owner account already exists. Please log in instead.'); }
+    const data=await signUpOwner(email,pw,email.split('@')[0]);
+    if(data.session){ state.ownerLoggedIn=true; setUrl({owner:'1'},true); route(); }
+    else document.getElementById('ownerLoginError').innerHTML='<div class="infobox">Account created. Check your email to confirm it, then return here and log in. The first venue you create will claim the platform owner role.</div>';
+  }catch(e){ document.getElementById('ownerLoginError').innerHTML=`<div class="errbox">${esc(e.message||'Could not create account')}</div>`; }
 }
 function openChangeOwnerPwModal(){
-  openModal(`
-    <span class="close-x" data-action="modal-close">✕</span>
-    <h3>Change owner password</h3>
-    <p class="hint" style="margin-bottom:10px;">This changes the password stored in the database.</p>
-    <div class="field"><label>New password</label><input id="newOwnerPw" type="password"></div>
-    <button class="btn primary block" id="saveOwnerPwBtn">Save</button>
-  `);
-  document.getElementById('saveOwnerPwBtn').onclick = async ()=>{
-    const val = document.getElementById('newOwnerPw').value.trim();
-    if(!val){ toast('Enter a password'); return; }
-    const cfg = await loadPlatformConfig(); cfg.ownerPassword = val; await savePlatformConfig(cfg);
-    toast('Owner password updated'); closeModal();
-  };
+  openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>Change password</h3><p class="sub">Password changes are handled securely by Supabase Auth. Use the account recovery flow if you need to reset it.</p><button class="btn primary block" id="resetPwBtn">Send password reset email</button>`);
+  document.getElementById('resetPwBtn').onclick=async()=>{ const u=await currentUser(); if(!u?.email){toast('No signed-in email');return;} const sb=getSb(); const {error}=await sb.auth.resetPasswordForEmail(u.email,{redirectTo:location.origin+location.pathname}); if(error) toast(error.message); else toast('Password reset email sent'); closeModal(); };
 }
 async function renderOwnerDash(){
   document.getElementById('createStoreError').innerHTML='';
@@ -2485,15 +2522,11 @@ function renderAdminLogin(store){
   state._pendingAdminStore = store;
 }
 async function adminLogin(){
-  const pw = document.getElementById('adminPwInput').value;
-  const store = state._pendingAdminStore;
-  if(pw === store.adminPassword){
-    state.adminLoggedIn = true; state.adminStoreSlug = store.slug;
-    setUrl({admin:'1', store:store.slug}, true);
-    route();
-  } else {
-    document.getElementById('adminLoginError').innerHTML = `<div class="errbox">Incorrect password.</div>`;
-  }
+  if(!loginAllowed('admin')) return;
+  const email=document.getElementById('adminEmailInput')?.value.trim(); const pw=document.getElementById('adminPwInput')?.value; const store=state._pendingAdminStore;
+  if(!email||!pw||!store){ document.getElementById('adminLoginError').innerHTML='<div class="errbox">Enter your email and password.</div>'; return; }
+  try{ await signInEmail(email,pw); if(!(await hasVenueAccess(store.slug))){ await signOut(); throw new Error('This account does not have access to this venue.'); } loginSucceeded('admin'); state.adminLoggedIn=true; state.adminStoreSlug=store.slug; setUrl({admin:'1',store:store.slug},true); route(); }
+  catch(e){ loginFailed('admin'); document.getElementById('adminLoginError').innerHTML=`<div class="errbox">${esc(e.message||'Sign-in failed')}</div>`; }
 }
 
 const ADMIN_TABS = [
@@ -2849,16 +2882,7 @@ async function adminSaveBranding(){
   document.getElementById('adminDashStoreName').textContent = state.store.name;
   const msg = document.getElementById('brandSaveMsg'); if(msg){ msg.textContent='Saved ✓'; setTimeout(()=>{ if(msg) msg.textContent=''; },1800); }
 }
-async function adminChangeStorePw(){
-  const val = document.getElementById('newStorePw').value.trim();
-  if(!val){ toast('Enter a password'); return; }
-  state.store.adminPassword = val;
-  await saveStore(state.store);
-  const idx = await loadStoreIndex();
-  const rec = idx.find(s=>s.slug===state.store.slug); if(rec){ rec.adminPassword=val; await saveStoreIndex(idx); }
-  document.getElementById('newStorePw').value='';
-  toast('Store password updated');
-}
+async function adminChangeStorePw(){ toast('Venue access is managed through Supabase Auth and venue roles.'); }
 
 /* ================= CUSTOMER VIEW ================= */
 function findPointById(id){
@@ -3660,11 +3684,10 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLower
 
 /* ================= INIT ================= */
 async function init(){
-  // Set the owner password to instantway2026 by default
-  const cfg = await loadPlatformConfig();
-  if(cfg.ownerPassword !== 'instantway2026'){
-    cfg.ownerPassword = 'instantway2026';
-    await savePlatformConfig(cfg);
+  if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('/sw.js'); }catch(e){} }
+  const u = await currentUser();
+  if(u){
+    state.ownerLoggedIn = await isPlatformOwner();
   }
   route();
 }
