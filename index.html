@@ -12,47 +12,10 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<title>InstantWay | Intelligent Indoor Wayfinding</title>
-<meta name="description" content="InstantWay is an intelligent indoor wayfinding, QR navigation, venue directory and operations platform.">
-<meta name="theme-color" content="#ff6b35">
-<link rel="manifest" href="/manifest.webmanifest">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>InstantWay</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script>
-/* InstantWay resilient Supabase loader: try multiple CDNs and never initialize auth before the client exists. */
-window.__instantWaySupabaseReady = (async function(){
-  if(window.supabase && typeof window.supabase.createClient === 'function') return window.supabase;
-  const sources = [
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
-    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
-  ];
-  for(const src of sources){
-    try{
-      await new Promise((resolve,reject)=>{
-        const existing=[...document.scripts].find(x=>x.src===src);
-        if(existing){
-          if(window.supabase) return resolve();
-          existing.addEventListener('load',resolve,{once:true});
-          existing.addEventListener('error',reject,{once:true});
-          return;
-        }
-        const script=document.createElement('script');
-        script.src=src;
-        script.async=false;
-        script.onload=resolve;
-        script.onerror=()=>reject(new Error('Failed to load '+src));
-        document.head.appendChild(script);
-      });
-      if(window.supabase && typeof window.supabase.createClient === 'function') return window.supabase;
-    }catch(e){ console.warn('InstantWay Supabase CDN failed:',src,e); }
-  }
-  throw new Error('Supabase client failed to load. Please check your internet connection and refresh.');
-})();
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -60,8 +23,8 @@ window.__instantWaySupabaseReady = (async function(){
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
   --radius:14px; --radius-sm:9px;
-  --font-display:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-  --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
 }
 html[data-theme="dark"]{
   --bg:#0c0d12; --bg2:#15161f; --bg3:#20222f; --card:#181a24;
@@ -334,31 +297,6 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
 .live-ocr-scanline{position:absolute;left:0;right:0;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:ocrscan 2s linear infinite;}
 @keyframes ocrscan{0%{top:5%;}50%{top:95%;}100%{top:5%;}}
 .live-ocr-matches{margin-top:10px;max-height:160px;overflow-y:auto;}
-
-/* ---- InstantWay Command Center + responsive v2 ---- */
-.command-center{max-width:1100px;width:100%;display:grid;gap:14px;}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;}
-.kpi .n{font-family:var(--font-display);font-size:25px;font-weight:800;color:var(--text);}
-.kpi .l{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
-.command-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;}
-.command-card h3{font-size:14px;color:var(--accent);margin-bottom:10px;}
-.health-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:8px;margin-bottom:6px;font-size:12px;}
-.health-dot{width:9px;height:9px;border-radius:50%;background:#2dd4bf;flex-shrink:0;}
-.health-dot.bad{background:#ff5252;}
-.health-dot.warn{background:#ffc400;}
-.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;}
-.smart-command{display:flex;gap:8px;align-items:center;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:8px;}
-.smart-command input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font:inherit;min-width:0;}
-.metric-table{width:100%;border-collapse:collapse;font-size:12px;}
-.metric-table td{padding:7px 4px;border-bottom:1px solid var(--border);}
-.metric-table td:last-child{text-align:right;font-weight:800;}
-.install-prompt{position:fixed;right:16px;bottom:16px;z-index:180;max-width:340px;background:var(--surface-glass);backdrop-filter:blur(10px);border:1px solid var(--border2);border-radius:14px;padding:12px;box-shadow:var(--shadow);display:none;}
-.install-prompt.show{display:block;}
-.offline-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:20px;background:rgba(255,196,0,.12);color:#ffc400;font-size:10px;font-weight:800;}
-.route-share{display:flex;gap:6px;flex-wrap:wrap;}
-@media(max-width:760px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.properties{width:240px}.topbar{padding:10px 12px}.toolbar{min-height:58px}.btn{padding:8px 12px}.cust-top .actions{width:100%;}.cust-top .actions .btn{font-size:11px}.searchbar{padding:9px 10px}.page{padding:20px 10px}}
-@media(max-width:520px){.main-area{flex-direction:column}.properties{width:100%;max-height:38vh;border-left:none;border-top:1px solid var(--border)}.canvas-wrapper{min-height:50vh}.kpi-grid{grid-template-columns:1fr 1fr}.qr-grid{grid-template-columns:1fr!important}.topbar h1{font-size:16px}}
 </style>
 </head>
 <body>
@@ -389,10 +327,11 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
   <div class="page">
     <div class="card">
       <h2>Platform Owner Login</h2>
-      <p class="sub">Build and manage every store on InstantWay.</p><div class="infobox">Enter the platform owner password to continue.</div>
+      <p class="sub">Build and manage every store on InstantWay.</p>
       <div id="ownerLoginError"></div>
-      <div class="field"><label>Password</label><div class="pw-wrap"><input id="ownerPwInput" type="password" autocomplete="off" placeholder="Enter owner password"><button type="button" class="pw-toggle" data-pw-target="ownerPwInput" aria-label="Show password">Show</button></div></div>
+      <div class="field"><label>Owner password</label><input id="ownerPwInput" type="password" placeholder="••••••••"></div>
       <button class="btn primary block" data-action="owner-login">Log in</button>
+      <p class="hint" style="margin-top:14px;">First time? Default password is <b>owner123</b> — change it after logging in.</p>
       <p style="margin-top:14px;"><a class="footer-link" href="#" data-action="go-home">← Back</a></p>
     </div>
   </div>
@@ -405,6 +344,7 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
     <div class="actions">
       <button class="theme-toggle" data-action="toggle-theme" title="Toggle light/dark">🌓</button>
       <span class="sub">Platform Owner</span>
+      <button class="btn small" data-action="owner-change-pw">Change password</button>
       <button class="btn small ghost" data-action="owner-logout">Log out</button>
     </div>
   </div>
@@ -444,8 +384,7 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
       <h2>Store Admin Login</h2>
       <p class="sub" id="adminLoginSub">Manage your store's products and QR codes.</p>
       <div id="adminLoginError"></div>
-      <div class="field"><label>Email</label><input id="adminEmailInput" type="email" autocomplete="email" placeholder="you@example.com"></div>
-      <div class="field"><label>Password</label><div class="pw-wrap"><input id="adminPwInput" type="password" autocomplete="current-password" placeholder="••••••••"><button type="button" class="pw-toggle" data-pw-target="adminPwInput" aria-label="Show password">Show</button></div></div>
+      <div class="field"><label>Store password</label><input id="adminPwInput" type="password" placeholder="••••••••"></div>
       <button class="btn primary block" data-action="admin-login">Log in</button>
       <p style="margin-top:14px;"><a class="footer-link" href="#" data-action="go-home">← Back</a></p>
     </div>
@@ -502,11 +441,8 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
     <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
       <button class="theme-toggle" data-action="toggle-theme" title="Toggle light/dark">🌓</button>
       <button class="btn small" data-action="cust-open-live-ocr" title="Live-scan a shopping list with your camera">📷 Scan list</button>
-       <button class="btn small" data-action="cust-smart-mission" title="Describe multiple things to find">🧠 Mission</button>
-       <button class="btn small" data-action="cust-use-gps" title="Use outdoor GPS as a starting hint">📡 GPS</button>
       <button class="btn small" data-action="cust-store-tour" title="See a route through the whole store">🧭 Tour</button>
       <button class="btn small" data-action="cust-toggle-list">🛒 List <span id="custListCount"></span></button>
-       <button class="btn small" data-action="cust-share-route" title="Share this route">↗ Share</button>
       <button class="btn small" data-action="toggle-accessible-mode" title="Step-free routing (avoid stairs/escalators)">♿</button>
       <button class="btn small" data-action="open-favorites" title="Your saved locations">⭐</button>
       <button class="btn small" data-action="open-meeting-point" title="Set a meeting point for your group">📌 Meet</button>
@@ -518,9 +454,6 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
     </div>
   </div>
   <div class="cust-body">
-    <div class="smart-command" style="margin-bottom:8px;max-width:900px;margin-left:auto;margin-right:auto;">
-      <span>🧠</span><input id="custSmartInput" placeholder="Try: milk, ATM, restroom, customer service…"><button class="btn small primary" data-action="cust-smart-input">Find</button>
-    </div>
     <div class="searchbar">
       <input id="custSearchInput" placeholder="Search for a product…">
       <button class="btn small" data-action="cust-clear-route">Clear route</button>
@@ -546,7 +479,6 @@ body.kiosk-mode .cust-top [data-action="cust-admin-link"]{display:none;}
 <!-- modal root -->
 <div id="modalRoot"></div>
 <div id="printArea" style="display:none;"></div>
-<div id="installPrompt" class="install-prompt"><b>📲 Install InstantWay</b><div class="hint" style="margin:4px 0 8px;">Keep the venue map one tap away. Works best when served over HTTPS.</div><div style="display:flex;gap:6px;"><button class="btn small primary" data-action="install-app">Install</button><button class="btn small ghost" data-action="dismiss-install">Later</button></div></div>
 
 <script>
 /* =========================================================
@@ -715,45 +647,9 @@ function applyVenueTemplate(store, templateKey){
   store.categories = tpl.categories.map(c=>({ id: uid('cat'), ...c }));
 }
 
-/* ---------- secure auth (Supabase Auth) ---------- */
-let sbClient = null;
-function getSb(){
-  if(!sbClient && window.supabase){ sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
-  return sbClient;
-}
-async function currentUser(){ const sb=getSb(); if(!sb) return null; const {data}=await sb.auth.getUser(); return data?.user||null; }
-async function signInEmail(email,password){ const sb=getSb(); if(!sb) throw new Error('Supabase client failed to load'); const {data,error}=await sb.auth.signInWithPassword({email,password}); if(error) throw error; return data; }
-async function signUpOwner(email,password,fullName){ const sb=getSb(); if(!sb) throw new Error('Supabase client failed to load'); const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:fullName||''}}}); if(error) throw error; return data; }
-async function signOut(){ const sb=getSb(); if(sb) await sb.auth.signOut(); state.ownerLoggedIn=false; state.adminLoggedIn=false; state.adminStoreSlug=null; }
-async function authHeaders(){
-  const sb=getSb();
-  if(!sb) throw new Error('Supabase client failed to load');
-  const {data}=await sb.auth.getSession();
-  const token=data?.session?.access_token;
-  return token ? {apikey:SUPABASE_ANON_KEY, Authorization:'Bearer '+token} : SB_HEADERS;
-}
-async function isPlatformOwner(){
-  const u=await currentUser(); if(!u) return false;
-  const headers=await authHeaders();
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers});
-  if(!res.ok) return false; const rows=await res.json(); return rows.length>0;
-}
-async function hasVenueAccess(slug){
-  const u=await currentUser(); if(!u) return false;
-  const headers=await authHeaders();
-  // Platform owners manage the entire InstantWay platform, so they can open any venue.
-  const ownerRes=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?user_id=eq.${encodeURIComponent(u.id)}&role=eq.platform_owner&select=organization_id&limit=1`,{headers});
-  if(ownerRes.ok){ const owners=await ownerRes.json(); if(owners.length) return true; }
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/venues?slug=eq.${encodeURIComponent(slug)}&select=id,organization_id&limit=1`,{headers});
-  if(!res.ok) return false; const rows=await res.json(); if(!rows.length) return false;
-  const v=rows[0];
-  const m=await fetch(`${SUPABASE_URL}/rest/v1/organization_members?organization_id=eq.${encodeURIComponent(v.organization_id)}&user_id=eq.${encodeURIComponent(u.id)}&select=role&limit=1`,{headers});
-  if(!m.ok) return false; const mr=await m.json(); return mr.length>0 && ['organization_owner','venue_admin','venue_editor','staff'].includes(mr[0].role);
-}
-
 /* ---------- storage layer (real hosted backend: Supabase) ---------- */
-const SUPABASE_URL = 'https://sktrjbinworqlxjbxawt.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_TI1AIENHyLyG__MaKv5Fbw_z9gwdCoB';
+const SUPABASE_URL = 'https://xrfrpilaztdczednjyhg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhyZnJwaWxhenRkY3plZG5qeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxNTczMTEsImV4cCI6MjEwMDczMzMxMX0.uJWhXjUdnuQux24hs1_BCHT70gQUyf0v_Fc0WYMHarM';
 const SB_HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer '+SUPABASE_ANON_KEY };
 
 function keyToTableId(key){
@@ -877,30 +773,7 @@ async function loadStore(slug){
   if(migrated._migrated){ delete migrated._migrated; await saveStore(migrated); }
   return migrated;
 }
-async function saveStore(store){
-  if(!store) return false;
-  store.updatedAt = Date.now();
-  store.sync = store.sync || {};
-  store.sync.lastLocalSaveAt = store.updatedAt;
-  const clean=JSON.parse(JSON.stringify(store)); delete clean.adminPassword;
-  try{ localStorage.setItem('instantway-offline-'+store.slug, JSON.stringify({store:clean,cachedAt:Date.now()})); }catch(e){}
-  if(!navigator.onLine){
-    store.sync.pending = true;
-    try{ localStorage.setItem('instantway-pending-'+store.slug, JSON.stringify(clean)); }catch(e){}
-    updateOfflineIndicator();
-    return true;
-  }
-  const ok = await sSet('store:'+store.slug, clean);
-  if(ok){
-    store.sync.pending=false; store.sync.lastSyncedAt=Date.now();
-    try{ localStorage.removeItem('instantway-pending-'+store.slug); }catch(e){}
-  } else {
-    store.sync.pending=true;
-    try{ localStorage.setItem('instantway-pending-'+store.slug, JSON.stringify(clean)); }catch(e){}
-  }
-  updateOfflineIndicator();
-  return ok;
-}
+async function saveStore(store){ return sSet('store:'+store.slug, store); }
 
 function newFloor(name){
   return { id: uid('fl'), name: name||'Ground Floor', image:null, gridRows:40, walk:[], points:[], walls:[] };
@@ -909,7 +782,8 @@ function newStore(name, adminPassword, venueType){
   const slug = slugify(name) + '-' + Math.random().toString(36).slice(2,6);
   const store = {
     slug, name: name||'New Store', createdAt: Date.now(),
-        branding: { primary:'#ff6b35', secondary:'#4ecdc4' },
+    adminPassword: adminPassword || 'store123',
+    branding: { primary:'#ff6b35', secondary:'#4ecdc4' },
     floors: [ newFloor('Ground Floor') ],
     ads: [],       // {id,title,subtitle,image,link,targetPointIds:[],active}
     events: [],    // {type:'scan'|'route', pointId?, floorId?, ts} — capped log used for heatmaps/analytics
@@ -938,7 +812,7 @@ const state = {
     floorIdx:0, tool:'place', category:'general', shape:'point',
     selectedPointId:null, dragging:null, pathDraft:null, shapeDraft:null,
     imgCache:{}, saveTimer:null,
-    zoom:1, panX:0, panY:0, brushSize:2, gridVisualScale:1, gridOpacity:0.18, spacePan:false
+    zoom:1, panX:0, panY:0
   },
   customer:{
     locationNode:null, route:null, legIdx:0, shopList:[], imgCache:{}, animT:0,
@@ -1162,7 +1036,6 @@ async function route(){
     const { store, offline } = await loadStoreWithOfflineFallback(slug);
     if(!store){ renderStoreNotFound(); showView('view-home'); return; }
     state.store = store;
-    const resumed = loadVisitState(slug); if(resumed && !state.customer.locationNode){ state.customer.locationNode=resumed.locationNode||null; state.customer.shopList=resumed.shopList||[]; }
     if(offline) toast('⚠️ Showing a cached copy of this store — connection issue detected');
     activateKioskModeIfRequested();
     try{ const savedLang = localStorage.getItem('instantway-lang'); if(savedLang) state.customer.language = savedLang; }catch(e){}
@@ -1194,13 +1067,6 @@ async function route(){
   showView('view-home');
 }
 window.addEventListener('popstate', route);
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter' && document.getElementById('view-owner-login')?.classList.contains('active')){
-    e.preventDefault();
-    ownerLogin();
-  }
-});
-
 
 function renderStoreNotFound(){
   document.getElementById('view-home').querySelector('.page').innerHTML = `
@@ -1228,7 +1094,7 @@ async function handleAction(action, el, e){
     case 'go-owner': setUrl({owner:'1', admin:null, store:null, node:null}, true); return route();
     case 'go-owner-dash': setUrl({owner:'1', store:null}, true); return route();
     case 'owner-login': return ownerLogin();
-    case 'owner-logout': ownerLogout(); setUrl({owner:null},true); return route();
+    case 'owner-logout': state.ownerLoggedIn=false; setUrl({owner:null},true); return route();
     case 'owner-change-pw': return openChangeOwnerPwModal();
     case 'owner-create-store': return ownerCreateStore();
     case 'owner-open-builder': setUrl({owner:'1', store:el.dataset.slug}, true); return route();
@@ -1237,7 +1103,7 @@ async function handleAction(action, el, e){
     case 'owner-copy-link': return copyToClipboard(location.origin+location.pathname+'?store='+encodeURIComponent(el.dataset.slug));
 
     case 'admin-login': return adminLogin();
-    case 'admin-logout': signOut(); setUrl({admin:null,store:null},true); return route();
+    case 'admin-logout': state.adminLoggedIn=false; state.adminStoreSlug=null; setUrl({admin:null,store:null},true); return route();
     case 'admin-tab': state.adminTab = el.dataset.tab; return renderAdminDash();
     case 'admin-save-branding': return adminSaveBranding();
     case 'admin-change-storepw': return adminChangeStorePw();
@@ -1269,7 +1135,7 @@ async function handleAction(action, el, e){
 
     case 'cust-toggle-list': return custToggleShopPanel();
     case 'cust-clear-route': state.customer.route=null; state.customer.shopList=[]; renderCustomer(); return;
-    case 'cust-set-location': state.customer.locationNode = el.dataset.node; state.customer.route=null; saveVisitState(state.store); renderCustomer(); return;
+    case 'cust-set-location': state.customer.locationNode = el.dataset.node; state.customer.route=null; renderCustomer(); return;
     case 'cust-next-leg': state.customer.legIdx++; renderRouteCanvasArea(); return;
     case 'toggle-theme': toggleTheme(); return;
     case 'zoom-in': applyZoom(el.dataset.target, 0.5); return;
@@ -1307,15 +1173,6 @@ async function handleAction(action, el, e){
     case 'submit-appointment': return submitAppointment();
     case 'admin-update-wait-time': return adminUpdateWaitTime(el.dataset.catid);
     case 'cust-open-live-ocr': return openLiveOcrModal();
-    case 'owner-command': return runOwnerCommand(el);
-    case 'admin-health': return openAdminHealthCenter();
-    case 'admin-export-analytics': return exportAnalytics();
-    case 'cust-share-route': return shareCurrentRoute();
-    case 'cust-smart-mission': return runSmartMission();
-    case 'cust-smart-input': return runSmartInput();
-    case 'cust-use-gps': return useOutdoorGps();
-    case 'install-app': return installApp();
-    case 'dismiss-install': return dismissInstallPrompt();
     default: break;
   }
 }
@@ -1560,91 +1417,53 @@ function findOrphanPoints(store){
 }
 
 
-const LOGIN_GUARD={owner:{fails:0,until:0},admin:{fails:0,until:0}};
-function loginAllowed(kind){const g=LOGIN_GUARD[kind];if(Date.now()<g.until){toast('Too many failed attempts. Try again in '+Math.ceil((g.until-Date.now())/1000)+'s');return false;}return true;}
-function loginFailed(kind){const g=LOGIN_GUARD[kind];g.fails++;if(g.fails>=5){g.until=Date.now()+30000;g.fails=0;}}
-function loginSucceeded(kind){LOGIN_GUARD[kind]={fails:0,until:0};}
 /* ================= OWNER ================= */
-const INSTANTWAY_OWNER_PASSWORD = 'instantway2026';
 function renderOwnerLogin(){
-  const err=document.getElementById('ownerLoginError');
-  if(err) err.innerHTML='';
-  const inp=document.getElementById('ownerPwInput');
-  if(inp){ inp.value=''; setTimeout(()=>inp.focus(),80); }
-}
-function ownerLogout(){
-  state.ownerLoggedIn=false;
-  try{ sessionStorage.removeItem('instantway-owner-unlocked'); }catch(e){}
+  document.getElementById('ownerLoginError').innerHTML='';
+  const inp = document.getElementById('ownerPwInput'); if(inp) inp.value='';
 }
 async function ownerLogin(){
-  if(!loginAllowed('owner')) return;
-  const err=document.getElementById('ownerLoginError');
-  const btn=document.querySelector('#view-owner-login [data-action="owner-login"]');
-  const pw=document.getElementById('ownerPwInput')?.value || '';
-  if(!pw){
-    if(err) err.innerHTML='<div class="errbox">Enter the owner password.</div>';
-    return;
+  const pw = document.getElementById('ownerPwInput').value;
+  const cfg = await loadPlatformConfig();
+  if(pw === cfg.ownerPassword){
+    state.ownerLoggedIn = true;
+    setUrl({owner:'1'}, true);
+    route();
+  } else {
+    document.getElementById('ownerLoginError').innerHTML = `<div class="errbox">Incorrect password.</div>`;
   }
-  if(pw !== INSTANTWAY_OWNER_PASSWORD){
-    loginFailed('owner');
-    if(err) err.innerHTML='<div class="errbox">Incorrect password.</div>';
-    const inp=document.getElementById('ownerPwInput');
-    if(inp){ inp.value=''; inp.focus(); }
-    return;
-  }
-  loginSucceeded('owner');
-  state.ownerLoggedIn=true;
-  try{ sessionStorage.setItem('instantway-owner-unlocked','1'); }catch(e){}
-  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Opening…'; }
-  setUrl({owner:'1'},true);
-  await route();
 }
 function openChangeOwnerPwModal(){
-  openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>Change password</h3><p class="sub">Password changes are handled securely by Supabase Auth. Use the account recovery flow if you need to reset it.</p><button class="btn primary block" id="resetPwBtn">Send password reset email</button>`);
-  document.getElementById('resetPwBtn').onclick=async()=>{ const u=await currentUser(); if(!u?.email){toast('No signed-in email');return;} const sb=getSb(); const {error}=await sb.auth.resetPasswordForEmail(u.email,{redirectTo:location.origin+location.pathname}); if(error) toast(error.message); else toast('Password reset email sent'); closeModal(); };
+  openModal(`
+    <span class="close-x" data-action="modal-close">✕</span>
+    <h3>Change owner password</h3>
+    <div class="field"><label>New password</label><input id="newOwnerPw" type="password"></div>
+    <button class="btn primary block" id="saveOwnerPwBtn">Save</button>
+  `);
+  document.getElementById('saveOwnerPwBtn').onclick = async ()=>{
+    const val = document.getElementById('newOwnerPw').value.trim();
+    if(!val){ toast('Enter a password'); return; }
+    const cfg = await loadPlatformConfig(); cfg.ownerPassword = val; await savePlatformConfig(cfg);
+    toast('Owner password updated'); closeModal();
+  };
 }
+
 async function renderOwnerDash(){
   document.getElementById('createStoreError').innerHTML='';
   const idx = await loadStoreIndex();
   const listEl = document.getElementById('storeList');
-  const stores = idx || [];
-  let totalPoints=0,totalQr=0,totalEvents=0,totalHelp=0;
-  for(const meta of stores){
-    try{ const st=await loadStore(meta.slug); if(st){ totalPoints += st.floors.reduce((n,f)=>n+f.points.length,0); totalQr += st.floors.reduce((n,f)=>n+f.points.filter(p=>p.isQR).length,0); totalEvents += (st.events||[]).length; totalHelp += (st.events||[]).filter(e=>e.type==='staff_assist'&&!e.resolved).length; } }catch(e){}
+  if(idx.length===0){
+    listEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="big">🏬</div><p>No stores yet. Create your first one above.</p></div>`;
+    return;
   }
-  const dash=document.querySelector('#view-owner-dash .dash-grid');
-  if(dash && !document.getElementById('ownerCommandCenter')){
-    const cc=document.createElement('div'); cc.id='ownerCommandCenter'; cc.className='command-center';
-    cc.innerHTML=`<div class="kpi-grid">
-      <div class="kpi"><div class="n" id="okpiStores">${stores.length}</div><div class="l">Venues</div></div>
-      <div class="kpi"><div class="n" id="okpiPoints">${totalPoints}</div><div class="l">Mapped locations</div></div>
-      <div class="kpi"><div class="n" id="okpiQr">${totalQr}</div><div class="l">QR endpoints</div></div>
-      <div class="kpi"><div class="n" id="okpiHelp">${totalHelp}</div><div class="l">Open help requests</div></div>
-    </div>
-    <div class="command-card"><h3>⚡ Platform command center</h3>
-      <div class="smart-command"><span>⌘</span><input id="ownerCommandInput" placeholder="Try: open map, admin, preview, health, analytics…"><button class="btn small primary" data-action="owner-command">Run</button></div>
-      <div class="quick-grid" style="margin-top:10px;">
-        <button class="btn small" data-action="owner-command" data-command="health">🩺 Platform health</button>
-        <button class="btn small" data-action="owner-command" data-command="analytics">📊 Analytics</button>
-        <button class="btn small" data-action="owner-command" data-command="preview">👀 Preview first venue</button>
-        <button class="btn small" data-action="owner-command" data-command="security">🔐 Security checklist</button>
-      </div>
-    </div>`;
-    dash.prepend(cc);
-  } else {
-    const q=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
-    q('okpiStores',stores.length);q('okpiPoints',totalPoints);q('okpiQr',totalQr);q('okpiHelp',totalHelp);
-  }
-  if(stores.length===0){ listEl.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="big">🏬</div><p>No stores yet. Create your first one above.</p></div>`; return; }
-  listEl.innerHTML = stores.map(s=>`
+  listEl.innerHTML = idx.map(s=>`
     <div class="store-card">
       <h4><span class="swatch" style="background:${esc(s.primary||'#ff6b35')}"></span>${esc(s.name)}</h4>
       <div class="slug">?store=${esc(s.slug)}</div>
-      <div class="hint">Admin credentials are hidden here for safety.</div>
+      <div class="hint">Admin password: <b style="color:var(--text);font-family:monospace;">${esc(s.adminPassword||'—')}</b></div>
       <div class="row">
         <button class="btn small primary" data-action="owner-open-builder" data-slug="${esc(s.slug)}">Edit map</button>
         <button class="btn small" data-action="owner-open-admin" data-slug="${esc(s.slug)}">Admin panel</button>
-        <button class="btn small" data-action="owner-command" data-command="health:${esc(s.slug)}">Health</button>
       </div>
       <div class="row">
         <button class="btn small ghost" data-action="owner-copy-link" data-slug="${esc(s.slug)}">Copy link</button>
@@ -1653,34 +1472,6 @@ async function renderOwnerDash(){
     </div>`).join('');
 }
 
-async function runOwnerCommand(el){
-  const input=document.getElementById('ownerCommandInput');
-  const raw=(el?.dataset?.command || input?.value || '').trim().toLowerCase();
-  if(!raw){toast('Type a command');return;}
-  if(raw==='security'){ openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>🔐 Security reality check</h3><div class="warnbox">Authentication is handled by Supabase Auth and venue access is checked against role-based membership. Keep RLS enabled on all production tables.</div><button class="btn primary" onclick="closeModal();">Got it</button>`); return;}
-  if(raw==='analytics'){ const first=(await loadStoreIndex())[0]; if(first){state.store=await loadStore(first.slug); openAdminHealthCenter();} else toast('Create a venue first'); return;}
-  if(raw==='preview'){ const first=(await loadStoreIndex())[0]; if(first){setUrl({store:first.slug},true);route();} else toast('Create a venue first'); return;}
-  if(raw.startsWith('health')){ const slug=raw.split(':')[1]; if(slug){state.store=await loadStore(slug);} if(state.store) openAdminHealthCenter(); else toast('Venue not found'); return;}
-  const idx=await loadStoreIndex(); const first=idx[0];
-  if(first && /map|builder/.test(raw)){setUrl({owner:'1',store:first.slug},true);route();return;}
-  if(first && /admin/.test(raw)){setUrl({admin:'1',store:first.slug},true);state.adminLoggedIn=true;state.adminStoreSlug=first.slug;route();return;}
-  toast('Try: map, admin, preview, health, analytics, security');
-}
-function openAdminHealthCenter(){
-  const st=state.store; if(!st){toast('No venue loaded');return;}
-  const floors=st.floors||[], pts=floors.flatMap(f=>f.points||[]), qr=pts.filter(p=>p.isQR), orphan=findOrphanPoints(st), events=st.events||[], scans=events.filter(e=>e.type==='scan').length, routes=events.filter(e=>e.type==='route').length, help=events.filter(e=>e.type==='staff_assist'&&!e.resolved).length;
-  openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>🩺 ${esc(st.name)} health center</h3>
-    <div class="kpi-grid" style="margin:10px 0"><div class="kpi"><div class="n">${floors.length}</div><div class="l">Floors</div></div><div class="kpi"><div class="n">${pts.length}</div><div class="l">Locations</div></div><div class="kpi"><div class="n">${qr.length}</div><div class="l">QRs</div></div><div class="kpi"><div class="n">${help}</div><div class="l">Open help</div></div></div>
-    <div class="health-row"><span class="health-dot ${orphan.length?'bad':''}"></span><span><b>Routing network</b><br><span class="hint">${orphan.length?orphan.length+' unreachable location(s)':'All mapped locations connected'}</span></span></div>
-    <div class="health-row"><span class="health-dot"></span><span><b>Usage</b><br><span class="hint">${scans} QR scans · ${routes} route requests</span></span></div>
-    <div class="health-row"><span class="health-dot ${qr.some(p=>p.needsPositioning)?'warn':''}"></span><span><b>QR deployment</b><br><span class="hint">${qr.filter(p=>p.needsPositioning).length} QR location(s) still need positioning</span></span></div>`);
-}
-function exportAnalytics(){
-  if(!state.store){toast('Open a venue first');return;}
-  const rows=[['timestamp','type','pointId','floorId','resolved']].concat((state.store.events||[]).map(e=>[new Date(e.ts||Date.now()).toISOString(),e.type,e.pointId||'',e.floorId||'',e.resolved??'']));
-  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(state.store.slug||'instantway')+'-analytics.csv'; a.click(); URL.revokeObjectURL(a.href); toast('Analytics CSV exported');
-}
 async function ownerCreateStore(){
   const nameEl = document.getElementById('newStoreName');
   const name = nameEl.value.trim();
@@ -1689,7 +1480,7 @@ async function ownerCreateStore(){
   const store = newStore(name, null, venueSel ? venueSel.value : 'grocery');
   await saveStore(store);
   const idx = await loadStoreIndex();
-  idx.push({slug:store.slug, name:store.name, primary:store.branding.primary});
+  idx.push({slug:store.slug, name:store.name, adminPassword:store.adminPassword, primary:store.branding.primary});
   await saveStoreIndex(idx);
   nameEl.value='';
   toast('Store created');
@@ -2028,30 +1819,14 @@ function drawBuilderCanvas(){
     ctx.beginPath(); ctx.moveTo(w.x1*W, w.y1*H); ctx.lineTo(w.x2*W, w.y2*H); ctx.stroke();
   });
   ctx.setLineDash([]);
-  // Walkable network: keep the grid internally for routing, but render it as a clean dashed path.
-  // This avoids the old shaded/unshaded checkerboard look while preserving precise pathfinding.
+  // painted walkway grid — brushed on freely, so it can bend/curve around real layout
   const rows = gridRowsForFloor(fl);
   const cw = W/GRID_COLS, ch = H/rows;
-  const walkCells = new Set(fl.walk||[]);
-  ctx.save();
-  ctx.strokeStyle = 'rgba(0,230,180,0.82)';
-  ctx.lineWidth = Math.max(2.5, Math.min(cw,ch)*0.48);
-  ctx.lineCap='round';
-  ctx.setLineDash([7,8]);
-  ctx.lineDashOffset = -((Date.now()/90)%15);
+  ctx.fillStyle = 'rgba(0,230,180,0.42)';
   (fl.walk||[]).forEach(k=>{
     const [r,c] = k.split(',').map(Number);
-    const x=(c+.5)*cw, y=(r+.5)*ch;
-    [[0,1],[1,0],[1,1],[1,-1]].forEach(([dr,dc])=>{
-      const nk=(r+dr)+','+(c+dc);
-      if(!walkCells.has(nk)) return;
-      ctx.beginPath();
-      ctx.moveTo(x,y);
-      ctx.lineTo((c+dc+.5)*cw,(r+dr+.5)*ch);
-      ctx.stroke();
-    });
+    ctx.fillRect(c*cw-0.5, r*ch-0.5, cw+1, ch+1);
   });
-  ctx.restore();
   // faint grid guide lines while painting/erasing, so the brush feels precise
   if(state.builder.tool==='path' || state.builder.tool==='erase'){
     ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1;
@@ -2241,7 +2016,7 @@ function onCanvasDown(e){
   }
   if(state.builder.tool==='path'){
     state.builder.painting = true; state.builder.eraseMode = false; state.builder.lastPaintRel = rel;
-    paintCellsAlong(fl, rel, rel, false, Math.max(0, (state.builder.brushSize||2)-1));
+    paintCellsAlong(fl, rel, rel, false, 0);
     drawBuilderCanvas();
     return;
   }
@@ -2251,7 +2026,7 @@ function onCanvasDown(e){
     state.builder.eraseClickPoint = null;
     state.builder.eraseClickWall = findWallNear(fl, canvas, rel, 10);
     state.builder.painting = true; state.builder.eraseMode = true; state.builder.lastPaintRel = rel;
-    paintCellsAlong(fl, rel, rel, true, Math.max(0, (state.builder.brushSize||2)-1));
+    paintCellsAlong(fl, rel, rel, true, 0);
     drawBuilderCanvas();
   }
 }
@@ -2280,7 +2055,7 @@ function onCanvasMove(e){
   }
   if(state.builder.painting){
     const from = state.builder.lastPaintRel || downInfo.rel;
-    paintCellsAlong(fl, from, rel, state.builder.eraseMode, Math.max(0, (state.builder.brushSize||2)-1));
+    paintCellsAlong(fl, from, rel, state.builder.eraseMode, 0);
     state.builder.lastPaintRel = rel;
     drawBuilderCanvas();
     return;
@@ -2555,8 +2330,8 @@ function renderImportPreview(rows){
     <div class="field"><label>Name column</label><select id="impColName">${headers.map(h=>`<option ${h===guessName?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
     <div class="field"><label>Category column (optional)</label><select id="impColCat"><option value="">— none —</option>${headers.map(h=>`<option ${h===guessCat?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
     <div class="field"><label>Price column (optional)</label><select id="impColPrice"><option value="">— none —</option>${headers.map(h=>`<option ${h===guessPrice?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
-    <div class="field"><label>Aisle/location name column (optional — matched to existing map locations by name)</label><select id="impColLoc"><option value="">— none —</option>${headers.map(h=>`<option ${h===guessLoc?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
-    <p class="hint" style="margin-bottom:10px;">Rows whose aisle/location doesn't exist stay in the catalog as Unmapped. Your floor plan is never modified by a product import.</p>
+    <div class="field"><label>Aisle/location name column (optional — matched to existing map items by name, or auto-created)</label><select id="impColLoc"><option value="">— none —</option>${headers.map(h=>`<option ${h===guessLoc?'selected':''}>${esc(h)}</option>`).join('')}</select></div>
+    <p class="hint" style="margin-bottom:10px;">Rows whose aisle/location doesn't exist on your map yet will be auto-created as a new point (unpositioned — drag it into place afterward in the map builder).</p>
     <button class="btn primary block" id="doImportBtn">Import ${rows.length} row(s)</button>
   `;
   document.getElementById('doImportBtn').onclick = ()=>runImport(rows);
@@ -2566,43 +2341,38 @@ async function runImport(rows){
   const catCol = document.getElementById('impColCat').value;
   const priceCol = document.getElementById('impColPrice').value;
   const locCol = document.getElementById('impColLoc').value;
-  state.store.catalog = state.store.catalog || [];
-  let mapped=0, unmapped=0, updated=0;
+  const fl = state.store.floors[0];
+  let created=0, matched=0;
+  const defaultCat = productCats(state.store)[0] || (state.store.categories||[])[0];
   rows.forEach(row=>{
-    const name=(row[nameCol]||'').trim(); if(!name) return;
-    const rawPrice=priceCol ? parseFloat(String(row[priceCol]).replace(/[^0-9.\-]/g,'')) : null;
-    const price=Number.isFinite(rawPrice)?rawPrice:null;
-    const locName=locCol ? (row[locCol]||'').trim() : '';
-    const catName=catCol ? (row[catCol]||'').trim() : '';
-    let locationId=null;
+    const name = (row[nameCol]||'').trim();
+    if(!name) return;
+    const price = priceCol ? parseFloat(String(row[priceCol]).replace(/[^0-9.\-]/g,'')) : null;
+    const locName = locCol ? (row[locCol]||'').trim() : '';
+    let cat = defaultCat;
+    if(catCol && row[catCol]){
+      const wanted = row[catCol].trim().toLowerCase();
+      const found = (state.store.categories||[]).find(c=>c.label.toLowerCase()===wanted);
+      if(found) cat = found;
+    }
     if(locName){
-      for(const f of state.store.floors||[]){
-        const hit=(f.points||[]).find(p=>(p.name||'').trim().toLowerCase()===locName.toLowerCase());
-        if(hit){ locationId=hit.id; break; }
+      let existing = null;
+      state.store.floors.forEach(f=>{ const hit=f.points.find(p=>p.name.toLowerCase()===locName.toLowerCase()); if(hit) existing=hit; });
+      if(existing){
+        existing.product = name; existing.price = isNaN(price)?existing.price:price;
+        matched++; return;
       }
     }
-    const key=normOcr(name);
-    let item=state.store.catalog.find(x=>normOcr(x.name)===key);
-    if(item){
-      item.price=price; item.category=catName||item.category||''; item.locationId=locationId||item.locationId||null; item.updatedAt=Date.now(); updated++;
-    } else {
-      item={id:uid('prd'),name,price,category:catName||'',locationId,createdAt:Date.now(),updatedAt:Date.now()};
-      state.store.catalog.push(item);
-    }
-    if(locationId){
-      const found=findPointById(locationId);
-      if(found){
-        found.pt.products=found.pt.products||[];
-        if(!found.pt.products.includes(item.id)) found.pt.products.push(item.id);
-        if(!found.pt.product) found.pt.product=name;
-      }
-      mapped++;
-    } else unmapped++;
+    fl.points.push({
+      id: uid('pt'), category: cat.id, name: locName || name, shape:'point',
+      x:0.5, y:0.5, product:name, price:isNaN(price)?null:price,
+      isQR:false, scans:0, floorLink:null, direction:null, needsPositioning:true
+    });
+    created++;
   });
-  logEvent(state.store,{type:'catalog_import',count:rows.length,mapped,unmapped});
   await saveStore(state.store);
   closeModal();
-  toast(`Imported ${rows.length}: ${mapped} mapped, ${unmapped} waiting for a location. Map stayed untouched.`);
+  toast(`Imported: ${matched} matched to existing locations, ${created} new location(s) created — drag new pins into place.`);
   if(document.getElementById('view-admin-dash').classList.contains('active')) renderAdminDash();
 }
 
@@ -2613,53 +2383,17 @@ function renderAdminLogin(store){
   document.getElementById('adminLoginError').innerHTML='';
   const inp = document.getElementById('adminPwInput'); if(inp) inp.value='';
   state._pendingAdminStore = store;
-  setTimeout(bindAdminLogin, 0);
 }
-let adminLoginBusy=false;
 async function adminLogin(){
-  if(adminLoginBusy || !loginAllowed('admin')) return;
-  const errorEl=document.getElementById('adminLoginError');
-  const btn=document.querySelector('#view-admin-login [data-action="admin-login"]');
-  const email=document.getElementById('adminEmailInput')?.value.trim();
-  const pw=document.getElementById('adminPwInput')?.value;
-  const store=state._pendingAdminStore;
-  if(!email||!pw||!store){ if(errorEl) errorEl.innerHTML='<div class="errbox">Enter your email and password.</div>'; return; }
-  adminLoginBusy=true;
-  if(btn){ btn.disabled=true; btn.textContent='Signing in…'; }
-  if(errorEl) errorEl.innerHTML='<div class="infobox">Signing you in securely…</div>';
-  try{
-    await window.__instantWaySupabaseReady;
-    if(!getSb()) throw new Error('Authentication service is still loading. Please wait a moment and try again.');
-    const result=await signInEmail(email,pw);
-    if(!result?.user) throw new Error('Sign-in did not return an authenticated user.');
-    if(!(await hasVenueAccess(store.slug))){ await signOut(); throw new Error('This account does not have access to this venue.'); }
-    loginSucceeded('admin');
-    state.adminLoggedIn=true;
-    state.adminStoreSlug=store.slug;
-    setUrl({admin:'1',store:store.slug},true);
-    await route();
-  }catch(e){
-    console.error('InstantWay admin login failed:',e);
-    loginFailed('admin');
-    if(errorEl) errorEl.innerHTML=`<div class="errbox">${esc(e?.message||'Sign-in failed. Please try again.')}</div>`;
-  }finally{
-    adminLoginBusy=false;
-    if(btn){ btn.disabled=false; btn.textContent='Log in'; }
+  const pw = document.getElementById('adminPwInput').value;
+  const store = state._pendingAdminStore;
+  if(pw === store.adminPassword){
+    state.adminLoggedIn = true; state.adminStoreSlug = store.slug;
+    setUrl({admin:'1', store:store.slug}, true);
+    route();
+  } else {
+    document.getElementById('adminLoginError').innerHTML = `<div class="errbox">Incorrect password.</div>`;
   }
-}
-function bindAdminLogin(){
-  const btn=document.querySelector('#view-admin-login [data-action="admin-login"]');
-  if(btn && btn.dataset.loginBound!=='1'){
-    btn.dataset.loginBound='1';
-    btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();adminLogin();});
-  }
-  ['adminEmailInput','adminPwInput'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el && el.dataset.loginKeyBound!=='1'){
-      el.dataset.loginKeyBound='1';
-      el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adminLogin();}});
-    }
-  });
 }
 
 const ADMIN_TABS = [
@@ -2667,9 +2401,7 @@ const ADMIN_TABS = [
   {id:'qr', label:'▦ QR Codes'},
   {id:'analytics', label:'📊 Analytics'},
   {id:'ads', label:'📣 Ads'},
-  {id:'branding', label:'🎨 Branding'},
-  {id:'operations', label:'🛟 Operations'},
-  {id:'security', label:'🔐 Security'}
+  {id:'branding', label:'🎨 Branding'}
 ];
 function renderAdminDash(){
   document.getElementById('adminDashStoreName').textContent = state.store.name;
@@ -2682,8 +2414,6 @@ function renderAdminDash(){
   else if(state.adminTab==='analytics') content.innerHTML = adminAnalyticsHtml();
   else if(state.adminTab==='ads') content.innerHTML = adminAdsHtml();
   else if(state.adminTab==='branding') content.innerHTML = adminBrandingHtml();
-  else if(state.adminTab==='operations') content.innerHTML = adminOperationsHtml();
-  else if(state.adminTab==='security') content.innerHTML = adminSecurityHtml();
   bindAdminTabEvents();
 }
 
@@ -2918,37 +2648,6 @@ function openAdEditor(adId){
   };
 }
 
-function adminOperationsHtml(){
-  const ev=(state.store.events||[]).slice().reverse();
-  const help=ev.filter(e=>e.type==='staff_assist'&&!e.resolved);
-  const wait=state.store.waitTimes||{};
-  return `<div class="command-center">
-    <div class="command-card"><h3>🛟 Staff assist queue</h3>
-      ${help.length?help.slice(0,20).map((e,i)=>{const f=findPointById(e.pointId);return `<div class="health-row"><span class="health-dot bad"></span><span style="flex:1"><b>${esc(f?.pt?.name||'Unknown location')}</b> · ${esc(f?.fl?.name||'Unknown floor')}<br><span class="hint">${new Date(e.ts).toLocaleString()}</span></span><button class="btn small" onclick="resolveHelp(${i})">Resolve</button></div>`}).join(''):`<div class="okbox">✓ No open assistance requests.</div>`}
-    </div>
-    <div class="command-card"><h3>⏱ Queue / appointment waits</h3>
-      ${(state.store.categories||[]).map(c=>`<div class="health-row"><span style="flex:1">${c.icon} ${esc(c.label)}</span><b>${esc(wait[c.id]||'Not set')}</b><button class="btn small" data-action="admin-update-wait-time" data-catid="${c.id}">Edit</button></div>`).join('')}
-    </div>
-  </div>`;
-}
-function resolveHelp(index){
-  const arr=(state.store.events||[]).slice().reverse().filter(e=>e.type==='staff_assist'&&!e.resolved);
-  const target=arr[index]; if(!target) return; target.resolved=true; saveStore(state.store); renderAdminDash(); toast('Assistance request resolved');
-}
-function adminSecurityHtml(){
-  return `<div class="command-center">
-    <div class="command-card"><h3>🔐 Production security status</h3>
-      <div class="health-row"><span class="health-dot warn"></span><span><b>Client-side credentials</b><br><span class="hint">The current app compares owner/store passwords in browser JavaScript. This is suitable for a prototype, not a production SaaS.</span></span></div>
-      <div class="health-row"><span class="health-dot warn"></span><span><b>Supabase RLS</b><br><span class="hint">Database writes should be restricted with Supabase Auth + Row Level Security before public launch.</span></span></div>
-      <div class="health-row"><span class="health-dot"></span><span><b>HTTPS / PWA</b><br><span class="hint">Serve over HTTPS for camera, installation and secure browser APIs.</span></span></div>
-      <div class="health-row"><span class="health-dot"></span><span><b>Data minimization</b><br><span class="hint">Customer favorites and visit state remain on-device; event logs are capped.</span></span></div>
-      <button class="btn primary" onclick="openSecurityMigrationGuide()">View production migration plan</button>
-    </div>
-  </div>`;
-}
-function openSecurityMigrationGuide(){
-  openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>Production launch checklist</h3><div class="hint" style="line-height:1.8">1. Move owner/admin authentication to Supabase Auth.<br>2. Add RLS policies per platform owner, venue and staff role.<br>3. Remove plaintext password fields from store records.<br>4. Add server-side rate limiting and audit logs.<br>5. Store floor images in object storage instead of giant JSON rows.<br>6. Move analytics/events into dedicated tables for scale.<br>7. Rotate the current Supabase anon key if it was exposed outside its intended project context.<br><br><b>Important:</b> the browser can never make a secret truly secret. The frontend must not be the security boundary.</div>`);
-}
 function adminBrandingHtml(){
   const b = state.store.branding;
   return `<div class="card" style="max-width:none;">
@@ -2962,7 +2661,7 @@ function adminBrandingHtml(){
     <span id="brandSaveMsg" style="margin-left:10px;font-size:12px;color:var(--secondary);"></span>
     <hr style="border:none;border-top:1px solid var(--border);margin:18px 0;">
     <h2 style="font-size:16px;">Store password</h2>
-    <div class="field"><label>New store admin password</label><div class="pw-wrap"><input id="newStorePw" type="password" placeholder="••••••••"><button type="button" class="pw-toggle" data-pw-target="newStorePw" aria-label="Show password">Show</button></div></div>
+    <div class="field"><label>New store admin password</label><input id="newStorePw" type="password" placeholder="••••••••"></div>
     <button class="btn" id="saveStorePwBtn">Update password</button>
   </div>`;
 }
@@ -3015,7 +2714,16 @@ async function adminSaveBranding(){
   document.getElementById('adminDashStoreName').textContent = state.store.name;
   const msg = document.getElementById('brandSaveMsg'); if(msg){ msg.textContent='Saved ✓'; setTimeout(()=>{ if(msg) msg.textContent=''; },1800); }
 }
-async function adminChangeStorePw(){ toast('Venue access is managed through Supabase Auth and venue roles.'); }
+async function adminChangeStorePw(){
+  const val = document.getElementById('newStorePw').value.trim();
+  if(!val){ toast('Enter a password'); return; }
+  state.store.adminPassword = val;
+  await saveStore(state.store);
+  const idx = await loadStoreIndex();
+  const rec = idx.find(s=>s.slug===state.store.slug); if(rec){ rec.adminPassword=val; await saveStoreIndex(idx); }
+  document.getElementById('newStorePw').value='';
+  toast('Store password updated');
+}
 
 /* ================= CUSTOMER VIEW ================= */
 function findPointById(id){
@@ -3154,119 +2862,158 @@ function custAdClick(adId){
   }
 }
 
-/* ---- OCR Intelligence 3.0: multi-pass preprocessing + fuzzy catalog correction ----
-   Tesseract remains fully client-side. The app deliberately distinguishes:
-   1) text that was read, 2) text corrected against this venue's catalog,
-   3) text that is not present in the venue catalog. It never silently invents stock. ---- */
-function ocrCatalog(){
-  return allShelfPoints().map(({pt,fl})=>({pt,fl,label:(pt.product||pt.name||'').trim()})).filter(x=>x.label);
-}
-function normOcr(s){
-  return String(s||'').toLowerCase().normalize('NFKD').replace(/[’‘`]/g,"'").replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
-}
-function levenshtein(a,b){
-  a=normOcr(a); b=normOcr(b); if(a===b)return 0; if(!a)return b.length;if(!b)return a.length;
-  const prev=Array.from({length:b.length+1},(_,i)=>i);
-  for(let i=1;i<=a.length;i++){let cur=[i];for(let j=1;j<=b.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));for(let j=0;j<cur.length;j++)prev[j]=cur[j];}
-  return prev[b.length];
-}
-function ocrSimilarity(a,b){
-  a=normOcr(a);b=normOcr(b);if(!a||!b)return 0;if(a===b)return 1;
-  if(a.includes(b)||b.includes(a))return .86;
-  const d=levenshtein(a,b), m=Math.max(a.length,b.length); return m?Math.max(0,1-d/m):0;
-}
-function ocrNormalizeLine(line){
-  return line.replace(/\b0\b/g,'o').replace(/\b1\b/g,'i').replace(/rn/g,'m').replace(/cl/g,'d').replace(/vv/g,'w').replace(/\s+/g,' ').trim();
-}
-function splitOcrLines(text){
-  return String(text||'').split(/[\n\r,;•]+/).map(ocrNormalizeLine).map(x=>x.replace(/^[-*•\d.)]+\s*/,'').trim()).filter(x=>x.length>=2);
-}
-function makeOcrVariants(source){
-  return new Promise((resolve,reject)=>{
-    const img=new Image(); img.onload=()=>{
-      const variants=[];
-      const scale=Math.min(2.2,Math.max(1,1600/Math.max(img.width,img.height)));
-      const w=Math.round(img.width*scale),h=Math.round(img.height*scale);
-      [false,true].forEach(invert=>{
-        const c=document.createElement('canvas');c.width=w;c.height=h;const ctx=c.getContext('2d',{willReadFrequently:true});
-        ctx.drawImage(img,0,0,w,h);const d=ctx.getImageData(0,0,w,h), data=d.data;
-        for(let i=0;i<data.length;i+=4){let y=.299*data[i]+.587*data[i+1]+.114*data[i+2];y=(y-128)*1.55+128;y=Math.max(0,Math.min(255,y));if(invert)y=255-y;data[i]=data[i+1]=data[i+2]=y;}
-        ctx.putImageData(d,0,0);variants.push(c);
-      }); resolve(variants);
-    }; img.onerror=reject;img.src=URL.createObjectURL(source);
-  });
-}
-async function intelligentOcr(source, progress){
-  if(typeof Tesseract==='undefined') throw new Error('OCR engine unavailable');
-  const variants=await makeOcrVariants(source); let combined=[];
-  for(let i=0;i<variants.length;i++){
-    if(progress)progress(`Reading pass ${i+1} of ${variants.length}…`);
-    const r=await Tesseract.recognize(variants[i],'eng',{logger:m=>{if(m.status==='recognizing text'&&progress)progress(`Reading handwriting… ${Math.round((m.progress||0)*100)}%`);}});
-    combined.push(r.data?.text||'');
-  }
-  return [...new Set(combined.join('\n').split(/\n/).map(x=>x.trim()).filter(Boolean))].join('\n');
-}
-function matchOcrWordsToProducts(words){
-  const products=ocrCatalog(), out=[], used=new Set();
-  words.forEach(raw=>{
-    const q=normOcr(raw); if(q.length<2)return; let best=null,bestScore=0;
-    products.forEach(item=>{
-      const name=normOcr(item.label); let score=ocrSimilarity(q,name);
-      const qt=q.split(' '), nt=name.split(' ');
-      if(qt.some(t=>t.length>2 && nt.some(n=>n===t))) score=Math.max(score,.90);
-      if(qt.some(t=>t.length>3 && nt.some(n=>n.startsWith(t)||t.startsWith(n)))) score=Math.max(score,.78);
-      if(score>bestScore){bestScore=score;best=item;}
-    });
-    if(best && bestScore>=.62 && !used.has(best.pt.id)){used.add(best.pt.id);out.push({word:raw,pt:best.pt,fl:best.fl,score:Math.round(bestScore*100)});}
-  }); return out.sort((a,b)=>b.score-a.score);
-}
-function analyzeOcrText(rawText){
-  const lines=splitOcrLines(rawText), matches=matchOcrWordsToProducts(lines), matched=new Set(matches.map(m=>m.pt.id));
-  const unknown=lines.filter(line=>!matches.some(m=>normOcr(m.word)===normOcr(line))).filter(x=>x.length>2);
-  return {lines,matches,unknown};
-}
+/* ---- Photo/handwriting shopping list: fully client-side OCR (Tesseract.js) — no API key,
+   works well on printed/typed text, weaker on messy handwriting. We tell the customer that. ---- */
 function openOcrModal(){
-  openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>📝 Smart handwriting scanner</h3>
-    <p class="hint" style="margin-bottom:12px;">Uses multiple image passes and corrects likely handwriting/OCR mistakes against this venue's actual catalog. Anything not found is shown as <b>not in this venue's mapped catalog</b>, never silently added.</p>
-    <div class="ocr-dropzone" id="ocrDropzone">📷 Take a photo or choose an image</div><input type="file" id="ocrFileInput" accept="image/*" capture="environment" style="display:none;">
-    <div id="ocrResults" style="margin-top:14px;"></div>`);
-  document.getElementById('ocrDropzone').onclick=()=>document.getElementById('ocrFileInput').click();
-  document.getElementById('ocrFileInput').onchange=onOcrFileSelected;
+  openModal(`
+    <span class="close-x" data-action="modal-close">✕</span>
+    <h3>Scan your shopping list</h3>
+    <p class="hint" style="margin-bottom:12px;">Take a photo or upload an image of your list. Works best on printed or clearly written text — messy handwriting may need manual fixes.</p>
+    <div class="ocr-dropzone" id="ocrDropzone">📷 Tap to take a photo or choose an image</div>
+    <input type="file" id="ocrFileInput" accept="image/*" capture="environment" style="display:none;">
+    <div id="ocrResults" style="margin-top:14px;"></div>
+  `);
+  const dz = document.getElementById('ocrDropzone');
+  const inp = document.getElementById('ocrFileInput');
+  dz.addEventListener('click', ()=>inp.click());
+  inp.addEventListener('change', onOcrFileSelected);
 }
 async function onOcrFileSelected(e){
-  const file=e.target.files?.[0];if(!file)return; const el=document.getElementById('ocrResults');
-  el.innerHTML='<div class="hint"><span class="spinner"></span> Preparing image and reading handwriting…</div>';
-  try{const raw=await intelligentOcr(file,msg=>{if(el)el.innerHTML=`<div class="hint"><span class="spinner"></span> ${esc(msg)}</div>`;}); renderOcrMatches(matchOcrWordsToProducts(splitOcrLines(raw)),raw);}
-  catch(err){console.error(err);el.innerHTML='<div class="errbox">OCR could not read this image. Try brighter lighting, hold the phone parallel to the page, or use the manual search.</div>';}
+  const file = e.target.files[0];
+  if(!file) return;
+  const resultsEl = document.getElementById('ocrResults');
+  resultsEl.innerHTML = `<div class="hint"><span class="spinner"></span> Reading your list…</div>`;
+  try{
+    if(typeof Tesseract === 'undefined') throw new Error('OCR engine unavailable');
+    const { data } = await Tesseract.recognize(file, 'eng');
+    const words = (data.text||'').split(/[\n,;•\-]+/).map(w=>w.trim()).filter(w=>w.length>1);
+    const matches = matchOcrWordsToProducts(words);
+    renderOcrMatches(matches, data.text);
+  }catch(err){
+    console.error(err);
+    resultsEl.innerHTML = `<div class="errbox">Couldn't read that image. Try a clearer, well-lit photo — or search manually instead.</div>`;
+  }
 }
-function renderOcrMatches(matches,rawText){
-  const el=document.getElementById('ocrResults'), a=analyzeOcrText(rawText);
-  el.innerHTML=`<div class="command-card" style="margin-bottom:8px;"><b>What InstantWay read</b><div class="hint" style="white-space:pre-wrap;margin-top:6px;max-height:120px;overflow:auto;">${esc(rawText||'Nothing readable')}</div></div>
-    ${a.matches.length?`<div class="okbox">✓ ${a.matches.length} item(s) confidently matched to this venue.</div>`:''}
-    ${a.matches.map((m,i)=>`<div class="ocr-match-item"><input type="checkbox" id="ocrm_${i}" checked><label for="ocrm_${i}" style="flex:1;"><b>${esc(m.pt.product||m.pt.name)}</b> <span class="tag">${esc(m.fl.name)}</span><br><span class="hint">Read “${esc(m.word)}” · ${m.score}% catalog match</span></label></div>`).join('')}
-    ${a.unknown.length?`<div class="warnbox" style="margin-top:8px;"><b>Not found in this venue</b><br><span class="hint">${a.unknown.map(esc).join(' · ')}</span><br><small>These may be handwriting/OCR errors, or the venue simply hasn't mapped them.</small></div>`:''}
-    <button class="btn primary block" id="ocrAddAllBtn" style="margin-top:10px;" ${a.matches.length?'':'disabled'}>Add confirmed items to list</button>`;
-  document.getElementById('ocrAddAllBtn').onclick=()=>{a.matches.forEach((m,i)=>{if(document.getElementById('ocrm_'+i)?.checked)addToShopList(m.pt.id);});closeModal();toast(`Added ${a.matches.length} confirmed item(s)`);};
+function matchOcrWordsToProducts(words){
+  const products = allShelfPoints();
+  const matches = [];
+  const seen = new Set();
+  words.forEach(word=>{
+    const w = word.toLowerCase();
+    if(w.length<3) return;
+    let best=null, bestScore=0;
+    products.forEach(({pt,fl})=>{
+      const name = (pt.product||pt.name||'').toLowerCase();
+      if(!name) return;
+      let score=0;
+      if(name===w) score=100;
+      else if(name.includes(w) || w.includes(name)) score=70;
+      else {
+        const wordTokens = name.split(/\s+/);
+        if(wordTokens.some(t=>t===w)) score=60;
+        else if(wordTokens.some(t=>t.startsWith(w)||w.startsWith(t))) score=35;
+      }
+      if(score>bestScore){ bestScore=score; best={pt,fl}; }
+    });
+    if(best && bestScore>=35 && !seen.has(best.pt.id)){
+      seen.add(best.pt.id);
+      matches.push({ word, pt:best.pt, fl:best.fl, score:bestScore });
+    }
+  });
+  return matches.sort((a,b)=>b.score-a.score);
 }
-let liveOcrStream=null,liveOcrTimer=null,liveOcrFoundIds=new Set();
-async function openLiveOcrModal(){
-  liveOcrFoundIds=new Set();openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>📷 Live handwriting scanner</h3><p class="hint">Hold the list steady. InstantWay runs repeated OCR passes, corrects against the venue catalog, and only counts confirmed locations.</p><div class="live-ocr-video-wrap"><video id="liveOcrVideo" autoplay playsinline muted></video><div class="live-ocr-scanline"></div></div><p class="hint" id="liveOcrStatus">Starting camera…</p><div id="liveOcrMatches" class="live-ocr-matches"></div><button class="btn" id="liveOcrFallbackBtn">Upload a photo instead</button><button class="btn primary block" id="liveOcrDoneBtn">Done — add 0 found item(s)</button>`);
-  document.getElementById('liveOcrFallbackBtn').onclick=()=>{stopLiveOcr();openOcrModal();};document.getElementById('liveOcrDoneBtn').onclick=finishLiveOcr;
-  try{liveOcrStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}});document.getElementById('liveOcrVideo').srcObject=liveOcrStream;document.getElementById('liveOcrStatus').textContent='Scanning…';liveOcrTimer=setInterval(runLiveOcrPass,3200);}catch(e){document.getElementById('liveOcrStatus').textContent='Camera unavailable. Use the upload option.';}
+function renderOcrMatches(matches, rawText){
+  const resultsEl = document.getElementById('ocrResults');
+  if(!matches.length){
+    resultsEl.innerHTML = `<div class="warnbox">Couldn't confidently match any items to products in this store.</div>
+      <p class="hint" style="margin-top:8px;">Raw text read: "${esc((rawText||'').slice(0,140))}"</p>`;
+    return;
+  }
+  resultsEl.innerHTML = `<p class="hint" style="margin-bottom:8px;">Found ${matches.length} likely match(es) — uncheck anything wrong, then add.</p>` +
+    matches.map((m,i)=>`
+      <div class="ocr-match-item">
+        <input type="checkbox" id="ocrm_${i}" checked>
+        <label for="ocrm_${i}" style="flex:1;">${esc(m.pt.product||m.pt.name)} <span class="tag">${esc(m.fl.name)}</span></label>
+        <span class="hint">from "${esc(m.word)}"</span>
+      </div>`).join('') +
+    `<button class="btn primary block" id="ocrAddAllBtn" style="margin-top:10px;">Add checked items to list</button>`;
+  document.getElementById('ocrAddAllBtn').onclick = ()=>{
+    matches.forEach((m,i)=>{ if(document.getElementById('ocrm_'+i).checked) addToShopList(m.pt.id); });
+    closeModal();
+    toast('Added to your shopping list');
+  };
 }
-async function runLiveOcrPass(){const v=document.getElementById('liveOcrVideo');if(!v?.videoWidth)return;try{const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);const blob=await new Promise(r=>c.toBlob(r,'image/jpeg',.88));const raw=await intelligentOcr(blob);matchOcrWordsToProducts(splitOcrLines(raw)).forEach(m=>liveOcrFoundIds.add(m.pt.id));renderLiveOcrMatches();}catch(e){}}
-function renderLiveOcrMatches(){const w=document.getElementById('liveOcrMatches'),b=document.getElementById('liveOcrDoneBtn');if(!w)return;const found=[...liveOcrFoundIds].map(findPointById).filter(Boolean);w.innerHTML=found.map(({pt,fl})=>`<div class="ocr-match-item">✓ <span style="flex:1"><b>${esc(pt.product||pt.name)}</b> <span class="tag">${esc(fl.name)}</span></span></div>`).join('');if(b)b.textContent=`Done — add ${found.length} found item(s)`;}
-function stopLiveOcr(){if(liveOcrTimer){clearInterval(liveOcrTimer);liveOcrTimer=null;}if(liveOcrStream){liveOcrStream.getTracks().forEach(t=>t.stop());liveOcrStream=null;}}
-function finishLiveOcr(){liveOcrFoundIds.forEach(id=>addToShopList(id));stopLiveOcr();closeModal();toast(`Added ${liveOcrFoundIds.size} confirmed item(s)`);}
 
-function runSmartInput(){
-  const q=document.getElementById('custSmartInput')?.value.trim(); if(!q)return;
-  const terms=q.split(/[,+]|\band\b|\bthen\b/gi).map(x=>x.trim()).filter(Boolean); const products=ocrCatalog(); const ids=[];
-  terms.forEach(t=>{const m=matchOcrWordsToProducts([t])[0];if(m)ids.push(m.pt.id);});
-  const unique=[...new Set(ids)]; if(!unique.length){toast('I could not match those requests to this venue map. Try the exact product or service name.');return;}
-  if(!state.customer.locationNode){toast('Set your starting location first.');renderLocationPicker();return;}
-  state.customer.shopList=unique; routeShopList();
+/* ---------- Feature: live camera auto-detect shopping list (upgraded OCR) ----------
+   Instead of a single photo, this opens the device camera and runs OCR passes every
+   few seconds automatically, streaming matches into the list as they're detected —
+   noticeably faster for a customer than "take photo -> wait -> take another photo"
+   if the first framing was imperfect. Falls back to the single-photo flow if the
+   camera can't be accessed (permissions denied, no camera, etc). ---- */
+let liveOcrStream = null, liveOcrTimer = null, liveOcrFoundIds = new Set();
+async function openLiveOcrModal(){
+  liveOcrFoundIds = new Set();
+  openModal(`
+    <span class="close-x" data-action="modal-close">✕</span>
+    <h3>Live scan your shopping list</h3>
+    <p class="hint" style="margin-bottom:10px;">Point your camera at your list — items are detected automatically as you hold steady. Works best on printed or clearly written text.</p>
+    <div class="live-ocr-video-wrap" id="liveOcrVideoWrap">
+      <video id="liveOcrVideo" autoplay playsinline muted></video>
+      <div class="live-ocr-scanline"></div>
+    </div>
+    <p class="hint" id="liveOcrStatus" style="margin-top:8px;">Starting camera…</p>
+    <div class="live-ocr-matches" id="liveOcrMatches"></div>
+    <button class="btn" id="liveOcrFallbackBtn" style="margin-top:10px;">Or upload a photo instead</button>
+    <button class="btn primary block" id="liveOcrDoneBtn" style="margin-top:8px;">Done — add ${0} found item(s)</button>
+  `);
+  document.getElementById('liveOcrFallbackBtn').onclick = ()=>{ stopLiveOcr(); openOcrModal(); };
+  document.getElementById('liveOcrDoneBtn').onclick = finishLiveOcr;
+  try{
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('camera unavailable');
+    liveOcrStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:'environment' } });
+    const video = document.getElementById('liveOcrVideo');
+    video.srcObject = liveOcrStream;
+    document.getElementById('liveOcrStatus').textContent = 'Scanning… hold your list steady';
+    liveOcrTimer = setInterval(runLiveOcrPass, 2500);
+  }catch(err){
+    console.error(err);
+    document.getElementById('liveOcrStatus').textContent = 'Camera unavailable — use "upload a photo instead" below.';
+  }
 }
+async function runLiveOcrPass(){
+  const video = document.getElementById('liveOcrVideo');
+  if(!video || !video.videoWidth || typeof Tesseract==='undefined') return;
+  try{
+    const c = document.createElement('canvas');
+    c.width = video.videoWidth; c.height = video.videoHeight;
+    c.getContext('2d').drawImage(video, 0, 0);
+    const { data } = await Tesseract.recognize(c, 'eng');
+    const words = (data.text||'').split(/[\n,;•\-]+/).map(w=>w.trim()).filter(w=>w.length>1);
+    const matches = matchOcrWordsToProducts(words);
+    let newCount = 0;
+    matches.forEach(m=>{ if(!liveOcrFoundIds.has(m.pt.id)){ liveOcrFoundIds.add(m.pt.id); newCount++; } });
+    if(newCount>0) renderLiveOcrMatches();
+  }catch(err){ /* silent — next pass will retry */ }
+}
+function renderLiveOcrMatches(){
+  const wrap = document.getElementById('liveOcrMatches');
+  const doneBtn = document.getElementById('liveOcrDoneBtn');
+  if(!wrap) return;
+  const found = [...liveOcrFoundIds].map(id=>findPointById(id)).filter(Boolean);
+  wrap.innerHTML = found.map(({pt,fl})=>`<div class="ocr-match-item"><span style="flex:1;">✓ ${esc(pt.product||pt.name)} <span class="tag">${esc(fl.name)}</span></span></div>`).join('');
+  if(doneBtn) doneBtn.textContent = `Done — add ${found.length} found item(s)`;
+}
+function stopLiveOcr(){
+  if(liveOcrTimer){ clearInterval(liveOcrTimer); liveOcrTimer=null; }
+  if(liveOcrStream){ liveOcrStream.getTracks().forEach(t=>t.stop()); liveOcrStream=null; }
+}
+function finishLiveOcr(){
+  liveOcrFoundIds.forEach(id=>addToShopList(id));
+  stopLiveOcr();
+  closeModal();
+  toast(`Added ${liveOcrFoundIds.size} item(s) to your list`);
+}
+
 /* ---- Store Tour: one long route touching every reachable shelf/point — the "see everything" walk ---- */
 function computeStoreTour(){
   if(!state.customer.locationNode){ toast('Set your location first'); return; }
@@ -3312,7 +3059,6 @@ function routeToPoint(targetId){
   saveStore(state.store);
   renderRouteCanvasArea();
   if(state.customer.voiceGuidance) speakCurrentLeg();
-  saveVisitState(state.store);
 }
 function routeShopList(){
   if(!state.customer.locationNode){ toast('Set your location first'); return; }
@@ -3325,7 +3071,6 @@ function routeShopList(){
   document.getElementById('custShopPanel').style.display='none';
   renderRouteCanvasArea();
   if(state.customer.voiceGuidance) speakCurrentLeg();
-  saveVisitState(state.store);
 }
 function renderRouteCanvasArea(){
   document.getElementById('custCanvasWrap').innerHTML = custCanvasMarkup();
@@ -3617,12 +3362,12 @@ function drawCustomerCanvas(){
     const leg = route.legs[state.customer.legIdx];
     if(leg.floorId===fl.id && leg.points.length>1){
       const pts = leg.points;
-      // Investor-demo route: a single clean moving dashed line with a subtle halo.
-      ctx.lineCap='round'; ctx.lineJoin='round';
-      ctx.strokeStyle = brand+'55'; ctx.lineWidth=7; ctx.setLineDash([]);
+      // base line
+      ctx.strokeStyle = brand; ctx.lineWidth=6; ctx.lineCap='round'; ctx.lineJoin='round';
       drawSmoothPath(ctx, pts, W, H);
-      ctx.strokeStyle='#ffffff'; ctx.lineWidth=3.2;
-      ctx.setLineDash([5,11]); ctx.lineDashOffset = -(state.customer.animT*0.75)%16;
+      // animated flow overlay
+      ctx.strokeStyle='#ffffff'; ctx.lineWidth=3;
+      ctx.setLineDash([12,14]); ctx.lineDashOffset = -(state.customer.animT*0.6)%26;
       drawSmoothPath(ctx, pts, W, H);
       ctx.setLineDash([]);
       // start pin
@@ -3678,32 +3423,6 @@ function drawPin(ctx,x,y,color,emoji){
   ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.fillStyle='#fff'; ctx.fillText(emoji,x,y+4);
 }
 
-function shareCurrentRoute(){
-  if(!state.customer.route){toast('Choose a destination first');return;}
-  const leg=state.customer.route.legs[state.customer.route.legs.length-1];
-  const target=leg?.points?.length?leg.points[leg.points.length-1]:null;
-  const found=target?allQrEligiblePoints().find(r=>Math.abs(r.pt.x-target.x)<0.001&&Math.abs(r.pt.y-target.y)<0.001):null;
-  const url=location.origin+location.pathname+'?store='+encodeURIComponent(state.store.slug)+(found?'&node='+encodeURIComponent(found.pt.id):'');
-  if(navigator.share){navigator.share({title:'InstantWay route',text:'Open this InstantWay location',url}).catch(()=>{});} else copyToClipboard(url);
-}
-function runSmartMission(){
-  const q=prompt('What are you trying to find? Try: milk, bread, pharmacy, restroom'); if(!q)return;
-  const terms=q.toLowerCase().split(/[,;]+|\band\b|\bthen\b/).map(x=>x.trim()).filter(Boolean);
-  const points=allShelfPoints().concat(allQrEligiblePoints().filter(r=>!isProductCategory(state.store,r.pt.category)));
-  const ids=[];
-  terms.forEach(term=>{let best=null,score=0;points.forEach(({pt})=>{const hay=((pt.product||'')+' '+(pt.name||'')+' '+catById(state.store,pt.category).label).toLowerCase();let sc=hay.includes(term)?100:term.split(/\s+/).some(w=>w.length>2&&hay.includes(w))?45:0;if(sc>score){score=sc;best=pt;}});if(best&&score>=45&&!ids.includes(best.id))ids.push(best.id);});
-  if(!ids.length){toast('I could not confidently match that mission. Try a product, aisle, restroom, entrance, or department name.');return;}
-  state.customer.shopList=ids; updateShopCount(); routeShopList();
-}
-function useOutdoorGps(){
-  if(!navigator.geolocation){toast('Location services are not available on this device');return;}
-  toast('Reading your outdoor GPS position…');
-  navigator.geolocation.getCurrentPosition(()=>toast('GPS found your outdoor position. Indoor positioning still needs a mapped beacon/QR scan.'),()=>toast('GPS permission denied or unavailable. Scan a nearby InstantWay QR instead.'),{enableHighAccuracy:true,timeout:8000});
-}
-let deferredInstallPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;document.getElementById('installPrompt')?.classList.add('show');});
-async function installApp(){if(!deferredInstallPrompt){toast('Install is available when this site is served as an HTTPS PWA');return;} deferredInstallPrompt.prompt(); try{await deferredInstallPrompt.userChoice;}catch(e){} deferredInstallPrompt=null; dismissInstallPrompt();}
-function dismissInstallPrompt(){document.getElementById('installPrompt')?.classList.remove('show');}
 /* ================= QR CODES + PRINTING ================= */
 const QR_TEMPLATES = [
   {id:'classic', label:'Classic', desc:'Clean white card, store name + map thumbnail'},
@@ -3735,14 +3454,12 @@ async function openPrintModal(){
         <option value="oneperpage">One per page — large handout poster</option>
       </select>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><button class="btn primary" id="doPrintBtn">Generate & Print</button><button class="btn" id="openCanvaQrBtn">🎨 Customize in Canva</button></div>
+    <button class="btn primary block" id="doPrintBtn">Generate & Print</button>
   `);
   document.getElementById('doPrintBtn').onclick = ()=>{
     const tpl = document.querySelector('input[name=qrtpl]:checked').value;
     doPrint(rows, tpl);
   };
-  const canvaBtn=document.getElementById('openCanvaQrBtn');
-  if(canvaBtn) canvaBtn.onclick=()=>window.open('https://www.canva.com/d/0Cu54SPcDO8nHME','_blank','noopener');
 }
 
 function getFloorImageAsyncCached(fl){
@@ -3813,399 +3530,13 @@ async function doPrint(rows, tplId){
   setTimeout(()=>{ window.print(); }, 350);
 }
 
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();document.getElementById('custSmartInput')?.focus();}});
-
 /* ================= INIT ================= */
 async function init(){
-  try{
-    await window.__instantWaySupabaseReady;
-  }catch(e){
-    console.error(e);
-    const bootMsg = document.querySelector('#app, body');
-    if(bootMsg && !document.getElementById('supabaseBootError')){
-      const box=document.createElement('div');
-      box.id='supabaseBootError';
-      box.style='position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg,#0c0d12);color:var(--text,#fff);z-index:99999;font-family:system-ui,sans-serif;text-align:center';
-      box.innerHTML='<div style="max-width:420px"><div style="font-size:28px;margin-bottom:10px">InstantWay</div><div style="font-size:16px;font-weight:700;margin-bottom:8px">Connection library could not load</div><div style="font-size:13px;opacity:.75;margin-bottom:18px">The app could not reach its authentication library. Check your internet connection, then try again.</div><button onclick="location.reload()" style="border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer">Retry</button></div>';
-      document.body.appendChild(box);
-    }
-    return;
-  }
-  if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('/sw.js'); }catch(e){} }
-  try{
-    state.ownerLoggedIn = sessionStorage.getItem('instantway-owner-unlocked') === '1';
-  }catch(e){
-    state.ownerLoggedIn = false;
-  }
+  await loadPlatformConfig();
   route();
 }
 init();
 </script>
-
-
-<style>
-.pw-wrap{position:relative;display:flex;align-items:center}.pw-wrap input{padding-right:64px}.pw-toggle{position:absolute;right:6px;border:0;background:transparent;color:var(--accent);font-weight:700;cursor:pointer;padding:7px 8px}
-.mvp-save-state{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);padding:4px 8px;border:1px solid var(--border);border-radius:999px}.mvp-save-state.pending{color:#ffc400}.mvp-save-state.ok{color:#00d69f}
-.mvp-quickbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:7px 10px;background:var(--bg2);border-bottom:1px solid var(--border)}
-.mvp-quickbar .btn{font-size:11px;padding:6px 9px}.activity-row{padding:8px 0;border-bottom:1px solid var(--border);font-size:12px}.activity-row:last-child{border-bottom:0}
-.map-sync-pill{position:fixed;right:14px;bottom:14px;z-index:1000;padding:7px 10px;border-radius:999px;background:#1e2430;color:#fff;font-size:11px;box-shadow:0 4px 16px rgba(0,0,0,.25);display:none}.map-sync-pill.show{display:block}.map-sync-pill.offline{background:#704f00}.map-sync-pill.syncing{background:#164d72}
-</style>
-<script>
-(function(){
-  function ensureMvpData(store){
-    if(!store) return;
-    store.catalog=store.catalog||[]; store.activity=store.activity||[]; store.sync=store.sync||{};
-    store.categories=store.categories||[];
-    const ensure=(label,icon,color)=>{ let c=store.categories.find(x=>x.label.toLowerCase()===label.toLowerCase()); if(!c){ c={id:uid('cat'),label,icon,color,kind:'amenity'}; store.categories.push(c); } return c; };
-    ensure('Entrance','🚪','#22c55e'); ensure('Exit','🚪','#ef4444');
-  }
-  window.ensureMvpData = ensureMvpData;
-  const oldLoadStore=window.loadStore;
-  window.loadStore=async function(slug){ const st=await oldLoadStore(slug); ensureMvpData(st); return st; };
-  const oldNewStore=window.newStore;
-  window.newStore=function(){ const st=oldNewStore.apply(this,arguments); ensureMvpData(st); return st; };
-
-  window.updateOfflineIndicator=function(){
-    let el=document.getElementById('mvpSyncPill'); if(!el){el=document.createElement('div');el.id='mvpSyncPill';el.className='map-sync-pill';document.body.appendChild(el);}
-    const pending=state.store&&state.store.sync&&state.store.sync.pending;
-    if(!navigator.onLine){el.textContent='● Offline · changes saved on this device';el.className='map-sync-pill show offline';}
-    else if(pending){el.textContent='↻ Waiting to sync…';el.className='map-sync-pill show syncing';}
-    else {el.textContent='✓ Saved online';el.className='map-sync-pill show';clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1700);}
-  };
-  async function flushPending(){
-    if(!navigator.onLine) return; updateOfflineIndicator();
-    for(let i=0;i<localStorage.length;i++){
-      const k=localStorage.key(i); if(!k||!k.startsWith('instantway-pending-')) continue;
-      try{ const st=JSON.parse(localStorage.getItem(k)); const ok=await sSet('store:'+st.slug,st); if(ok) localStorage.removeItem(k); }catch(e){}
-    }
-    if(state.store){state.store.sync=state.store.sync||{};state.store.sync.pending=false;state.store.sync.lastSyncedAt=Date.now();}
-    updateOfflineIndicator();
-  }
-  window.addEventListener('online',flushPending); window.addEventListener('offline',updateOfflineIndicator);
-
-  function activity(action,detail){
-    if(!state.store) return; ensureMvpData(state.store); state.store.activity.push({action,detail:detail||'',ts:Date.now()}); if(state.store.activity.length>300)state.store.activity=state.store.activity.slice(-300);
-  }
-  document.addEventListener('click',e=>{
-    const pw=e.target.closest('[data-pw-target]'); if(pw){const inp=document.getElementById(pw.dataset.pwTarget);if(inp){const show=inp.type==='password';inp.type=show?'text':'password';pw.textContent=show?'Hide':'Show';pw.setAttribute('aria-label',show?'Hide password':'Show password');}return;}
-    const a=e.target.closest('[data-mvp-action]'); if(!a)return;
-    const act=a.dataset.mvpAction;
-    if(act==='undo') return mvpUndo(); if(act==='redo')return mvpRedo(); if(act==='history')return openMvpHistory(); if(act==='sync')return flushPending();
-  },true);
-
-  // Undo / redo works on map state only and never touches the imported catalog.
-  const hist={undo:[],redo:[],before:null};
-  function snap(){ if(!state.store)return null; return JSON.stringify({floors:state.store.floors,categories:state.store.categories}); }
-  function restore(raw){ if(!raw)return; const x=JSON.parse(raw);state.store.floors=x.floors;state.store.categories=x.categories;saveStore(state.store);renderBuilder(); }
-  window.mvpUndo=function(){ if(!hist.undo.length)return toast('Nothing to undo');hist.redo.push(snap());restore(hist.undo.pop());activity('undo'); };
-  window.mvpRedo=function(){ if(!hist.redo.length)return toast('Nothing to redo');hist.undo.push(snap());restore(hist.redo.pop());activity('redo'); };
-  document.addEventListener('pointerdown',e=>{if(e.target&&e.target.id==='builderCanvas')hist.before=snap();},true);
-  document.addEventListener('pointerup',e=>{if(hist.before&&document.getElementById('view-builder')?.classList.contains('active')){const now=snap();if(now!==hist.before){hist.undo.push(hist.before);if(hist.undo.length>60)hist.undo.shift();hist.redo=[];activity('map_edit');}hist.before=null;}},true);
-  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?mvpRedo():mvpUndo();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();mvpRedo();}},true);
-
-  window.openMvpHistory=function(){
-    const rows=((state.store&&state.store.activity)||[]).slice(-30).reverse();
-    openModal(`<span class="close-x" data-action="modal-close">✕</span><h3>Recent activity</h3><p class="hint">Every key action is timestamped for your demo and audit trail.</p>${rows.length?rows.map(x=>`<div class="activity-row"><b>${esc(x.action.replace(/_/g,' '))}</b>${x.detail?` · ${esc(x.detail)}`:''}<br><span class="hint">${new Date(x.ts).toLocaleString()}</span></div>`).join(''):'<p class="hint">No activity yet.</p>'}`);
-  };
-
-  const oldRenderBuilder=window.renderBuilder;
-  window.renderBuilder=function(skipDraw){ ensureMvpData(state.store); oldRenderBuilder(skipDraw); let q=document.getElementById('mvpQuickbar'); if(!q){q=document.createElement('div');q.id='mvpQuickbar';q.className='mvp-quickbar';document.getElementById('builderToolbar').insertAdjacentElement('afterend',q);} const ts=state.store?.updatedAt?new Date(state.store.updatedAt).toLocaleTimeString(): 'not saved yet';q.innerHTML=`<button class="btn" data-mvp-action="undo">↶ Undo</button><button class="btn" data-mvp-action="redo">↷ Redo</button><button class="btn" data-mvp-action="history">🕒 History</button><button class="btn" data-mvp-action="sync">↻ Sync now</button><span class="mvp-save-state ${state.store?.sync?.pending?'pending':'ok'}">${navigator.onLine?(state.store?.sync?.pending?'Offline changes pending':'Saved · '+ts):'Offline · autosaving'}</span><span class="hint">Tip: Products are separate from the map. Import freely, then map only the locations you need.</span>`; };
-
-  // Catalog-first product admin. Imported products never mutate the floor plan.
-  window.adminProductsHtml=function(){
-    ensureMvpData(state.store); const catalog=state.store.catalog||[]; const locs=allQrEligiblePoints().filter(({pt})=>isProductCategory(state.store,pt.category));
-    const button=adminImportButtonHtml();
-    if(!catalog.length) return `<div class="card" style="max-width:none"><h2 style="font-size:16px">Products</h2><p class="sub">Import your product list first. It stays separate from the map, so shelves, paths and entrances remain fully editable.</p>${button}<div class="infobox">No products imported yet.</div></div>`;
-    return `<div class="card" style="max-width:none"><h2 style="font-size:16px">Products</h2><p class="sub">${catalog.length} catalog item(s). Assign a mapped shelf/location only when ready.</p>${button}<table class="ptable"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Mapped location</th><th>Updated</th></tr></thead><tbody>${catalog.map((it,i)=>`<tr><td><input data-cat-field="name" data-idx="${i}" value="${esc(it.name||'')}"></td><td><input data-cat-field="category" data-idx="${i}" value="${esc(it.category||'')}"></td><td><input data-cat-field="price" data-idx="${i}" type="number" step="0.01" value="${it.price??''}" style="width:90px"></td><td><select data-cat-field="locationId" data-idx="${i}"><option value="">Unmapped</option>${locs.map(({pt,fl})=>`<option value="${pt.id}" ${it.locationId===pt.id?'selected':''}>${esc(fl.name)} · ${esc(pt.name)}</option>`).join('')}</select></td><td class="hint">${it.updatedAt?new Date(it.updatedAt).toLocaleString():'—'}</td></tr>`).join('')}</tbody></table><button class="btn primary" id="saveCatalogBtn" style="margin-top:14px">Save product mapping</button><span id="catalogSaveMsg" class="hint" style="margin-left:8px"></span></div>`;
-  };
-  const oldBindAdmin=window.bindAdminTabEvents;
-  window.bindAdminTabEvents=function(){ oldBindAdmin(); const b=document.getElementById('saveCatalogBtn'); if(b)b.onclick=async()=>{const catalog=state.store.catalog||[];document.querySelectorAll('[data-cat-field]').forEach(inp=>{const it=catalog[+inp.dataset.idx];if(!it)return;const f=inp.dataset.catField;if(f==='price')it.price=inp.value===''?null:Number(inp.value);else it[f]=inp.value;it.updatedAt=Date.now();});(state.store.floors||[]).forEach(fl=>(fl.points||[]).forEach(pt=>{pt.products=[];}));catalog.forEach(it=>{if(!it.locationId)return;const found=findPointById(it.locationId);if(found){found.pt.products=found.pt.products||[];found.pt.products.push(it.id);if(!found.pt.product)found.pt.product=it.name;}});activity('product_mapping_saved',catalog.length+' items');await saveStore(state.store);document.getElementById('catalogSaveMsg').textContent='Saved ✓';}; };
-
-  // Search catalog, but route only items that have a mapped location.
-  window.onCustSearch=function(){
-    const q=document.getElementById('custSearchInput').value.trim().toLowerCase(), el=document.getElementById('custResults'); if(!q){el.style.display='none';el.innerHTML='';return;}
-    ensureMvpData(state.store); const catalog=(state.store.catalog||[]).filter(x=>(x.name||'').toLowerCase().includes(q)||(x.category||'').toLowerCase().includes(q)).slice(0,30);
-    if(!catalog.length) return (el.style.display='block',el.innerHTML=`<div class="result-item"><span class="meta">Not found in this venue</span></div>`);
-    el.style.display='block';el.innerHTML=catalog.map(it=>{const f=it.locationId?findPointById(it.locationId):null;return `<div class="result-item"><div><div class="name">${esc(it.name)}</div><div class="meta">${esc(it.category||'Product')} · ${f?esc(f.fl.name+' · '+f.pt.name):'Not mapped yet'}</div></div><div style="display:flex;gap:8px;align-items:center"><span class="price">${fmtPrice(it.price)}</span>${f?`<button class="btn small" data-nodeid="${f.pt.id}" data-role="add">+ List</button><button class="btn small primary" data-nodeid="${f.pt.id}" data-role="go">Go</button>`:`<span class="tag">Unmapped</span>`}</div></div>`;}).join('');el.querySelectorAll('[data-role="go"]').forEach(b=>b.onclick=()=>{routeToPoint(b.dataset.nodeid);el.style.display='none';document.getElementById('custSearchInput').value='';});el.querySelectorAll('[data-role="add"]').forEach(b=>b.onclick=()=>addToShopList(b.dataset.nodeid));
-  };
-
-  // More explicit entrance/exit labels in the customer location picker.
-  const oldPicker=window.renderLocationPicker;
-  window.renderLocationPicker=function(){ensureMvpData(state.store);oldPicker();};
-
-  document.addEventListener('click',e=>{const a=e.target.closest('[data-action]');if(a&&state.store&&!/modal-close|toggle-theme|zoom-|set-tool|set-category/.test(a.dataset.action||'')){activity(a.dataset.action);}},true);
-  window.addEventListener('load',()=>{updateOfflineIndicator();setTimeout(flushPending,600);});
-})();
-</script>
-
-
-<!-- INSTANTWAY SIMPLE WORKFLOW + MAP UX PATCH -->
-<style>
-  .iw-flow{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:10px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
-  .iw-flow .step{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);font-size:11px;color:var(--text2)}
-  .iw-flow .step.active{border-color:var(--accent);color:var(--text);background:rgba(255,107,53,.10)}
-  .iw-flow .num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--border2);font-weight:800;color:var(--text)}
-  .iw-section{border:1px solid var(--border);border-radius:12px;background:var(--bg2);padding:14px;margin-bottom:12px}
-  .iw-section h3{margin:0 0 5px;font-size:15px}.iw-section p{margin:0 0 12px}
-  .iw-cat-row{display:grid;grid-template-columns:minmax(150px,1.2fr) minmax(170px,1fr) 100px 110px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--border)}
-  .iw-cat-row:first-child{border-top:0}.iw-cat-name{display:flex;align-items:center;gap:8px;font-weight:700}.iw-cat-name .ico{font-size:20px}.iw-muted{font-size:11px;color:var(--text2)}
-  .iw-actionbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
-  .iw-qr-toggle{min-width:100px}.iw-qr-toggle.on{background:var(--accent);color:#fff;border-color:transparent}
-  .iw-progress{height:7px;border-radius:99px;background:var(--bg3);overflow:hidden}.iw-progress>span{display:block;height:100%;background:var(--accent);border-radius:99px}
-  .iw-grid-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px}
-  .iw-grid-controls label{font-size:10px;text-transform:uppercase;font-weight:800;color:var(--text2)}
-  .iw-seg{display:flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden}.iw-seg button{border:0;border-right:1px solid var(--border2);background:transparent;color:var(--text2);padding:6px 9px;font-size:11px;cursor:pointer}.iw-seg button:last-child{border-right:0}.iw-seg button.active{background:var(--accent);color:#fff}
-  .iw-slider{width:120px;accent-color:var(--accent)}
-  #builderCanvasWrap,#custCanvasWrap{touch-action:none;overscroll-behavior:contain;}
-  #builderCanvas{cursor:crosshair;user-select:none;-webkit-user-select:none}
-  @media(max-width:760px){.iw-cat-row{grid-template-columns:1fr 1fr}.iw-cat-row .iw-actions{grid-column:1/-1}.iw-flow .step{flex:1 1 140px}}
-</style>
-<script>
-(function(){
-  const iwOldRenderAdminDash = window.renderAdminDash;
-  const iwOldSetupBuilderCanvas = window.setupBuilderCanvas;
-  const iwOldDrawBuilderCanvas = window.drawBuilderCanvas;
-
-  state.builder.gridVisualScale = state.builder.gridVisualScale || 1;
-  state.builder.gridOpacity = state.builder.gridOpacity ?? 0.18;
-  state.builder.spacePan = false;
-
-  function iwCatalog(){ ensureMvpData(state.store); return state.store.catalog || (state.store.catalog=[]); }
-  function iwProductCount(cat){ return iwCatalog().filter(p=>String(p.category||'').trim().toLowerCase()===String(cat.label||'').trim().toLowerCase() || p.category===cat.id).length; }
-  function iwCategoryLocations(cat){
-    const out=[];
-    (state.store.floors||[]).forEach(fl=>(fl.points||[]).forEach(pt=>{
-      if(pt.category===cat.id) out.push({pt,fl});
-    }));
-    return out;
-  }
-  function iwBestLocation(cat){
-    const a=iwCategoryLocations(cat); return a[0]||null;
-  }
-  function iwFlow(active){
-    const steps=[['1','🗺️','Map'],['2','📦','Products'],['3','📍','Locations'],['4','▦','QR Codes'],['5','🚀','Publish']];
-    return `<div class="iw-flow">${steps.map(s=>`<div class="step ${active===s[0]?'active':''}"><span class="num">${s[0]}</span><span>${s[2]}</span></div>`).join('')}</div>`;
-  }
-  function iwLocationOptions(selected){
-    return `<option value="">Unmapped</option>`+(state.store.floors||[]).flatMap(fl=>(fl.points||[]).filter(pt=>isProductCategory(state.store,pt.category)).map(pt=>`<option value="${pt.id}" ${selected===pt.id?'selected':''}>${esc(fl.name)} · ${esc(pt.name)}</option>`)).join('');
-  }
-
-  window.adminProductsHtml=function(){
-    const catalog=iwCatalog();
-    const cats=(state.store.categories||[]).filter(c=>c.kind==='product');
-    const mapped=catalog.filter(p=>p.locationId).length;
-    return `${iwFlow('2')}
-      <div class="iw-section"><h3>📦 Products</h3>
-        <p class="sub">Import your spreadsheet here. Products stay separate from the map. Nothing you import can move or damage your floor plan.</p>
-        <div class="iw-actionbar">${adminImportButtonHtml()}<span class="tag">${catalog.length} products</span><span class="tag">${mapped} mapped</span><span class="tag">${catalog.length-mapped} waiting</span></div>
-      </div>
-      <div class="iw-section"><h3>📍 Category placement</h3>
-        <p class="sub">First map the real category areas. Then products can inherit those locations automatically. Individual products can still be moved later.</p>
-        ${cats.length?cats.map(cat=>{const loc=iwBestLocation(cat);const n=iwProductCount(cat);return `<div class="iw-cat-row"><div class="iw-cat-name"><span class="ico">${cat.icon}</span><span>${esc(cat.label)}</span></div><div>${loc?`<span class="tag">${esc(loc.fl.name)} · ${esc(loc.pt.name)}</span>`:`<span class="tag">Not mapped</span>`}</div><div class="iw-muted">${n} product${n===1?'':'s'}</div><div class="iw-actions"><button class="btn small" data-iw-open-builder="1">Open map</button></div></div>`;}).join(''):`<div class="hint">Create your store categories in the Map Builder first.</div>`}
-      </div>
-      <div class="iw-section"><h3>🧺 Product locations</h3>
-        <p class="sub">Use this only for exceptions. Most products should inherit their category's mapped area.</p>
-        ${catalog.length?`<table class="ptable"><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Location</th></tr></thead><tbody>${catalog.map((it,i)=>`<tr><td><input data-iw-p="name" data-i="${i}" value="${esc(it.name||'')}"></td><td><input data-iw-p="category" data-i="${i}" value="${esc(it.category||'')}"></td><td><input data-iw-p="price" data-i="${i}" type="number" step="0.01" value="${it.price??''}" style="width:90px"></td><td><select data-iw-p="locationId" data-i="${i}">${iwLocationOptions(it.locationId)}</select></td></tr>`).join('')}</tbody></table><div class="iw-actionbar"><button class="btn primary" id="iwSaveProducts">Save product locations</button><span id="iwProductMsg" class="hint"></span></div>`:`<div class="hint">No products yet. Import your CSV/Excel list above.</div>`}
-      </div>`;
-  };
-
-  window.adminQrHtml=function(){
-    const rows=allQrEligiblePoints(); const selected=rows.filter(x=>x.pt.isQR).length;
-    return `${iwFlow('4')}
-      <div class="iw-section"><h3>▦ QR Locations</h3>
-        <p class="sub">Do not hunt for checkboxes. Click <b>Use for QR</b> on the locations you want visitors to scan. The map will show a QR badge on each selected location.</p>
-        <div class="iw-actionbar"><span class="tag">${selected} selected</span><span class="iw-muted">${rows.length} available locations</span></div>
-        ${rows.length?`<table class="ptable"><thead><tr><th>Floor</th><th>Location</th><th>Type</th><th>QR</th></tr></thead><tbody>${rows.map(({pt,fl})=>{const cat=catById(state.store,pt.category);return `<tr><td>${esc(fl.name)}</td><td><b>${esc(pt.name)}</b></td><td><span class="tag">${cat.icon} ${esc(cat.label)}</span></td><td><button class="btn small iw-qr-toggle ${pt.isQR?'on':''}" data-iw-qr="${pt.id}">${pt.isQR?'✓ QR selected':'Use for QR'}</button></td></tr>`;}).join('')}</tbody></table>`:`<div class="hint">Place locations on the map first.</div>`}
-        <div class="iw-actionbar"><button class="btn primary" data-iw-generate-qr="1">Create QR codes →</button><button class="btn" data-action="admin-qr-healthcheck">🩺 Check QR setup</button></div>
-      </div>`;
-  };
-
-  window.renderAdminDash=function(){
-    document.getElementById('adminDashStoreName').textContent=state.store.name;
-    const tabs=[
-      {id:'products',label:'📦 Products'},
-      {id:'qr',label:'▦ QR Codes'},
-      {id:'analytics',label:'📊 Analytics'},
-      {id:'ads',label:'📣 Ads'},
-      {id:'branding',label:'🎨 Branding'},
-      {id:'operations',label:'🛟 Operations'},
-      {id:'security',label:'🔐 Security'}
-    ];
-    document.getElementById('adminTabs').innerHTML=tabs.map(t=>`<button class="pill ${state.adminTab===t.id?'active':''}" data-action="admin-tab" data-tab="${t.id}" style="${state.adminTab===t.id?`background:${state.store.branding.primary};border-color:transparent;`:''}">${t.label}</button>`).join('');
-    const content=document.getElementById('adminContent');
-    if(state.adminTab==='products')content.innerHTML=adminProductsHtml();
-    else if(state.adminTab==='qr')content.innerHTML=adminQrHtml();
-    else if(state.adminTab==='analytics')content.innerHTML=adminAnalyticsHtml();
-    else if(state.adminTab==='ads')content.innerHTML=adminAdsHtml();
-    else if(state.adminTab==='branding')content.innerHTML=adminBrandingHtml();
-    else if(state.adminTab==='operations')content.innerHTML=adminOperationsHtml();
-    else if(state.adminTab==='security')content.innerHTML=adminSecurityHtml();
-    bindAdminTabEvents();
-  };
-
-  const iwOldBindAdmin=window.bindAdminTabEvents;
-  window.bindAdminTabEvents=function(){
-    iwOldBindAdmin();
-    const save=document.getElementById('iwSaveProducts');
-    if(save)save.onclick=async()=>{
-      const cat=iwCatalog();
-      document.querySelectorAll('[data-iw-p]').forEach(el=>{const it=cat[+el.dataset.i];if(!it)return;const f=el.dataset.iwP;it[f]=f==='price'?(el.value===''?null:Number(el.value)):el.value;it.updatedAt=Date.now();});
-      (state.store.floors||[]).forEach(fl=>(fl.points||[]).forEach(pt=>pt.products=[]));
-      cat.forEach(it=>{if(!it.locationId)return;const found=findPointById(it.locationId);if(found){found.pt.products=found.pt.products||[];if(!found.pt.products.includes(it.id))found.pt.products.push(it.id);}});
-      activity('product_locations_saved',cat.length+' catalog items'); await saveStore(state.store); const m=document.getElementById('iwProductMsg');if(m)m.textContent='Saved ✓';
-    };
-  };
-
-  document.addEventListener('click',async e=>{
-    const open=e.target.closest('[data-iw-open-builder]');
-    if(open){e.preventDefault();setUrl({owner:'1',store:state.store.slug},true);return route();}
-    const qr=e.target.closest('[data-iw-qr]');
-    if(qr){e.preventDefault();const id=qr.dataset.iwQr;const f=findPointById(id);if(f){f.pt.isQR=!f.pt.isQR;activity('qr_location_toggled',f.pt.name);await saveStore(state.store);renderAdminDash();toast(f.pt.isQR?'QR location selected':'QR location removed');}return;}
-    const gen=e.target.closest('[data-iw-generate-qr]');
-    if(gen){e.preventDefault();if(!allQrEligiblePoints().some(x=>x.pt.isQR)){toast('Select at least one QR location first');return;}openPrintModal();return;}
-  },true);
-
-  // Make imported category text resolve to the real category id where possible.
-  const oldRunImport=window.runImport;
-  window.runImport=async function(rows){
-    const before=JSON.stringify(state.store.catalog||[]);
-    await oldRunImport(rows);
-    const cats=state.store.categories||[];
-    (state.store.catalog||[]).forEach(it=>{
-      const hit=cats.find(c=>String(c.label).trim().toLowerCase()===String(it.category||'').trim().toLowerCase());
-      if(hit)it.category=hit.id;
-      if(!it.locationId && hit){
-        const loc=iwBestLocation(hit); if(loc)it.locationId=loc.pt.id;
-      }
-    });
-    await saveStore(state.store);
-    activity('catalog_category_resolution','Imported products linked to mapped category areas where available');
-    renderAdminDash();
-  };
-
-  // Responsive map fit: preserve the real aspect ratio and fit both width AND height.
-  window.setupBuilderCanvas=function(){
-    iwOldSetupBuilderCanvas();
-    const canvas=document.getElementById('builderCanvas'),wrap=document.getElementById('builderCanvasWrap'),fl=currentFloor();
-    if(canvas&&wrap){
-      getFloorImage(fl,(img)=>{
-        const pad=36;
-        const availW=Math.max(320, wrap.clientWidth-pad);
-        const availH=Math.max(300, wrap.clientHeight-pad);
-        const ratio=(img&&img.width&&img.height)?img.height/img.width:(460/800);
-        let w=availW, h=w*ratio;
-        if(h>availH){h=availH;w=h/ratio;}
-        // Keep a useful working size even in a short/initially-unmeasured flex layout.
-        if(!Number.isFinite(w)||w<320){w=800;h=w*ratio;}
-        canvas._targetCssW=Math.round(w);canvas._targetCssH=Math.round(h);
-        canvas.style.setProperty('--iw-canvas-w',Math.round(w)+'px');
-        canvas.style.setProperty('--iw-canvas-h',Math.round(h)+'px');
-        drawBuilderCanvas();
-      });
-    }
-    if(canvas&&!canvas._iwMousePan){
-      canvas._iwMousePan=true;
-      canvas.addEventListener('mousedown',ev=>{if(ev.button===1 || state.builder.spacePan){ev.preventDefault();state.builder._iwPanning=true;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};document.getElementById('builderCanvasWrap')?.classList.add('panning');}});
-      window.addEventListener('mousemove',ev=>{if(!state.builder._iwPanning)return;const d=state.builder._iwPanLast;state.builder.panX+=ev.clientX-d.x;state.builder.panY+=ev.clientY-d.y;state.builder._iwPanLast={x:ev.clientX,y:ev.clientY};drawBuilderCanvas();});
-      window.addEventListener('mouseup',()=>{state.builder._iwPanning=false;state.builder._iwPanLast=null;document.getElementById('builderCanvasWrap')?.classList.remove('panning');});
-      canvas.addEventListener('dblclick',()=>resetZoom('builder'));
-      canvas.addEventListener('contextmenu',ev=>ev.preventDefault());
-    }
-  };
-
-  // Re-fit the map whenever the builder workspace changes size. This prevents the
-  // common "map stuck in a tiny corner" problem after loading an image or resizing the window.
-  if(!window.__iwBuilderResizeObserver){
-    const fitBuilderMap=()=>{
-      if(!document.getElementById('view-builder')?.classList.contains('active')) return;
-      const canvas=document.getElementById('builderCanvas'),wrap=document.getElementById('builderCanvasWrap'),fl=currentFloor();
-      if(!canvas||!wrap||!fl)return;
-      getFloorImage(fl,(img)=>{
-        const pad=36, aw=Math.max(320,wrap.clientWidth-pad), ah=Math.max(300,wrap.clientHeight-pad), ratio=img&&img.width&&img.height?img.height/img.width:460/800;
-        let w=aw,h=w*ratio;if(h>ah){h=ah;w=h/ratio;}
-        if(!Number.isFinite(w)||!Number.isFinite(h))return;
-        canvas._targetCssW=Math.round(w);canvas._targetCssH=Math.round(h);canvas.style.setProperty('--iw-canvas-w',Math.round(w)+'px');canvas.style.setProperty('--iw-canvas-h',Math.round(h)+'px');drawBuilderCanvas();
-      });
-    };
-    window.__iwFitBuilderMap=fitBuilderMap;
-    window.__iwBuilderResizeObserver=new ResizeObserver(fitBuilderMap);
-    setTimeout(()=>{const w=document.getElementById('builderCanvasWrap');if(w)window.__iwBuilderResizeObserver.observe(w);fitBuilderMap();},300);
-    window.addEventListener('resize',fitBuilderMap);
-  }
-
-  // Keyboard pan mode and a friendlier wheel experience.
-  document.addEventListener('keydown',e=>{if(e.code==='Space'&&!e.repeat&&document.getElementById('view-builder')?.classList.contains('active')){e.preventDefault();state.builder.spacePan=true;document.body.style.cursor='grab';document.getElementById('builderCanvasWrap')?.classList.add('panning');}},true);
-  document.addEventListener('keyup',e=>{if(e.code==='Space'){e.preventDefault();state.builder.spacePan=false;document.body.style.cursor='';document.getElementById('builderCanvasWrap')?.classList.remove('panning');}},true);
-
-  // Add simple grid + brush controls to the builder without forcing users to type numbers.
-  const oldRenderBuilder=window.renderBuilder;
-  window.renderBuilder=function(skipDraw){
-    oldRenderBuilder(skipDraw);
-    const tb=document.getElementById('builderToolbar');if(!tb||document.getElementById('iwGridControls'))return;
-    const el=document.createElement('div');el.id='iwGridControls';el.className='iw-grid-controls';el.innerHTML=`<label>Grid</label><div class="iw-seg"><button data-iw-grid="0">Fine</button><button data-iw-grid="1">Normal</button><button data-iw-grid="2">Large</button></div><label>Guide</label><input class="iw-slider" id="iwGridOpacity" type="range" min="0" max="100" value="${Math.round(state.builder.gridOpacity*100)}" aria-label="Grid guide opacity"><span class="iw-muted" id="iwGridOpacityVal">${Math.round(state.builder.gridOpacity*100)}%</span>`;tb.appendChild(el);
-    el.querySelectorAll('[data-iw-grid]').forEach(b=>{if(+b.dataset.iwGrid===state.builder.gridVisualScale-1)b.classList.add('active');b.onclick=()=>{state.builder.gridVisualScale=+b.dataset.iwGrid+1;el.querySelectorAll('[data-iw-grid]').forEach(x=>x.classList.toggle('active',x===b));drawBuilderCanvas();};});
-    const op=document.getElementById('iwGridOpacity');op.oninput=()=>{state.builder.gridOpacity=Number(op.value)/100;document.getElementById('iwGridOpacityVal').textContent=op.value+'%';drawBuilderCanvas();};
-    const brush=document.createElement('div');brush.id='iwBrushControls';brush.className='iw-brush-controls';brush.innerHTML=`<label>Brush</label><div class="iw-brush-scale"><button data-iw-brush="1">Tiny</button><button data-iw-brush="2">Small</button><button data-iw-brush="3">Medium</button><button data-iw-brush="5">Large</button><button data-iw-brush="7">Wide</button></div>`;tb.appendChild(brush);
-    brush.querySelectorAll('[data-iw-brush]').forEach(b=>{b.classList.toggle('active',+b.dataset.iwBrush===state.builder.brushSize);b.onclick=()=>{state.builder.brushSize=+b.dataset.iwBrush;brush.querySelectorAll('[data-iw-brush]').forEach(x=>x.classList.toggle('active',x===b));drawBuilderCanvas();};});
-  };
-
-  // Overlay the visual guide only while path editing. Scale/opacity are visual controls; routing grid stays precise.
-  window.drawBuilderCanvas=function(){
-    iwOldDrawBuilderCanvas();
-    const canvas=document.getElementById('builderCanvas');if(!canvas)return;
-    const fl=currentFloor();if(!fl)return;
-    if(!(state.builder.tool==='path'||state.builder.tool==='erase'))return;
-    const W=canvas._targetCssW||800,H=canvas._targetCssH||460,ctx=canvas.getContext('2d'),dpr=window.devicePixelRatio||1,z=zoomState('builder');
-    ctx.save();ctx.setTransform(dpr*z.zoom,0,0,dpr*z.zoom,dpr*((W/2)*(1-z.zoom)+z.panX),dpr*((H/2)*(1-z.zoom)+z.panY));
-    const cols=GRID_COLS,rows=gridRowsForFloor(fl),step=Math.max(1,state.builder.gridVisualScale||1),cw=W/cols,ch=H/rows;
-    ctx.strokeStyle=`rgba(255,255,255,${Math.max(.01,state.builder.gridOpacity||.01)})`;ctx.lineWidth=1;
-    for(let c=0;c<=cols;c+=step){ctx.beginPath();ctx.moveTo(c*cw,0);ctx.lineTo(c*cw,H);ctx.stroke();}
-    for(let r=0;r<=rows;r+=step){ctx.beginPath();ctx.moveTo(0,r*ch);ctx.lineTo(W,r*ch);ctx.stroke();}
-    ctx.restore();
-  };
-
-  // Small semantic markers for entrance, exit and stairs, drawn on top of the existing marker.
-  const iwMarkerDraw=window.drawBuilderCanvas;
-  window.drawBuilderCanvas=function(){
-    iwMarkerDraw();
-    const canvas=document.getElementById('builderCanvas');if(!canvas)return;const fl=currentFloor();const W=canvas._targetCssW||800,H=canvas._targetCssH||460,dpr=window.devicePixelRatio||1,z=zoomState('builder'),ctx=canvas.getContext('2d');
-    ctx.save();ctx.setTransform(dpr*z.zoom,0,0,dpr*z.zoom,dpr*((W/2)*(1-z.zoom)+z.panX),dpr*((H/2)*(1-z.zoom)+z.panY));
-    (fl.points||[]).forEach(pt=>{const cat=catById(state.store,pt.category);const label=String(cat?.label||'').toLowerCase();let glyph=null;if(/entrance/.test(label))glyph='↘';else if(/exit/.test(label))glyph='↗';else if(/stair/.test(label))glyph='▥';else return;const x=pt.x*W,y=pt.y*H;ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle='#111';ctx.lineWidth=4;ctx.font='bold 20px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.strokeText(glyph,x,y);ctx.fillText(glyph,x,y);ctx.restore();});
-    ctx.restore();
-  };
-})();
-</script>
-
-<style id="iw-map-ux-final">
-#builderCanvasWrap{
-  overflow:auto !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  min-width:0; min-height:0;
-  padding:18px !important;
-  box-sizing:border-box;
-  cursor:default;
-  background:#0a0a14;
-}
-#builderCanvas{
-  flex:0 0 auto !important;
-  max-width:none !important;
-  max-height:none !important;
-  width:var(--iw-canvas-w, 800px) !important;
-  height:var(--iw-canvas-h, 460px) !important;
-  object-fit:contain;
-}
-#builderCanvasWrap.panning,#builderCanvasWrap.panning #builderCanvas{cursor:grabbing !important;}
-#iwGridControls{margin-left:auto;}
-.iw-brush-controls{display:flex;align-items:center;gap:9px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;white-space:nowrap}
-.iw-brush-controls label{font-size:10px;text-transform:uppercase;font-weight:800;color:var(--text2)}
-.iw-brush-scale{display:flex;border:1px solid var(--border2);border-radius:8px;overflow:hidden}
-.iw-brush-scale button{border:0;border-right:1px solid var(--border2);background:transparent;color:var(--text2);padding:6px 8px;font-size:11px;cursor:pointer}
-.iw-brush-scale button:last-child{border-right:0}
-.iw-brush-scale button.active{background:var(--accent);color:#fff}
-@media(max-width:900px){#builderCanvasWrap{align-items:flex-start;justify-content:flex-start}.iw-grid-controls,.iw-brush-controls{margin-left:0}}
-</style>
 
 </body>
 </html>
