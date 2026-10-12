@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -26,11 +27,9 @@ html,body{height:100%;}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 h1,h2,h3,.font-display{font-family:var(--font-display);}
 #app{min-height:100vh;display:flex;flex-direction:column;max-width:600px;margin:0 auto;}
-
 .topbar{background:var(--bg2);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent);flex-shrink:0;gap:10px;}
 .topbar h1{font-size:18px;color:var(--accent);display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;}
 .topbar .sub{font-size:11px;color:var(--text2);font-weight:600;}
-
 .btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:11px 18px;border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;}
 .btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -41,15 +40,12 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .btn.block{width:100%;}
 .btn.big{padding:20px;font-size:16px;}
 .btn.small{padding:6px 12px;font-size:12px;}
-
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:11px;color:var(--text2);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
 .field input,.field select,.field textarea{width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:15px;outline:none;font-family:inherit;}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
-
 .page{flex:1;padding:20px 16px;overflow-y:auto;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
-
 .landing-hero{text-align:center;padding:24px 0 20px;}
 .landing-hero .logo{font-size:56px;margin-bottom:8px;}
 .landing-hero h1{font-size:26px;color:var(--text);margin-bottom:4px;}
@@ -61,22 +57,17 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .tile .text h3{font-size:16px;margin-bottom:2px;color:var(--text);}
 .tile .text p{font-size:12px;color:var(--text2);line-height:1.4;}
 .tile .arrow{color:var(--text2);font-size:20px;}
-
 .errbox{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
 .okbox{background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.4);color:var(--success);padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
 .warnbox{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:var(--warn);padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
 .hint{font-size:12px;color:var(--text2);line-height:1.5;}
-
 .bigcode{background:var(--bg3);border:2px dashed var(--accent);border-radius:12px;padding:20px;text-align:center;margin:16px 0;}
 .bigcode .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
 .bigcode .code{font-family:var(--font-display);font-size:42px;font-weight:800;color:var(--accent);letter-spacing:8px;}
-
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
 .footer{padding:16px;text-align:center;font-size:11px;color:var(--text2);}
 .footer a{color:var(--accent);text-decoration:none;}
-
 #cmdMap{width:100%;height:100vh;position:absolute;inset:0;z-index:0;background:#0a0a14;}
 .cmd-overlay{position:relative;z-index:10;pointer-events:none;height:100vh;}
 .cmd-overlay > *{pointer-events:auto;}
@@ -89,7 +80,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .cmd-pill.red{color:var(--danger);border-color:rgba(239,68,68,0.5);animation:pulse-red 1s infinite;}
 .cmd-pill.yellow{color:var(--warn);border-color:rgba(251,191,36,0.4);}
 @keyframes pulse-red{0%,100%{background:rgba(239,68,68,0.15);}50%{background:rgba(239,68,68,0.35);}}
-
 .officer-marker{width:32px;height:32px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer;transition:transform 0.2s;position:relative;}
 .officer-marker:hover{transform:scale(1.15);}
 .officer-marker.available{background:var(--success);}
@@ -98,21 +88,236 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .officer-marker.emergency{background:var(--danger);animation:pulse-marker 0.8s infinite;}
 @keyframes pulse-marker{0%,100%{box-shadow:0 2px 12px rgba(0,0,0,0.6),0 0 0 0 rgba(239,68,68,0.7);}50%{box-shadow:0 2px 12px rgba(0,0,0,0.6),0 0 0 14px rgba(239,68,68,0);}}
 .officer-marker .initial{font-family:var(--font-display);}
-
 .officer-popup{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;min-width:200px;box-shadow:var(--shadow);}
 .officer-popup h4{margin:0 0 4px 0;font-size:14px;color:var(--text);font-family:var(--font-display);}
 .officer-popup .role{font-size:11px;color:var(--text2);margin-bottom:6px;}
 .officer-popup .meta{font-size:11px;color:var(--text2);margin-bottom:4px;}
 .officer-popup .meta b{color:var(--text);}
-
 .cmd-bottom{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg, rgba(12,13,18,0.95) 0%, rgba(12,13,18,0.6) 70%, transparent 100%);padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
 .cmd-bottom .hint{font-size:11px;color:var(--text2);}
-
 .cmd-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;background:rgba(0,0,0,0.8);border-radius:12px;padding:20px 30px;text-align:center;backdrop-filter:blur(10px);}
 .cmd-loading .spinner{width:28px;height:28px;border-width:3px;}
+:root{
+  --op-bg:#0a0e14;
+  --op-panel:#111820;
+  --op-panel-2:#161f2a;
+  --op-border:#1f2937;
+  --op-border-2:#2a3543;
+  --op-text:#e5e7eb;
+  --op-text-muted:#6b7280;
+  --op-text-dim:#4b5563;
+  --op-amber:#f59e0b;
+  --op-amber-dim:#b45309;
+  --op-green:#10b981;
+  --op-yellow:#eab308;
+  --op-red:#ef4444;
+  --op-blue:#3b82f6;
+  --op-grey:#6b7280;
+  --op-font-mono:'JetBrains Mono','SF Mono',ui-monospace,Menlo,monospace;
+  --op-font-sans:'Inter Tight',-apple-system,BlinkMacSystemFont,sans-serif;
+  --op-font-cond:'Oswald','Roboto Condensed',sans-serif;
+}
+.cmd-overlay{font-family:var(--op-font-sans);color:var(--op-text);}
+.cmd-topbar{background:linear-gradient(180deg, rgba(10,14,20,0.98) 0%, rgba(10,14,20,0.85) 70%, transparent 100%);border-bottom:1px solid var(--op-border);padding:10px 16px;}
+.cmd-topbar .title{font-family:var(--op-font-cond);text-transform:uppercase;letter-spacing:1.5px;font-size:14px;font-weight:600;color:var(--op-text);}
+.cmd-topbar .title .sub{font-family:var(--op-font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--op-text-muted);font-weight:500;margin-top:3px;}
+.cmd-topbar .title .sub b{color:var(--op-amber);font-weight:700;}
+.cmd-pill{font-family:var(--op-font-mono);font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;border-radius:3px;padding:5px 10px;border:1px solid var(--op-border-2);background:rgba(0,0,0,0.4);}
+.cmd-pill.green{ color:var(--op-green); border-color:rgba(16,185,129,0.35); }
+.cmd-pill.red{ color:var(--op-red); border-color:rgba(239,68,68,0.45); }
+.cmd-bottom{background:linear-gradient(0deg, rgba(10,14,20,0.98) 0%, rgba(10,14,20,0.75) 70%, transparent 100%);border-top:1px solid var(--op-border);padding:12px 16px;}
+.cmd-bottom .hint{font-family:var(--op-font-mono);font-size:10px;color:var(--op-text-muted);letter-spacing:0.3px;text-transform:uppercase;}
+.officer-marker{width:26px;height:26px;border-radius:3px;border:2px solid rgba(255,255,255,0.9);box-shadow:0 0 0 1px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.5);font-family:var(--op-font-mono);font-size:11px;font-weight:700;letter-spacing:-0.5px;}
+.officer-marker.available{ background:var(--op-green); }
+.officer-marker.busy{ background:var(--op-yellow); color:#111; }
+.officer-marker.break{ background:var(--op-blue); }
+.officer-marker.emergency{ background:var(--op-red); }
+.officer-popup{background:var(--op-panel);border:1px solid var(--op-border);border-radius:4px;padding:10px 12px;font-family:var(--op-font-sans);min-width:180px;}
+.officer-popup h4{font-family:var(--op-font-cond);font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--op-text);margin:0 0 4px 0;font-weight:600;}
+.officer-popup .role{font-family:var(--op-font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--op-text-muted);margin-bottom:6px;}
+.officer-popup .meta{font-family:var(--op-font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.3px;color:var(--op-text-muted);margin-bottom:3px;display:flex;justify-content:space-between;}
+.officer-popup .meta b{color:var(--op-text);font-weight:600;}
+.officer-panel{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100vw;background:var(--op-panel);border-left:1px solid var(--op-border);transform:translateX(100%);transition:transform 180ms cubic-bezier(0.4,0,0.2,1);z-index:100;display:flex;flex-direction:column;font-family:var(--op-font-sans);box-shadow:-20px 0 40px rgba(0,0,0,0.5);}
+.officer-panel.open{ transform:translateX(0); }
+@media(max-width:640px){
+  .officer-panel{top:auto;height:75vh;width:100vw;border-left:none;border-top:2px solid var(--op-amber);transform:translateY(100%);}
+  .officer-panel.open{ transform:translateY(0); }
+}
+.op-header{padding:14px 16px 12px;border-bottom:1px solid var(--op-border);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.op-id-badge{font-family:var(--op-font-mono);font-size:11px;font-weight:700;color:var(--op-amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:3px;padding:4px 8px;letter-spacing:0.5px;flex-shrink:0;}
+.op-header-info{ flex:1; min-width:0; }
+.op-name{font-family:var(--op-font-cond);font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--op-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.op-role{font-family:var(--op-font-mono);font-size:10px;color:var(--op-text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:2px;}
+.op-close{background:transparent;border:1px solid var(--op-border-2);color:var(--op-text-muted);width:28px;height:28px;border-radius:3px;cursor:pointer;font-size:14px;flex-shrink:0;}
+.op-close:hover{ color:var(--op-text); border-color:var(--op-text-muted); }
+.op-status-strip{padding:10px 16px;background:var(--op-panel-2);border-bottom:1px solid var(--op-border);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.op-status-square{width:12px;height:12px;border-radius:2px;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,0.15);}
+.op-status-square.available{ background:var(--op-green); box-shadow:0 0 0 1px rgba(255,255,255,0.15), 0 0 8px rgba(16,185,129,0.6); }
+.op-status-square.busy{ background:var(--op-yellow); }
+.op-status-square.break{ background:var(--op-blue); }
+.op-status-square.emergency{ background:var(--op-red); animation:op-pulse 1s infinite; }
+.op-status-square.offline{ background:var(--op-grey); }
+@keyframes op-pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
+.op-status-word{font-family:var(--op-font-cond);font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--op-text);}
+.op-status-time{margin-left:auto;font-family:var(--op-font-mono);font-size:10px;color:var(--op-text-muted);text-transform:uppercase;}
+.op-vitals{padding:14px 16px;border-bottom:1px solid var(--op-border);flex-shrink:0;}
+.op-vital-row{margin-bottom:10px;display:grid;grid-template-columns:110px 1fr 60px;align-items:center;gap:10px;}
+.op-vital-row:last-child{ margin-bottom:0; }
+.op-vital-label{font-family:var(--op-font-mono);font-size:9px;color:var(--op-text-muted);text-transform:uppercase;letter-spacing:0.5px;}
+.op-vital-bar{height:4px;background:var(--op-panel-2);border-radius:2px;overflow:hidden;position:relative;}
+.op-vital-bar .fill{height:100%;transition:width 300ms;border-radius:2px;}
+.op-vital-bar .fill.good{ background:var(--op-green); }
+.op-vital-bar .fill.warn{ background:var(--op-yellow); }
+.op-vital-bar .fill.crit{ background:var(--op-red); }
+.op-vital-value{font-family:var(--op-font-mono);font-size:11px;font-weight:600;color:var(--op-text);text-align:right;letter-spacing:-0.2px;}
+.op-actions{padding:12px 16px;border-bottom:1px solid var(--op-border);display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;}
+.op-action{background:var(--op-panel-2);border:1px solid var(--op-border-2);color:var(--op-text);font-family:var(--op-font-cond);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:12px 8px;border-radius:4px;cursor:pointer;transition:all 120ms;display:flex;align-items:center;justify-content:center;gap:6px;}
+.op-action:hover{background:var(--op-amber);color:#0a0e14;border-color:var(--op-amber);}
+.op-action.primary{background:var(--op-amber);color:#0a0e14;border-color:var(--op-amber);}
+.op-action.primary:hover{ background:#fbbf24; }
+.op-action.live{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.5);color:var(--op-red);}
+.op-action.live:hover{ background:var(--op-red); color:#fff; }
+.op-section-title{font-family:var(--op-font-mono);font-size:9px;color:var(--op-text-muted);text-transform:uppercase;letter-spacing:1px;padding:12px 16px 6px;border-bottom:1px solid var(--op-border);}
+.op-comms{flex:1;display:flex;flex-direction:column;min-height:120px;overflow:hidden;}
+.op-comms-log{flex:1;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:6px;}
+.op-comms-empty{color:var(--op-text-dim);font-size:11px;text-align:center;padding:20px 0;font-family:var(--op-font-mono);}
+.op-msg{font-size:12px;line-height:1.4;padding:6px 10px;border-radius:4px;max-width:85%;}
+.op-msg.from-command{background:rgba(245,158,11,0.12);border-left:2px solid var(--op-amber);align-self:flex-end;color:var(--op-text);}
+.op-msg.from-officer{background:var(--op-panel-2);border-left:2px solid var(--op-text-muted);align-self:flex-start;color:var(--op-text);}
+.op-msg-time{font-family:var(--op-font-mono);font-size:9px;color:var(--op-text-dim);margin-top:3px;letter-spacing:0.3px;}
+.op-comms-input{padding:10px 16px;border-top:1px solid var(--op-border);display:flex;gap:8px;flex-shrink:0;}
+.op-comms-input input{flex:1;background:var(--op-panel-2);border:1px solid var(--op-border-2);color:var(--op-text);padding:8px 10px;border-radius:4px;font-family:var(--op-font-sans);font-size:13px;outline:none;}
+.op-comms-input input:focus{ border-color:var(--op-amber); }
+.op-comms-input button{background:var(--op-amber);border:none;color:#0a0e14;font-family:var(--op-font-cond);font-weight:600;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:0 16px;border-radius:4px;cursor:pointer;}
+.op-comms-input button:hover{ background:#fbbf24; }
+.op-danger{padding:12px 16px;border-top:1px solid var(--op-border);background:var(--op-panel-2);display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0;}
+.op-danger button{background:transparent;border:1px solid var(--op-border-2);color:var(--op-text-muted);font-family:var(--op-font-mono);font-size:10px;text-transform:uppercase;letter-spacing:0.5px;padding:10px 6px;border-radius:3px;cursor:pointer;transition:all 120ms;}
+.op-danger button:hover{ color:var(--op-text); border-color:var(--op-text-muted); }
+.op-danger button.danger{color:var(--op-red);border-color:rgba(239,68,68,0.4);}
+.op-danger button.danger:hover{background:var(--op-red);color:#fff;border-color:var(--op-red);}
+.officer-marker.broadcasting{box-shadow:0 0 0 1px rgba(0,0,0,0.6), 0 0 0 4px rgba(239,68,68,0.5), 0 0 12px rgba(239,68,68,0.6);animation:op-broadcast-pulse 1.5s infinite;}
+.op-broadcast-bar{
+  position:fixed;top:60px;left:16px;right:16px;z-index:90;
+  background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.5);
+  border-radius:8px;padding:12px 16px;
+  display:none;align-items:center;gap:12px;
+  font-family:var(--op-font-mono);font-size:12px;color:var(--op-text);
+  backdrop-filter:blur(10px);
+}
+.op-broadcast-bar.show{ display:flex; }
+.op-broadcast-dot{
+  width:10px;height:10px;border-radius:50%;background:var(--op-red);
+  animation:op-pulse 1s infinite;flex-shrink:0;
+}
+.op-broadcast-info{ flex:1;min-width:0; }
+.op-broadcast-name{
+  font-family:var(--op-font-cond);text-transform:uppercase;letter-spacing:1px;
+  font-weight:600;font-size:13px;
+}
+.op-broadcast-time{ font-size:10px;color:var(--op-text-muted);margin-top:2px; }
+.op-broadcast-bar button{
+  background:var(--op-amber);border:none;color:#0a0e14;
+  font-family:var(--op-font-cond);font-weight:600;font-size:11px;
+  letter-spacing:1px;text-transform:uppercase;padding:8px 14px;
+  border-radius:4px;cursor:pointer;
+}
+.op-broadcast-bar button:hover{ background:#fbbf24; }
+
+.op-video-modal{
+  position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.95);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.op-video-modal.show{ display:flex; }
+.op-video-inner{
+  position:relative;width:100%;max-width:900px;
+  background:var(--op-panel);border:1px solid var(--op-border);
+  border-radius:8px;overflow:hidden;
+}
+.op-video-header{
+  background:var(--op-panel-2);padding:10px 14px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--op-border);
+  font-family:var(--op-font-mono);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.op-video-header .live-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--op-red);
+  animation:op-pulse 1s infinite;
+}
+.op-video-header .info{ flex:1; }
+.op-video-header .info b{ color:var(--op-amber); }
+.op-video-header .timer{ color:var(--op-text-muted); }
+.op-video-header button{
+  background:transparent;border:1px solid var(--op-border-2);
+  color:var(--op-text-muted);padding:5px 12px;border-radius:3px;
+  font-family:var(--op-font-mono);font-size:10px;text-transform:uppercase;
+  cursor:pointer;
+}
+.op-video-header button:hover{ color:var(--op-text);border-color:var(--op-text-muted); }
+.op-video-player{
+  position:relative;background:#000;aspect-ratio:16/9;
+  display:flex;align-items:center;justify-content:center;
+}
+.op-video-player video{
+  width:100%;height:100%;object-fit:contain;
+}
+.op-video-player .placeholder{
+  color:var(--op-text-dim);font-family:var(--op-font-mono);font-size:12px;
+  text-align:center;padding:40px;
+}
+.op-video-badge{
+  position:absolute;top:12px;left:12px;
+  background:rgba(239,68,68,0.9);color:#fff;
+  padding:4px 10px;border-radius:3px;
+  font-family:var(--op-font-mono);font-size:10px;
+  font-weight:700;letter-spacing:1px;text-transform:uppercase;
+}
+.op-video-actions{
+  padding:10px 14px;background:var(--op-panel-2);
+  border-top:1px solid var(--op-border);
+  display:flex;gap:8px;
+}
+.op-video-actions button{
+  background:var(--op-panel);border:1px solid var(--op-border-2);
+  color:var(--op-text);padding:8px 16px;border-radius:3px;
+  font-family:var(--op-font-cond);font-size:11px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;
+}
+.op-video-actions button:hover{ background:var(--op-amber);color:#0a0e14;border-color:var(--op-amber); }
+.op-video-actions button.danger{ color:var(--op-red);border-color:rgba(239,68,68,0.4); }
+.op-video-actions button.danger:hover{ background:var(--op-red);color:#fff; }
+
+/* Officer GO LIVE button */
+.officer-golive-card{
+  background:linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.05));
+  border:1px solid rgba(239,68,68,0.4);
+  border-radius:14px;padding:20px;text-align:center;margin-bottom:14px;
+}
+.officer-golive-btn{
+  background:var(--op-red);border:none;color:#fff;
+  font-family:var(--op-font-cond);font-weight:700;font-size:16px;
+  letter-spacing:2px;text-transform:uppercase;
+  padding:18px 32px;border-radius:8px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:10px;
+  box-shadow:0 4px 20px rgba(239,68,68,0.4);
+  transition:all 200ms;
+}
+.officer-golive-btn:hover{ background:#dc2626;transform:translateY(-2px);box-shadow:0 6px 24px rgba(239,68,68,0.6); }
+.officer-golive-btn.broadcasting{
+  background:#111820;border:2px solid var(--op-red);
+  animation:op-pulse 1.5s infinite;
+}
+.officer-golive-btn .rec-dot{
+  width:12px;height:12px;border-radius:50%;background:#fff;
+  animation:op-pulse 1s infinite;
+}
+@keyframes op-broadcast-pulse{
+  0%,100%{ box-shadow:0 0 0 1px rgba(0,0,0,0.6), 0 0 0 4px rgba(239,68,68,0.5), 0 0 12px rgba(239,68,68,0.6); }
+  50%{ box-shadow:0 0 0 1px rgba(0,0,0,0.6), 0 0 0 8px rgba(239,68,68,0.2), 0 0 20px rgba(239,68,68,0.8); }
+}
 </style>
 </head>
-  <div id="app">
+<body>
+<div id="app">
 
 <div class="topbar">
   <h1 onclick="goHome()">🎯 InstantWay Events</h1>
@@ -125,135 +330,66 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
     <h1>InstantWay Events</h1>
     <p>Live officer tracking for events — no app install</p>
   </div>
-
   <div class="tile" onclick="showView('organizer-create')">
     <div class="icon">🎯</div>
-    <div class="text">
-      <h3>I'm an event organizer</h3>
-      <p>Create an event, get a code, share with your team</p>
-    </div>
+    <div class="text"><h3>I'm an event organizer</h3><p>Create an event, get a code, share with your team</p></div>
     <div class="arrow">→</div>
   </div>
-
   <div class="tile" onclick="showView('officer-join')">
     <div class="icon">👮</div>
-    <div class="text">
-      <h3>I'm an officer</h3>
-      <p>Join with a code from your commander</p>
-    </div>
+    <div class="text"><h3>I'm an officer</h3><p>Join with a code from your commander</p></div>
     <div class="arrow">→</div>
   </div>
-
   <div class="tile" onclick="showView('share-location')">
     <div class="icon">📍</div>
-    <div class="text">
-      <h3>Share my location</h3>
-      <p>Get a code — friend enters it and sees you live</p>
-    </div>
+    <div class="text"><h3>Share my location</h3><p>Get a code — friend enters it and sees you live</p></div>
     <div class="arrow">→</div>
   </div>
-
   <div class="tile" onclick="window.location.href='index.html'">
     <div class="icon">🏪</div>
-    <div class="text">
-      <h3>I'm a shopper</h3>
-      <p>Store navigation — scan a QR code inside</p>
-    </div>
+    <div class="text"><h3>I'm a shopper</h3><p>Store navigation — scan a QR code inside</p></div>
     <div class="arrow">→</div>
   </div>
-
-  <div class="footer">
-    <p>InstantWay · Live locator for events</p>
-  </div>
+  <div class="footer"><p>InstantWay · Live locator for events</p></div>
 </div>
 
 <div id="view-organizer-create" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
-
   <div class="card">
     <h2 style="font-size:20px;margin-bottom:6px;">Create an event</h2>
     <p class="hint" style="margin-bottom:18px;">You'll get a code. Officers enter it to join your live map.</p>
-
     <div id="createError"></div>
-
-    <div class="field">
-      <label>Event name</label>
-      <input id="newEventName" placeholder="e.g. Blankets & Wine 15 Feb" maxlength="60">
-    </div>
-
-    <div class="field">
-      <label>Commander password</label>
-      <input id="newEventPassword" type="password" placeholder="Protect your command screen">
-      <p class="hint" style="margin-top:4px;">Only you (the commander) need this. Officers just use the event code.</p>
-    </div>
-
-    <button class="btn primary block" id="createEventBtn" onclick="doCreateEvent()">
-      Create event & get code
-    </button>
+    <div class="field"><label>Event name</label><input id="newEventName" placeholder="e.g. Blankets & Wine 15 Feb" maxlength="60"></div>
+    <div class="field"><label>Commander password</label><input id="newEventPassword" type="password" placeholder="Protect your command screen"><p class="hint" style="margin-top:4px;">Only you (the commander) need this. Officers just use the event code.</p></div>
+    <button class="btn primary block" id="createEventBtn" onclick="doCreateEvent()">Create event & get code</button>
   </div>
 </div>
 
 <div id="view-organizer-code" class="page" style="display:none;">
   <div class="okbox">✅ Event created successfully</div>
-
   <div class="card">
     <h2 style="font-size:18px;margin-bottom:4px;" id="eventTitle"></h2>
     <p class="hint">Share this code with your officers</p>
-
-    <div class="bigcode">
-      <div class="lbl">Event code</div>
-      <div class="code" id="eventCode">------</div>
-    </div>
-
-    <button class="btn primary block" onclick="copyOfficerLink()" style="margin-bottom:10px;">
-      📋 Copy officer invite link
-    </button>
-    <button class="btn block" onclick="copyEventCode()">
-      🔢 Copy code only
-    </button>
-
+    <div class="bigcode"><div class="lbl">Event code</div><div class="code" id="eventCode">------</div></div>
+    <button class="btn primary block" onclick="copyOfficerLink()" style="margin-bottom:10px;">📋 Copy officer invite link</button>
+    <button class="btn block" onclick="copyEventCode()">🔢 Copy code only</button>
     <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
-
-    <button class="btn primary block big" onclick="enterCommanderView()">
-      🎯 Enter Commander Dashboard →
-    </button>
-    <p class="hint" style="margin-top:8px;text-align:center;">
-      You'll need your commander password (set earlier)
-    </p>
+    <button class="btn primary block big" onclick="enterCommanderView()">🎯 Enter Commander Dashboard →</button>
+    <p class="hint" style="margin-top:8px;text-align:center;">You'll need your commander password (set earlier)</p>
   </div>
 </div>
 
 <div id="view-officer-join" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
-
   <div class="card">
     <h2 style="font-size:20px;margin-bottom:6px;">Join as officer</h2>
     <p class="hint" style="margin-bottom:18px;">Enter the code your commander sent you.</p>
-
     <div id="joinError"></div>
-
-    <div class="field">
-      <label>Event code</label>
-      <input id="joinCode" placeholder="e.g. AB12CD" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:22px;text-align:center;font-weight:700;font-family:var(--font-display);" oninput="this.value=this.value.toUpperCase()">
-    </div>
-
-    <div class="field">
-      <label>Your name</label>
-      <input id="joinName" placeholder="e.g. Officer Kamau" maxlength="40">
-    </div>
-
-    <div class="field">
-      <label>Your role (optional)</label>
-      <input id="joinRole" placeholder="e.g. Gate C supervisor" maxlength="40">
-    </div>
-
-    <button class="btn primary block big" id="joinBtn" onclick="joinAsOfficer()">
-      📍 Start broadcasting my location
-    </button>
-
-    <p class="hint" style="margin-top:12px;text-align:center;">
-      Your commander will see you on the live map
-    </p>
+    <div class="field"><label>Event code</label><input id="joinCode" placeholder="e.g. AB12CD" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:22px;text-align:center;font-weight:700;font-family:var(--font-display);" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="field"><label>Your name</label><input id="joinName" placeholder="e.g. Officer Kamau" maxlength="40"></div>
+    <div class="field"><label>Your role (optional)</label><input id="joinRole" placeholder="e.g. Gate C supervisor" maxlength="40"></div>
+    <button class="btn primary block big" id="joinBtn" onclick="joinAsOfficer()">📍 Start broadcasting my location</button>
+    <p class="hint" style="margin-top:12px;text-align:center;">Your commander will see you on the live map</p>
   </div>
 </div>
 
@@ -270,7 +406,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
     <h2 style="font-size:22px;margin-bottom:6px;">Broadcasting live</h2>
     <p class="hint" id="officerEventName"></p>
   </div>
-
   <div style="padding:0 16px;">
     <div class="card" style="text-align:center;padding:16px;">
       <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">GPS status</div>
@@ -278,10 +413,8 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
       <div id="gpsCoords" class="hint" style="margin-top:6px;"></div>
       <div id="lastSent" class="hint" style="margin-top:4px;"></div>
     </div>
-
     <div class="card" style="padding:16px;">
-      <div class="field" style="margin-bottom:10px;">
-        <label>My status</label>
+      <div class="field" style="margin-bottom:10px;"><label>My status</label>
         <select id="officerStatus" onchange="updateMyStatus(this.value)">
           <option value="available">🟢 Available</option>
           <option value="busy">🟡 Busy</option>
@@ -290,33 +423,27 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
         </select>
       </div>
     </div>
-
-    <button class="btn danger block big" onclick="triggerSOS()" style="margin-bottom:10px;padding:22px;font-size:18px;">
-      🆘 SOS — Alert commander
-    </button>
-
-    <button class="btn ghost block" onclick="stopBroadcasting()" style="margin-bottom:20px;">
-      ⏹ Stop broadcasting
-    </button>
+    <div class="officer-golive-card">
+  <div style="font-family:var(--op-font-mono);font-size:10px;color:var(--op-text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">LIVE VIDEO TO COMMAND</div>
+  <button id="goLiveBtn" class="officer-golive-btn" onclick="toggleGoLive()">
+    <span class="rec-dot"></span> GO LIVE
+  </button>
+  <p class="hint" style="margin-top:10px;font-size:11px;">Broadcast your camera to the command center</p>
+</div>
+<button class="btn danger block big" onclick="triggerSOS()" style="margin-bottom:10px;padding:22px;font-size:18px;">🆘 SOS — Alert commander</button>
+    
+    <button class="btn ghost block" onclick="stopBroadcasting()" style="margin-bottom:20px;">⏹ Stop broadcasting</button>
   </div>
 </div>
 
 <div id="view-share-location" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
-
   <div class="card">
     <h2 style="font-size:20px;margin-bottom:6px;">Share my location</h2>
     <p class="hint" style="margin-bottom:18px;">Get a code. Your friend enters it in this app and sees you live for as long as you choose.</p>
-
     <div id="shareError"></div>
-
-    <div class="field">
-      <label>Your name (shown to viewer)</label>
-      <input id="shareName" placeholder="e.g. Jane" maxlength="30">
-    </div>
-
-    <div class="field">
-      <label>Stop sharing after</label>
+    <div class="field"><label>Your name (shown to viewer)</label><input id="shareName" placeholder="e.g. Jane" maxlength="30"></div>
+    <div class="field"><label>Stop sharing after</label>
       <select id="shareDuration">
         <option value="15">15 minutes</option>
         <option value="30">30 minutes</option>
@@ -325,79 +452,45 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
         <option value="480">8 hours</option>
       </select>
     </div>
-
-    <button class="btn primary block big" onclick="startShareLocation()">
-      📍 Generate my share code
-    </button>
+    <button class="btn primary block big" onclick="startShareLocation()">📍 Generate my share code</button>
   </div>
 </div>
 
 <div id="view-share-code" class="page" style="display:none;">
   <div class="okbox">✅ Broadcasting your location</div>
-
   <div class="card">
     <p class="hint" style="text-align:center;">Give this code to the person you want to see you</p>
-
-    <div class="bigcode">
-      <div class="lbl">Share code</div>
-      <div class="code" id="shareCode">------</div>
-    </div>
-
-    <button class="btn primary block" onclick="copyShareCode()" style="margin-bottom:10px;">
-      📋 Copy code
-    </button>
-
+    <div class="bigcode"><div class="lbl">Share code</div><div class="code" id="shareCode">------</div></div>
+    <button class="btn primary block" onclick="copyShareCode()" style="margin-bottom:10px;">📋 Copy code</button>
     <div style="text-align:center;font-size:12px;color:var(--text2);" id="shareExpiry"></div>
-
     <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
-
-    <button class="btn ghost block" onclick="stopSharing()">
-      ⏹ Stop sharing
-    </button>
+    <button class="btn ghost block" onclick="stopSharing()">⏹ Stop sharing</button>
   </div>
 </div>
 
 <div id="view-view-shared" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
-
   <div class="card">
     <h2 style="font-size:20px;margin-bottom:6px;">See someone's location</h2>
     <p class="hint" style="margin-bottom:18px;">Enter the 6-digit code they shared with you.</p>
-
-    <div class="field">
-      <label>Share code</label>
-      <input id="viewCode" placeholder="------" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:22px;text-align:center;font-weight:700;font-family:var(--font-display);" oninput="this.value=this.value.toUpperCase()">
-    </div>
-
-    <button class="btn primary block big" onclick="viewSharedLocation()">
-      👀 View location
-    </button>
+    <div class="field"><label>Share code</label><input id="viewCode" placeholder="------" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:22px;text-align:center;font-weight:700;font-family:var(--font-display);" oninput="this.value=this.value.toUpperCase()"></div>
+    <button class="btn primary block big" onclick="viewSharedLocation()">👀 View location</button>
   </div>
 </div>
 
 <div id="view-commander-login" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
-
   <div class="card">
     <h2 style="font-size:20px;margin-bottom:6px;" id="cmdLoginTitle">Commander login</h2>
     <p class="hint" style="margin-bottom:18px;">Enter the password you set when creating this event.</p>
-
     <div id="cmdLoginError"></div>
-
-    <div class="field">
-      <label>Commander password</label>
-      <input id="cmdPassword" type="password" placeholder="••••••••">
-    </div>
-
-    <button class="btn primary block big" id="cmdLoginBtn" onclick="commanderLogin()">
-      🎯 Enter Command Dashboard
-    </button>
+    <div class="field"><label>Commander password</label><input id="cmdPassword" type="password" placeholder="••••••••"></div>
+    <button class="btn primary block big" id="cmdLoginBtn" onclick="commanderLogin()">🎯 Enter Command Dashboard</button>
   </div>
 </div>
 
 <div id="view-commander-dash" style="display:none;position:fixed;inset:0;">
   <div id="cmdMap"></div>
-
   <div class="cmd-overlay">
     <div class="cmd-topbar">
       <div class="title">
@@ -410,696 +503,803 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
         <button class="btn small ghost" onclick="exitCommanderView()" style="background:rgba(0,0,0,0.5);">✕ Exit</button>
       </div>
     </div>
-
     <div class="cmd-bottom">
       <div class="hint">Auto-refreshing every 3 seconds · Tap a dot for details</div>
       <button class="btn small" onclick="centerMap()">🎯 Center all</button>
     </div>
   </div>
-
   <div class="cmd-loading" id="cmdLoading">
     <div class="spinner"></div>
     <p style="margin-top:10px;font-size:13px;color:var(--text2);">Loading live map…</p>
   </div>
 </div>
+<div id="broadcastBar" class="op-broadcast-bar">
+  <div class="op-broadcast-dot"></div>
+  <div class="op-broadcast-info">
+    <div class="op-broadcast-name" id="broadcastBarName">Officer broadcasting</div>
+    <div class="op-broadcast-time" id="broadcastBarTime">0:00</div>
+  </div>
+  <button onclick="openBroadcastFromBar()">VIEW LIVE</button>
+</div>
+
+<div id="videoModal" class="op-video-modal">
+  <div class="op-video-inner">
+    <div class="op-video-header">
+      <div class="live-dot"></div>
+      <div class="info">LIVE — <b id="videoModalOfficerName">Officer</b></div>
+      <div class="timer" id="videoModalTimer">00:00</div>
+      <button onclick="closeVideoModal()">✕ Close</button>
+    </div>
+    <div class="op-video-player">
+      <video id="videoRemoteEl" autoplay playsinline></video>
+    </div>
+    <div class="op-video-actions">
+      <button onclick="snapshotVideo()">📷 Snapshot</button>
+      <button onclick="toggleRecordVideo()" id="recordBtn">⏺ Record</button>
+      <button class="danger" onclick="endVideoRequest()">⏹ End</button>
+    </div>
+  </div>
+</div>
+  
+<div id="officerPanel" class="officer-panel">
+  <div class="op-header">
+    <div class="op-id-badge" id="opIdBadge">K-000</div>
+    <div class="op-header-info">
+      <div class="op-name" id="opName">—</div>
+      <div class="op-role" id="opRole">—</div>
+    </div>
+    <button class="op-close" onclick="closeOfficerPanel()">✕</button>
+  </div>
+  <div class="op-status-strip">
+    <div class="op-status-square" id="opStatusSquare"></div>
+    <div class="op-status-word" id="opStatusWord">—</div>
+    <div class="op-status-time" id="opStatusTime">—</div>
+  </div>
+  <div class="op-vitals">
+    <div class="op-vital-row"><div class="op-vital-label">Last Update</div><div class="op-vital-bar"><div class="fill good" id="opVitalFreshFill" style="width:100%"></div></div><div class="op-vital-value" id="opVitalFreshVal">—</div></div>
+    <div class="op-vital-row"><div class="op-vital-label">GPS Accuracy</div><div class="op-vital-bar"><div class="fill good" id="opVitalAccFill" style="width:100%"></div></div><div class="op-vital-value" id="opVitalAccVal">—</div></div>
+    <div class="op-vital-row"><div class="op-vital-label">Signal</div><div class="op-vital-bar"><div class="fill good" id="opVitalSigFill" style="width:100%"></div></div><div class="op-vital-value" id="opVitalSigVal">—</div></div>
+    <div class="op-vital-row"><div class="op-vital-label">Zone</div><div class="op-vital-bar"><div class="fill good" style="width:100%"></div></div><div class="op-vital-value" id="opVitalZoneVal">—</div></div>
+  </div>
+  <div class="op-actions">
+    <button class="op-action" onclick="opActionMessage()">💬 Message</button>
+    <button class="op-action" onclick="opActionCall()">📞 Radio</button>
+    <button class="op-action live" onclick="opActionRequestVideo()">📹 Request Video</button>
+    <button class="op-action" onclick="opActionAssign()">🎯 Assign Task</button>
+  </div>
+  <div class="op-section-title">Comms Log</div>
+  <div class="op-comms">
+    <div class="op-comms-log" id="opCommsLog"><div class="op-comms-empty">No messages yet</div></div>
+    <div class="op-comms-input">
+      <input id="opCommsInput" placeholder="Type instruction…" onkeydown="if(event.key==='Enter') opSendMessage()">
+      <button onclick="opSendMessage()">Send</button>
+    </div>
+  </div>
+  <div class="op-danger">
+    <button onclick="opActionMarkBreak()">Mark Break</button>
+    <button onclick="opActionMarkDuty()">Mark Off Duty</button>
+    <button class="danger" onclick="opActionEscalate()">Escalate</button>
+    <button class="danger" onclick="opActionAlertOfficer()">⚠ Alert Officer</button>
+  </div>
+</div>
 
 </div>
-  <script>
-/* =========================================================
-   INSTANTWAY EVENTS — Full app
-   Uses the SAME Supabase project as your existing index.html
-   ========================================================= */
 
-/* ---------- Supabase config (same as index.html) ---------- */
+<script>
 const SUPABASE_URL = 'https://xrfrpilaztdczednjyhg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhyZnJwaWxhenRkY3plZG5qeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxNTczMTEsImV4cCI6MjEwMDczMzMxMX0.uJWhXjUdnuQux24hs1_BCHT70gQUyf0v_Fc0WYMHarM';
 const SB_HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer '+SUPABASE_ANON_KEY };
 
-/* ---------- utilities ---------- */
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escHtml(s){ return esc(s); }
 function uid(p){ return p+'_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-5); }
-function genCode(){ 
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for(let i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
-  return code;
-}
+function genCode(){ const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<6;i++) c+=chars[Math.floor(Math.random()*chars.length)]; return c; }
 function toast(msg){
-  let el = document.getElementById('toastEl');
-  if(!el){ 
-    el = document.createElement('div'); el.id='toastEl';
+  let el=document.getElementById('toastEl');
+  if(!el){ el=document.createElement('div'); el.id='toastEl';
     el.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90%;text-align:center;';
-    document.body.appendChild(el);
-  }
-  el.textContent = msg; el.style.display='block';
-  clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.display='none'; }, 2500);
+    document.body.appendChild(el); }
+  el.textContent=msg; el.style.display='block';
+  clearTimeout(el._t); el._t=setTimeout(()=>{ el.style.display='none'; },2500);
 }
-
-/* ---------- Supabase helpers ---------- */
-async function sbGet(table, id){
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}&select=data`, { headers: SB_HEADERS });
-    if(!res.ok) return null;
-    const rows = await res.json();
-    return rows.length ? rows[0].data : null;
-  }catch(e){ console.error('sbGet failed', e); return null; }
+async function sbGet(table,id){
+  try{ const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}&select=data`,{headers:SB_HEADERS});
+    if(!res.ok) return null; const rows=await res.json(); return rows.length?rows[0].data:null;
+  }catch(e){ console.error('sbGet failed',e); return null; }
 }
-async function sbSet(table, id, data, eventId){
-  try{
-    const body = { id, data };
-    if(eventId) body.event_id = eventId;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method:'POST',
-      headers: Object.assign({}, SB_HEADERS, {'Content-Type':'application/json', 'Prefer':'resolution=merge-duplicates,return=minimal'}),
-      body: JSON.stringify(body)
-    });
+async function sbSet(table,id,data,eventId){
+  try{ const body={id,data}; if(eventId) body.event_id=eventId;
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}`,{method:'POST',headers:Object.assign({},SB_HEADERS,{'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify(body)});
     return res.ok;
-  }catch(e){ console.error('sbSet failed', e); return false; }
+  }catch(e){ console.error('sbSet failed',e); return false; }
 }
-async function sbDelete(table, id){
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, { method:'DELETE', headers: SB_HEADERS });
-    return res.ok;
+async function sbDelete(table,id){
+  try{ const res=await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`,{method:'DELETE',headers:SB_HEADERS}); return res.ok;
   }catch(e){ return false; }
 }
 
-/* ---------- state ---------- */
-const state = {
-  currentView: 'landing',
-  event: null,
-  officer: null,
-  share: null,
-  watchId: null,
-  broadcastTimer: null,
-  lastPosition: null
-};
-
-/* ---------- view management ---------- */
-const VIEWS = {
-  landing: 'view-landing',
-  'organizer-create': 'view-organizer-create',
-  'organizer-code': 'view-organizer-code',
-  'officer-join': 'view-officer-join',
-  'officer-waiting': 'view-officer-waiting',
-  'officer-active': 'view-officer-active',
-  'share-location': 'view-share-location',
-  'share-code': 'view-share-code',
-  'view-shared': 'view-view-shared',
-  'commander-login': 'view-commander-login',
-  'commander-dash': 'view-commander-dash'
-};
+const state={ currentView:'landing', event:null, officer:null, share:null, watchId:null, broadcastTimer:null, lastPosition:null };
+const VIEWS={ landing:'view-landing','organizer-create':'view-organizer-create','organizer-code':'view-organizer-code','officer-join':'view-officer-join','officer-waiting':'view-officer-waiting','officer-active':'view-officer-active','share-location':'view-share-location','share-code':'view-share-code','view-shared':'view-view-shared','commander-login':'view-commander-login','commander-dash':'view-commander-dash' };
 function showView(name){
-  Object.values(VIEWS).forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.style.display = 'none';
-  });
-  const target = document.getElementById(VIEWS[name]);
-  if(target) target.style.display = 'block';
-  state.currentView = name;
-  window.scrollTo(0,0);
+  Object.values(VIEWS).forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
+  const target=document.getElementById(VIEWS[name]); if(target) target.style.display='block';
+  state.currentView=name; window.scrollTo(0,0);
 }
 function goHome(){
   stopGeolocation();
-  if(typeof cmdRefreshTimer !== 'undefined' && cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer = null; }
-  if(typeof cmdMap !== 'undefined' && cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap = null; }
-  if(typeof cmdMarkers !== 'undefined'){ cmdMarkers = {}; }
-  state.event = null;
-  state.officer = null;
-  state.share = null;
-  document.getElementById('topSub').textContent = '';
+  if(typeof cmdRefreshTimer!=='undefined' && cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer=null; }
+  if(typeof cmdMap!=='undefined' && cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap=null; }
+  if(typeof cmdMarkers!=='undefined'){ cmdMarkers={}; }
+  state.event=null; state.officer=null; state.share=null;
+  document.getElementById('topSub').textContent='';
   showView('landing');
 }
 
-/* ---------- ORGANIZER: CREATE EVENT ---------- */
 async function doCreateEvent(){
-  const nameEl = document.getElementById('newEventName');
-  const pwEl = document.getElementById('newEventPassword');
-  const errEl = document.getElementById('createError');
-  errEl.innerHTML = '';
-
-  const name = nameEl.value.trim();
-  const password = pwEl.value.trim();
-
-  if(!name){ errEl.innerHTML = '<div class="errbox">Please enter an event name.</div>'; return; }
-  if(password.length < 4){ errEl.innerHTML = '<div class="errbox">Password must be at least 4 characters.</div>'; return; }
-
-  const btn = document.getElementById('createEventBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Creating event…';
-
+  const nameEl=document.getElementById('newEventName'); const pwEl=document.getElementById('newEventPassword'); const errEl=document.getElementById('createError'); errEl.innerHTML='';
+  const name=nameEl.value.trim(); const password=pwEl.value.trim();
+  if(!name){ errEl.innerHTML='<div class="errbox">Please enter an event name.</div>'; return; }
+  if(password.length<4){ errEl.innerHTML='<div class="errbox">Password must be at least 4 characters.</div>'; return; }
+  const btn=document.getElementById('createEventBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Creating event…';
   try{
-    let code, attempts = 0;
-    do{
-      code = genCode();
-      const existing = await sbGet('events', code);
-      if(!existing) break;
-      attempts++;
-    } while(attempts < 5);
-
-    const eventData = {
-      code,
-      name,
-      password,
-      createdAt: Date.now(),
-      status: 'active'
-    };
-
-    const ok = await sbSet('events', code, eventData);
-    if(!ok) throw new Error('Failed to save event');
-
-    state.event = eventData;
-
-    document.getElementById('eventTitle').textContent = name;
-    document.getElementById('eventCode').textContent = code;
-    document.getElementById('topSub').textContent = 'Event: ' + name;
+    let code,attempts=0;
+    do{ code=genCode(); const existing=await sbGet('events',code); if(!existing) break; attempts++; } while(attempts<5);
+    const eventData={ code,name,password,createdAt:Date.now(),status:'active' };
+    const ok=await sbSet('events',code,eventData); if(!ok) throw new Error('Failed to save event');
+    state.event=eventData;
+    document.getElementById('eventTitle').textContent=name;
+    document.getElementById('eventCode').textContent=code;
+    document.getElementById('topSub').textContent='Event: '+name;
     showView('organizer-code');
+  }catch(err){ console.error(err); errEl.innerHTML='<div class="errbox">Error creating event: '+esc(err.message)+'</div>'; }
+  btn.disabled=false; btn.innerHTML='Create event & get code';
+}
+function copyOfficerLink(){ if(!state.event) return; const link=location.origin+location.pathname+'?code='+state.event.code; copyText(link,'Officer link copied — send via WhatsApp'); }
+function copyEventCode(){ if(!state.event) return; copyText(state.event.code,'Event code copied'); }
+function copyShareCode(){ if(!state.share) return; copyText(state.share.code,'Share code copied'); }
+function copyText(text,successMsg){
+  if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>toast(successMsg)).catch(()=>{ const el=document.createElement('textarea'); el.value=text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); toast(successMsg); }); }
+  else { const el=document.createElement('textarea'); el.value=text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); toast(successMsg); }
+}
+function enterCommanderView(){ if(!state.event) return; document.getElementById('cmdLoginTitle').textContent='Commander login — '+state.event.name; showView('commander-login'); }
 
-  }catch(err){
-    console.error(err);
-    errEl.innerHTML = '<div class="errbox">Error creating event: ' + esc(err.message) + '</div>';
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = 'Create event & get code';
-}
-
-function copyOfficerLink(){
-  if(!state.event) return;
-  const link = location.origin + location.pathname + '?code=' + state.event.code;
-  copyText(link, 'Officer link copied — send via WhatsApp to your team');
-}
-function copyEventCode(){
-  if(!state.event) return;
-  copyText(state.event.code, 'Event code copied');
-}
-function copyShareCode(){
-  if(!state.share) return;
-  copyText(state.share.code, 'Share code copied');
-}
-function copyText(text, successMsg){
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(text).then(()=>toast(successMsg)).catch(()=>{
-      const el = document.createElement('textarea'); el.value = text;
-      document.body.appendChild(el); el.select(); document.execCommand('copy');
-      document.body.removeChild(el); toast(successMsg);
-    });
-  } else {
-    const el = document.createElement('textarea'); el.value = text;
-    document.body.appendChild(el); el.select(); document.execCommand('copy');
-    document.body.removeChild(el); toast(successMsg);
-  }
-}
-
-function enterCommanderView(){
-  if(!state.event) return;
-  document.getElementById('cmdLoginTitle').textContent = 'Commander login — ' + state.event.name;
-  showView('commander-login');
-}
-
-/* ---------- OFFICER: JOIN ---------- */
 async function joinAsOfficer(){
-  const codeEl = document.getElementById('joinCode');
-  const nameEl = document.getElementById('joinName');
-  const roleEl = document.getElementById('joinRole');
-  const errEl = document.getElementById('joinError');
-  errEl.innerHTML = '';
-
-  const code = codeEl.value.trim().toUpperCase();
-  const name = nameEl.value.trim();
-  const role = roleEl.value.trim();
-
-  if(code.length !== 6){ errEl.innerHTML = '<div class="errbox">Event code must be 6 characters.</div>'; return; }
-  if(!name){ errEl.innerHTML = '<div class="errbox">Please enter your name.</div>'; return; }
-
-  const btn = document.getElementById('joinBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Joining…';
-
+  const codeEl=document.getElementById('joinCode'); const nameEl=document.getElementById('joinName'); const roleEl=document.getElementById('joinRole'); const errEl=document.getElementById('joinError'); errEl.innerHTML='';
+  const code=codeEl.value.trim().toUpperCase(); const name=nameEl.value.trim(); const role=roleEl.value.trim();
+  if(code.length!==6){ errEl.innerHTML='<div class="errbox">Event code must be 6 characters.</div>'; return; }
+  if(!name){ errEl.innerHTML='<div class="errbox">Please enter your name.</div>'; return; }
+  const btn=document.getElementById('joinBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Joining…';
   try{
-    const event = await sbGet('events', code);
-    if(!event){ errEl.innerHTML = '<div class="errbox">Event not found. Check the code with your commander.</div>'; btn.disabled=false; btn.innerHTML='📍 Start broadcasting my location'; return; }
-
-    state.event = event;
-    state.officer = {
-      id: uid('off'),
-      name,
-      role: role || 'Officer',
-      status: 'available',
-      joinedAt: Date.now()
-    };
-
-    document.getElementById('waitingMsg').textContent = 'Requesting location permission…';
+    const event=await sbGet('events',code);
+    if(!event){ errEl.innerHTML='<div class="errbox">Event not found. Check code.</div>'; btn.disabled=false; btn.innerHTML='📍 Start broadcasting my location'; return; }
+    state.event=event;
+    state.officer={ id:uid('off'),name,role:role||'Officer',status:'available',joinedAt:Date.now() };
+    document.getElementById('waitingMsg').textContent='Requesting location permission…';
     showView('officer-waiting');
-
     await startGeolocation();
-
-    document.getElementById('officerEventName').textContent = event.name;
-    document.getElementById('topSub').textContent = 'Officer: ' + name;
+    document.getElementById('officerEventName').textContent=event.name;
+    document.getElementById('topSub').textContent='Officer: '+name;
     showView('officer-active');
-
-  }catch(err){
-    console.error(err);
-    errEl.innerHTML = '<div class="errbox">Error joining: ' + esc(err.message) + '</div>';
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '📍 Start broadcasting my location';
+  }catch(err){ console.error(err); errEl.innerHTML='<div class="errbox">Error joining: '+esc(err.message)+'</div>'; }
+  btn.disabled=false; btn.innerHTML='📍 Start broadcasting my location';
 }
-</script>
-  <script>
-/* ---------- GEOLOCATION ---------- */
-function startGeolocation(){
-  return new Promise((resolve, reject) => {
-    if(!navigator.geolocation){ 
-      reject(new Error('Geolocation not supported on this device'));
-      return;
-    }
 
+function startGeolocation(){
+  return new Promise((resolve,reject)=>{
+    if(!navigator.geolocation){ reject(new Error('Geolocation not supported')); return; }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        handlePosition(pos);
-        state.watchId = navigator.geolocation.watchPosition(
-          handlePosition,
-          (err) => console.error('Watch error:', err),
-          { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
-        );
-        state.broadcastTimer = setInterval(() => {
-          if(state.lastPosition) broadcastPosition(state.lastPosition);
-        }, 5000);
+      (pos)=>{ handlePosition(pos);
+        state.watchId=navigator.geolocation.watchPosition(handlePosition,(err)=>console.error('Watch error:',err),{enableHighAccuracy:true,maximumAge:2000,timeout:15000});
+        state.broadcastTimer=setInterval(()=>{ if(state.lastPosition) broadcastPosition(state.lastPosition); },5000);
         resolve();
       },
-      (err) => {
-        const s = document.getElementById('gpsStatus');
-        if(s){
-          s.textContent = '❌ Location denied';
-          s.style.color = '#ef4444';
-        }
-        const c = document.getElementById('gpsCoords');
-        if(c) c.textContent = 'Enable location permission in browser settings';
+      (err)=>{ const s=document.getElementById('gpsStatus'); if(s){ s.textContent='❌ Location denied'; s.style.color='#ef4444'; }
+        const c=document.getElementById('gpsCoords'); if(c) c.textContent='Enable location permission';
         reject(new Error('Location permission denied'));
       },
-      { enableHighAccuracy: true, timeout: 15000 }
+      {enableHighAccuracy:true,timeout:15000}
     );
   });
 }
-
 function handlePosition(pos){
-  const coords = {
-    lat: pos.coords.latitude,
-    lng: pos.coords.longitude,
-    accuracy: pos.coords.accuracy,
-    ts: Date.now()
-  };
-  state.lastPosition = coords;
-
-  const statusEl = document.getElementById('gpsStatus');
-  const coordsEl = document.getElementById('gpsCoords');
-  const sentEl = document.getElementById('lastSent');
-  if(statusEl){
-    statusEl.textContent = '🟢 GPS active';
-    statusEl.style.color = '#2dd4bf';
-  }
-  if(coordsEl) coordsEl.textContent = coords.lat.toFixed(5) + ', ' + coords.lng.toFixed(5) + ' (±' + Math.round(coords.accuracy) + 'm)';
-
+  const coords={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy,ts:Date.now()};
+  state.lastPosition=coords;
+  const s=document.getElementById('gpsStatus'); const c=document.getElementById('gpsCoords');
+  if(s){ s.textContent='🟢 GPS active'; s.style.color='#2dd4bf'; }
+  if(c) c.textContent=coords.lat.toFixed(5)+', '+coords.lng.toFixed(5)+' (±'+Math.round(coords.accuracy)+'m)';
   broadcastPosition(coords);
 }
-
 async function broadcastPosition(coords){
-  if(!state.event || !state.officer) return;
-
-  const positionId = state.event.code + '_' + state.officer.id;
-  const positionData = {
-    officerId: state.officer.id,
-    name: state.officer.name,
-    role: state.officer.role,
-    status: state.officer.status,
-    lat: coords.lat,
-    lng: coords.lng,
-    accuracy: coords.accuracy,
-    ts: coords.ts
-  };
-
-  const ok = await sbSet('positions', positionId, positionData, state.event.code);
-  if(ok){
-    const sentEl = document.getElementById('lastSent');
-    if(sentEl) sentEl.textContent = 'Sent ' + new Date().toLocaleTimeString();
-  }
+  if(!state.event||!state.officer) return;
+  const positionId=state.event.code+'_'+state.officer.id;
+  const positionData={ officerId:state.officer.id,name:state.officer.name,role:state.officer.role,status:state.officer.status,lat:coords.lat,lng:coords.lng,accuracy:coords.accuracy,ts:coords.ts };
+  const ok=await sbSet('positions',positionId,positionData,state.event.code);
+  if(ok){ const s=document.getElementById('lastSent'); if(s) s.textContent='Sent '+new Date().toLocaleTimeString(); }
 }
-
-async function updateMyStatus(newStatus){
-  if(!state.officer) return;
-  state.officer.status = newStatus;
-  if(state.lastPosition) await broadcastPosition(state.lastPosition);
-  toast('Status: ' + newStatus);
-}
-
+async function updateMyStatus(newStatus){ if(!state.officer) return; state.officer.status=newStatus; if(state.lastPosition) await broadcastPosition(state.lastPosition); toast('Status: '+newStatus); }
 async function triggerSOS(){
-  if(!state.officer || !state.lastPosition){ toast('No position yet — wait for GPS'); return; }
-  const ok = confirm('Send SOS to commander?');
-  if(!ok) return;
-
-  state.officer.status = 'emergency';
-  document.getElementById('officerStatus').value = 'emergency';
+  if(!state.officer||!state.lastPosition){ toast('No position yet'); return; }
+  if(!confirm('Send SOS to commander?')) return;
+  state.officer.status='emergency';
+  document.getElementById('officerStatus').value='emergency';
   await broadcastPosition(state.lastPosition);
-  toast('🆘 SOS sent — commander notified');
+  toast('🆘 SOS sent');
 }
-
 async function stopBroadcasting(){
-  const ok = confirm('Stop broadcasting? Your commander will no longer see you.');
-  if(!ok) return;
-
+  if(!confirm('Stop broadcasting?')) return;
   stopGeolocation();
-
-  if(state.event && state.officer){
-    const positionId = state.event.code + '_' + state.officer.id;
-    await sbDelete('positions', positionId);
-  }
-
+  if(state.event&&state.officer){ await sbDelete('positions',state.event.code+'_'+state.officer.id); }
   goHome();
 }
-
 function stopGeolocation(){
-  if(state.watchId != null){
-    navigator.geolocation.clearWatch(state.watchId);
-    state.watchId = null;
-  }
-  if(state.broadcastTimer){
-    clearInterval(state.broadcastTimer);
-    state.broadcastTimer = null;
-  }
+  if(state.watchId!=null){ navigator.geolocation.clearWatch(state.watchId); state.watchId=null; }
+  if(state.broadcastTimer){ clearInterval(state.broadcastTimer); state.broadcastTimer=null; }
 }
 
-/* ---------- SHARE LOCATION (B2C) ---------- */
 async function startShareLocation(){
-  const nameEl = document.getElementById('shareName');
-  const durEl = document.getElementById('shareDuration');
-  const errEl = document.getElementById('shareError');
-  errEl.innerHTML = '';
-
-  const name = nameEl.value.trim() || 'Someone';
-  const durationMin = parseInt(durEl.value);
-
-  const btn = document.querySelector('#view-share-location .btn.primary');
-  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Requesting location…'; }
-
+  const nameEl=document.getElementById('shareName'); const durEl=document.getElementById('shareDuration'); const errEl=document.getElementById('shareError'); errEl.innerHTML='';
+  const name=nameEl.value.trim()||'Someone'; const durationMin=parseInt(durEl.value);
+  const btn=document.querySelector('#view-share-location .btn.primary');
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Requesting location…'; }
   try{
-    let code, attempts = 0;
-    do{
-      code = genCode();
-      const existing = await sbGet('events', code);
-      if(!existing) break;
-      attempts++;
-    } while(attempts < 5);
-
-    const expiresAt = Date.now() + durationMin*60*1000;
-    const shareData = {
-      code,
-      name,
-      type: 'share',
-      expiresAt,
-      createdAt: Date.now()
-    };
-
-    const ok = await sbSet('events', code, shareData);
-    if(!ok) throw new Error('Failed to create share code');
-
-    state.share = shareData;
-
+    let code,attempts=0;
+    do{ code=genCode(); const existing=await sbGet('events',code); if(!existing) break; attempts++; } while(attempts<5);
+    const expiresAt=Date.now()+durationMin*60*1000;
+    const shareData={ code,name,type:'share',expiresAt,createdAt:Date.now() };
+    const ok=await sbSet('events',code,shareData); if(!ok) throw new Error('Failed');
+    state.share=shareData;
     await startShareGeolocation();
-
-    document.getElementById('shareCode').textContent = code;
-    document.getElementById('shareExpiry').textContent = 'Stops sharing at ' + new Date(expiresAt).toLocaleTimeString();
-    document.getElementById('topSub').textContent = 'Sharing as ' + name;
+    document.getElementById('shareCode').textContent=code;
+    document.getElementById('shareExpiry').textContent='Stops at '+new Date(expiresAt).toLocaleTimeString();
+    document.getElementById('topSub').textContent='Sharing as '+name;
     showView('share-code');
-
-  }catch(err){
-    console.error(err);
-    errEl.innerHTML = '<div class="errbox">Error: ' + esc(err.message) + '</div>';
-  }
-
-  if(btn){ btn.disabled = false; btn.innerHTML = '📍 Generate my share code'; }
+  }catch(err){ console.error(err); errEl.innerHTML='<div class="errbox">Error: '+esc(err.message)+'</div>'; }
+  if(btn){ btn.disabled=false; btn.innerHTML='📍 Generate my share code'; }
 }
-
 function startShareGeolocation(){
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve,reject)=>{
     if(!navigator.geolocation){ reject(new Error('Geolocation not supported')); return; }
-
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        handleSharePosition(pos);
-        state.watchId = navigator.geolocation.watchPosition(
-          handleSharePosition,
-          (err) => console.error('Watch error:', err),
-          { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
-        );
-        state.broadcastTimer = setInterval(() => {
-          if(state.lastPosition) broadcastSharePosition(state.lastPosition);
-        }, 5000);
+      (pos)=>{ handleSharePosition(pos);
+        state.watchId=navigator.geolocation.watchPosition(handleSharePosition,(err)=>console.error(err),{enableHighAccuracy:true,maximumAge:2000,timeout:15000});
+        state.broadcastTimer=setInterval(()=>{ if(state.lastPosition) broadcastSharePosition(state.lastPosition); },5000);
         resolve();
       },
-      (err) => reject(new Error('Location permission denied')),
-      { enableHighAccuracy: true, timeout: 15000 }
+      (err)=>reject(new Error('Location permission denied')),
+      {enableHighAccuracy:true,timeout:15000}
     );
   });
 }
-
 function handleSharePosition(pos){
-  const coords = {
-    lat: pos.coords.latitude,
-    lng: pos.coords.longitude,
-    accuracy: pos.coords.accuracy,
-    ts: Date.now()
-  };
-  state.lastPosition = coords;
+  const coords={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy,ts:Date.now()};
+  state.lastPosition=coords;
   broadcastSharePosition(coords);
 }
-
 async function broadcastSharePosition(coords){
   if(!state.share) return;
-  const positionId = state.share.code + '_sharer';
-  const data = {
-    name: state.share.name,
-    lat: coords.lat,
-    lng: coords.lng,
-    accuracy: coords.accuracy,
-    ts: coords.ts,
-    expiresAt: state.share.expiresAt
-  };
-  await sbSet('positions', positionId, data, state.share.code);
+  const positionId=state.share.code+'_sharer';
+  const data={name:state.share.name,lat:coords.lat,lng:coords.lng,accuracy:coords.accuracy,ts:coords.ts,expiresAt:state.share.expiresAt};
+  await sbSet('positions',positionId,data,state.share.code);
 }
-
 async function stopSharing(){
-  const ok = confirm('Stop sharing your location?');
-  if(!ok) return;
+  if(!confirm('Stop sharing?')) return;
   stopGeolocation();
-  if(state.share){
-    await sbDelete('positions', state.share.code + '_sharer');
-    await sbDelete('events', state.share.code);
-  }
+  if(state.share){ await sbDelete('positions',state.share.code+'_sharer'); await sbDelete('events',state.share.code); }
   goHome();
 }
-
 async function viewSharedLocation(){
-  const codeEl = document.getElementById('viewCode');
-  const code = codeEl.value.trim().toUpperCase();
-  if(code.length !== 6){ toast('Code must be 6 characters'); return; }
-
-  const event = await sbGet('events', code);
-  if(!event || event.type !== 'share'){ toast('Share code not found or expired'); return; }
-  if(event.expiresAt && Date.now() > event.expiresAt){ toast('This share has expired'); return; }
-
+  const codeEl=document.getElementById('viewCode'); const code=codeEl.value.trim().toUpperCase();
+  if(code.length!==6){ toast('Code must be 6 characters'); return; }
+  const event=await sbGet('events',code);
+  if(!event||event.type!=='share'){ toast('Share code not found or expired'); return; }
+  if(event.expiresAt&&Date.now()>event.expiresAt){ toast('This share has expired'); return; }
   toast('Opening map view — coming in the next update');
 }
 
-/* ---------- COMMANDER DASHBOARD ---------- */
-let cmdMap = null, cmdMarkers = {}, cmdRefreshTimer = null;
+let cmdMap=null, cmdMarkers={}, cmdRefreshTimer=null;
 
 async function commanderLogin(){
-  const pwEl = document.getElementById('cmdPassword');
-  const errEl = document.getElementById('cmdLoginError');
-  errEl.innerHTML = '';
+  const pwEl=document.getElementById('cmdPassword'); const errEl=document.getElementById('cmdLoginError'); errEl.innerHTML='';
+  if(!state.event){ errEl.innerHTML='<div class="errbox">No event loaded.</div>'; return; }
+  if(pwEl.value!==state.event.password){ errEl.innerHTML='<div class="errbox">Incorrect password.</div>'; return; }
+  document.getElementById('cmdEventName').textContent=state.event.name;
+  document.getElementById('cmdEventCode').textContent=state.event.code;
+  document.getElementById('topSub').textContent='Commander: '+state.event.name;
+  showView('commander-dash');
+  setTimeout(()=>initCommanderMap(),100);
+}
+function initCommanderMap(){
+  if(cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap=null; }
+  cmdMarkers={};
+  const container=document.getElementById('cmdMap'); if(!container) return;
+  cmdMap=L.map('cmdMap',{center:[-1.2864,36.8172],zoom:15,zoomControl:true});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(cmdMap);
+  const loading=document.getElementById('cmdLoading'); if(loading) loading.style.display='none';
+   refreshOfficerPositions();
+  cmdRefreshTimer=setInterval(refreshOfficerPositions,3000);
+  startCommanderBroadcastPolling();
+}
+function exitCommanderView(){
+  if(cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer=null; }
+  if(commanderBroadcastPoll){ clearInterval(commanderBroadcastPoll); commanderBroadcastPoll=null; }
+  if(window._commanderPC){ try{ window._commanderPC.close(); }catch(e){} window._commanderPC = null; }
+  commanderActiveBroadcast = null;
+}
+async function refreshOfficerPositions(){
+  if(!state.event||!cmdMap) return;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/positions?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,{headers:SB_HEADERS});
+    if(!res.ok) return;
+    const rows=await res.json();
+    const seenIds=new Set(); let onlineCount=0; let sosCount=0;
+    rows.forEach(row=>{
+      const data=row.data; if(!data||!data.lat||!data.lng) return;
+      seenIds.add(row.id);
+      const ageSec=Math.round((Date.now()-data.ts)/1000);
+      const online=ageSec<60; if(online) onlineCount++;
+      if(data.status==='emergency'&&online) sosCount++;
+      let statusClass='available'; let statusEmoji='🟢';
+      if(data.status==='busy'){ statusClass='busy'; statusEmoji='🟡'; }
+      else if(data.status==='break'){ statusClass='break'; statusEmoji='🔵'; }
+      else if(data.status==='emergency'){ statusClass='emergency'; statusEmoji='🔴'; }
+      const opacity=online?1:0.35;
+      const initial=(data.name||'?').charAt(0).toUpperCase();
+      const iconHtml=`<div class="officer-marker ${statusClass}" style="opacity:${opacity};"><span class="initial">${initial}</span></div>`;
+      const icon=L.divIcon({html:iconHtml,className:'',iconSize:[26,26],iconAnchor:[13,13]});
+      const popupHtml=`<div class="officer-popup"><h4>${escHtml(data.name||'Officer')}</h4><div class="role">${escHtml(data.role||'Officer')}</div><div class="meta"><span>STATUS</span><b>${statusEmoji} ${escHtml(data.status||'available')}</b></div><div class="meta"><span>LAST SEEN</span><b>${ageSec<5?'just now':ageSec+'s ago'}</b></div><div class="meta"><span>ACCURACY</span><b>±${Math.round(data.accuracy||0)}m</b></div></div>`;
+      if(cmdMarkers[row.id]){
+        cmdMarkers[row.id].setLatLng([data.lat,data.lng]);
+        cmdMarkers[row.id].setIcon(icon);
+        cmdMarkers[row.id].setPopupContent(popupHtml);
+        if(currentOfficerId===row.id){ currentOfficerData=data; updateOfficerPanel(data); }
+      } else {
+        const marker=L.marker([data.lat,data.lng],{icon}).addTo(cmdMap);
+        marker.bindPopup(popupHtml);
+        marker.on('click',()=>{ openOfficerPanel(row.id,data); });
+        cmdMarkers[row.id]=marker;
+      }
+    });
+    Object.keys(cmdMarkers).forEach(id=>{ if(!seenIds.has(id)){ cmdMap.removeLayer(cmdMarkers[id]); delete cmdMarkers[id]; } });
+    const onlineEl=document.getElementById('cmdOnlineCount'); if(onlineEl) onlineEl.textContent='🟢 '+onlineCount+' online';
+    const sosEl=document.getElementById('cmdSosCount');
+    if(sosEl){ if(sosCount>0){ sosEl.style.display='inline-block'; sosEl.textContent='🆘 '+sosCount+' SOS'; } else { sosEl.style.display='none'; } }
+    if(!cmdMap._fittedOnce&&Object.keys(cmdMarkers).length>0){ centerMap(); cmdMap._fittedOnce=true; }
+  }catch(err){ console.error('refreshOfficerPositions failed',err); }
+}
+function centerMap(){
+  if(!cmdMap) return;
+  const markers=Object.values(cmdMarkers);
+  if(markers.length===0){ cmdMap.setView([-1.2864,36.8172],15); return; }
+  const group=L.featureGroup(markers); cmdMap.fitBounds(group.getBounds().pad(0.3));
+}
 
-  if(!state.event){ errEl.innerHTML = '<div class="errbox">No event loaded.</div>'; return; }
-  if(pwEl.value !== state.event.password){
-    errEl.innerHTML = '<div class="errbox">Incorrect password.</div>';
-    return;
+let currentOfficerId=null;
+let currentOfficerData=null;
+function openOfficerPanel(officerId,officerData){
+  currentOfficerId=officerId; currentOfficerData=officerData;
+  const idx=Object.keys(cmdMarkers).indexOf(officerId)+1;
+  const badge='K-'+String(idx).padStart(3,'0');
+  document.getElementById('opIdBadge').textContent=badge;
+  document.getElementById('opName').textContent=officerData.name||'Unknown';
+  document.getElementById('opRole').textContent=officerData.role||'Officer';
+  updateOfficerPanel(officerData);
+  renderCommsLog();
+  document.getElementById('officerPanel').classList.add('open');
+}
+function closeOfficerPanel(){
+  document.getElementById('officerPanel').classList.remove('open');
+  currentOfficerId=null; currentOfficerData=null;
+}
+function updateOfficerPanel(data){
+  if(!data) return;
+  const statusSquare=document.getElementById('opStatusSquare'); const statusWord=document.getElementById('opStatusWord');
+  const statuses={ available:{cls:'available',word:'AVAILABLE'}, busy:{cls:'busy',word:'BUSY'}, break:{cls:'break',word:'ON BREAK'}, emergency:{cls:'emergency',word:'EMERGENCY'} };
+  const s=statuses[data.status]||{cls:'offline',word:'UNKNOWN'};
+  statusSquare.className='op-status-square '+s.cls; statusWord.textContent=s.word;
+  const ageSec=Math.round((Date.now()-data.ts)/1000);
+  const ageLabel=ageSec<5?'LIVE':ageSec<60?ageSec+'s AGO':Math.round(ageSec/60)+'m AGO';
+  document.getElementById('opStatusTime').textContent=ageLabel;
+  const freshPct=Math.max(0,Math.min(100,100-(ageSec/60)*100));
+  const freshFill=document.getElementById('opVitalFreshFill'); freshFill.style.width=freshPct+'%'; freshFill.className='fill '+(freshPct>66?'good':freshPct>33?'warn':'crit');
+  document.getElementById('opVitalFreshVal').textContent=ageLabel;
+  const acc=Math.round(data.accuracy||0);
+  const accPct=Math.max(0,Math.min(100,100-(acc/40)*100));
+  const accFill=document.getElementById('opVitalAccFill'); accFill.style.width=accPct+'%'; accFill.className='fill '+(acc<10?'good':acc<25?'warn':'crit');
+  document.getElementById('opVitalAccVal').textContent='±'+acc+'m';
+  const sigPct=Math.max(0,Math.min(100,100-(ageSec/90)*100));
+  const sigFill=document.getElementById('opVitalSigFill'); sigFill.style.width=sigPct+'%'; sigFill.className='fill '+(sigPct>66?'good':sigPct>33?'warn':'crit');
+  document.getElementById('opVitalSigVal').textContent=sigPct>66?'STRONG':sigPct>33?'WEAK':'LOST';
+  const zoneEl=document.getElementById('opVitalZoneVal');
+  if(data.zone){ zoneEl.textContent=data.zone; } else if(data.lat&&data.lng){ zoneEl.textContent=data.lat.toFixed(3)+','+data.lng.toFixed(3); } else { zoneEl.textContent='—'; }
+}
+
+const commsLog={};
+function renderCommsLog(){
+  const log=document.getElementById('opCommsLog');
+  if(!currentOfficerId){ log.innerHTML='<div class="op-comms-empty">No officer selected</div>'; return; }
+  const msgs=commsLog[currentOfficerId]||[];
+  if(msgs.length===0){ log.innerHTML='<div class="op-comms-empty">No messages yet</div>'; return; }
+  log.innerHTML=msgs.map(m=>`<div class="op-msg from-${m.from}"><div>${escHtml(m.text)}</div><div class="op-msg-time">${new Date(m.ts).toLocaleTimeString()}</div></div>`).join('');
+  log.scrollTop=log.scrollHeight;
+}
+async function opSendMessage(){
+  const input=document.getElementById('opCommsInput'); const text=input.value.trim();
+  if(!text||!currentOfficerId) return;
+  commsLog[currentOfficerId]=commsLog[currentOfficerId]||[];
+  commsLog[currentOfficerId].push({from:'command',text,ts:Date.now()});
+  input.value=''; renderCommsLog();
+  if(state.event&&state.event.code){
+    const msgId=state.event.code+'_msg_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+    await sbSet('positions',msgId,{type:'message',targetOfficerId:currentOfficerId.replace(state.event.code+'_',''),from:'command',text,ts:Date.now()},state.event.code);
+  }
+}
+function opActionMessage(){ document.getElementById('opCommsInput').focus(); }
+function opActionCall(){ toast('Radio channel — use walkie-talkie'); }
+function opActionRequestVideo(){
+  if(!currentOfficerId) return;
+  const officerIdOnly=currentOfficerId.replace(state.event.code+'_','');
+  sbSet('positions',state.event.code+'_video_req_'+officerIdOnly,{type:'video_request',targetOfficerId:officerIdOnly,ts:Date.now()},state.event.code).then(()=>toast('📹 Video request sent'));
+}
+function opActionAssign(){ toast('Assign task — coming soon'); }
+function opActionMarkBreak(){ toast('Officer marked on break'); }
+function opActionMarkDuty(){
+  if(!currentOfficerId) return;
+  if(confirm('Mark officer off duty?')){ sbDelete('positions',currentOfficerId).then(()=>closeOfficerPanel()); }
+}
+function opActionEscalate(){ if(!currentOfficerId) return; toast('⚠ Escalation logged'); }
+function opActionAlertOfficer(){
+  if(!currentOfficerId) return;
+  if(!confirm('Send urgent alert?')) return;
+  const officerIdOnly=currentOfficerId.replace(state.event.code+'_','');
+  sbSet('positions',state.event.code+'_alert_'+officerIdOnly,{type:'alert',targetOfficerId:officerIdOnly,severity:'urgent',ts:Date.now()},state.event.code).then(()=>toast('⚠ Alert sent'));
+}
+
+  /* ═══════════ GO LIVE VIDEO — OFFICER SIDE ═══════════ */
+let myLocalStream = null;
+let myPeerConnection = null;
+let broadcasting = false;
+let broadcastStartTs = null;
+let broadcastTimerInterval = null;
+let broadcastSignalingInterval = null;
+
+async function toggleGoLive(){
+  if(broadcasting){ stopGoLive(); return; }
+  await startGoLive();
+}
+
+async function startGoLive(){
+  if(!state.event || !state.officer){ toast('No active event'); return; }
+  const btn = document.getElementById('goLiveBtn');
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> STARTING…'; }
+
+  try{
+    // 1. Get camera + mic
+    myLocalStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: true
+    });
+
+    broadcasting = true;
+    broadcastStartTs = Date.now();
+
+    // 2. Create the offer
+    myPeerConnection = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    });
+    myLocalStream.getTracks().forEach(track => myPeerConnection.addTrack(track, myLocalStream));
+
+    myPeerConnection.onicecandidate = (event) => {
+      if(event.candidate){
+        pushSignal({ type: 'ice_candidate', candidate: event.candidate, from: 'officer' });
+      }
+    };
+
+    const offer = await myPeerConnection.createOffer();
+    await myPeerConnection.setLocalDescription(offer);
+    await pushSignal({ type: 'offer', sdp: offer.sdp, from: 'officer' });
+
+    // 3. Poll for commander's answer
+    broadcastSignalingInterval = setInterval(pollForAnswer, 2000);
+
+    // 4. Update button to broadcasting state
+    if(btn){
+      btn.disabled = false;
+      btn.classList.add('broadcasting');
+      btn.innerHTML = '<span class="rec-dot"></span> LIVE — TAP TO STOP';
+    }
+
+    // 5. Update timer
+    broadcastTimerInterval = setInterval(() => {
+      const secs = Math.floor((Date.now() - broadcastStartTs) / 1000);
+      // Broadcast duration to Supabase as heartbeat
+    }, 1000);
+
+    toast('🔴 Broadcasting live to command');
+
+  }catch(err){
+    console.error(err);
+    if(btn){ btn.disabled = false; btn.innerHTML = '<span class="rec-dot"></span> GO LIVE'; }
+    toast('Camera access denied — check browser permissions');
+  }
+}
+
+async function pushSignal(payload){
+  if(!state.event || !state.officer) return;
+  const sigId = state.event.code + '_bc_' + state.officer.id;
+  const existing = await sbGet('video_signals', sigId) || { fromOfficer: state.officer.id, eventCode: state.event.code, created: Date.now(), signals: [] };
+  existing.signals = existing.signals || [];
+  existing.signals.push({ ...payload, ts: Date.now() });
+  if(existing.signals.length > 40) existing.signals = existing.signals.slice(-40);
+  existing.state = broadcasting ? 'live' : 'ended';
+  await sbSet('video_signals', sigId, existing, state.event.code);
+}
+
+async function pollForAnswer(){
+  if(!state.event || !state.officer || !myPeerConnection) return;
+  const sigId = state.event.code + '_bc_' + state.officer.id;
+  const data = await sbGet('video_signals', sigId);
+  if(!data || !data.signals) return;
+
+  const answers = data.signals.filter(s => s.from === 'commander' && s.type === 'answer');
+  const ices = data.signals.filter(s => s.from === 'commander' && s.type === 'ice_candidate');
+
+  if(answers.length && myPeerConnection.signalingState === 'have-local-offer'){
+    await myPeerConnection.setRemoteDescription({ type: 'answer', sdp: answers[answers.length-1].sdp });
+  }
+  for(const ice of ices){
+    try{ await myPeerConnection.addIceCandidate(ice.candidate); }catch(e){}
+  }
+}
+
+async function stopGoLive(){
+  broadcasting = false;
+
+  if(broadcastSignalingInterval){ clearInterval(broadcastSignalingInterval); broadcastSignalingInterval = null; }
+  if(broadcastTimerInterval){ clearInterval(broadcastTimerInterval); broadcastTimerInterval = null; }
+
+  if(myPeerConnection){ try{ myPeerConnection.close(); }catch(e){} myPeerConnection = null; }
+  if(myLocalStream){ myLocalStream.getTracks().forEach(t => t.stop()); myLocalStream = null; }
+
+  // Mark as ended in Supabase
+  if(state.event && state.officer){
+    const sigId = state.event.code + '_bc_' + state.officer.id;
+    const data = await sbGet('video_signals', sigId);
+    if(data){ data.state = 'ended'; data.endedAt = Date.now(); await sbSet('video_signals', sigId, data, state.event.code); }
   }
 
-  document.getElementById('cmdEventName').textContent = state.event.name;
-  document.getElementById('cmdEventCode').textContent = state.event.code;
-  document.getElementById('topSub').textContent = 'Commander: ' + state.event.name;
-  showView('commander-dash');
+  const btn = document.getElementById('goLiveBtn');
+  if(btn){ btn.classList.remove('broadcasting'); btn.innerHTML = '<span class="rec-dot"></span> GO LIVE'; }
 
-  setTimeout(() => initCommanderMap(), 100);
+  toast('Broadcast ended');
 }
 
-function initCommanderMap(){
-  if(cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap = null; }
-  cmdMarkers = {};
+/* ═══════════ GO LIVE VIDEO — COMMANDER SIDE ═══════════ */
+let commanderBroadcastPoll = null;
+let commanderActiveBroadcast = null;
 
-  const container = document.getElementById('cmdMap');
-  if(!container) return;
-
-  cmdMap = L.map('cmdMap', {
-    center: [-1.2864, 36.8172],
-    zoom: 15,
-    zoomControl: true
-  });
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap',
-    maxZoom: 19
-  }).addTo(cmdMap);
-
-  const loading = document.getElementById('cmdLoading');
-  if(loading) loading.style.display = 'none';
-
-  refreshOfficerPositions();
-  cmdRefreshTimer = setInterval(refreshOfficerPositions, 3000);
+function startCommanderBroadcastPolling(){
+  if(commanderBroadcastPoll) return;
+  commanderBroadcastPoll = setInterval(checkForBroadcasts, 3000);
+  checkForBroadcasts();
 }
 
-function exitCommanderView(){
-  if(cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer = null; }
-  if(cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap = null; }
-  cmdMarkers = {};
-  goHome();
-}
-
-async function refreshOfficerPositions(){
+async function checkForBroadcasts(){
   if(!state.event || !cmdMap) return;
   try{
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/positions?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,
+      `${SUPABASE_URL}/rest/v1/video_signals?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,
       { headers: SB_HEADERS }
     );
     if(!res.ok) return;
     const rows = await res.json();
 
-    const seenIds = new Set();
-    let onlineCount = 0;
-    let sosCount = 0;
-
+    let liveOnes = [];
     rows.forEach(row => {
-      const data = row.data;
-      if(!data || !data.lat || !data.lng) return;
-      seenIds.add(row.id);
-
-      const ageSec = Math.round((Date.now() - data.ts) / 1000);
-      const online = ageSec < 60;
-      if(online) onlineCount++;
-      if(data.status === 'emergency' && online) sosCount++;
-
-      let statusClass = 'available';
-      let statusEmoji = '🟢';
-      if(data.status === 'busy'){ statusClass = 'busy'; statusEmoji = '🟡'; }
-      else if(data.status === 'break'){ statusClass = 'break'; statusEmoji = '🔵'; }
-      else if(data.status === 'emergency'){ statusClass = 'emergency'; statusEmoji = '🔴'; }
-
-      const opacity = online ? 1 : 0.35;
-      const initial = (data.name || '?').charAt(0).toUpperCase();
-      const iconHtml = `<div class="officer-marker ${statusClass}" style="opacity:${opacity};"><span class="initial">${initial}</span></div>`;
-      const icon = L.divIcon({
-        html: iconHtml,
-        className: '',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      });
-
-      const popupHtml = `
-        <div class="officer-popup">
-          <h4>${escHtml(data.name || 'Officer')}</h4>
-          <div class="role">${escHtml(data.role || 'Officer')}</div>
-          <div class="meta">Status: <b>${statusEmoji} ${escHtml(data.status || 'available')}</b></div>
-          <div class="meta">Last seen: <b>${ageSec < 5 ? 'just now' : ageSec + 's ago'}</b></div>
-          <div class="meta">Accuracy: ±${Math.round(data.accuracy||0)}m</div>
-        </div>
-      `;
-
-      if(cmdMarkers[row.id]){
-        cmdMarkers[row.id].setLatLng([data.lat, data.lng]);
-        cmdMarkers[row.id].setIcon(icon);
-        cmdMarkers[row.id].setPopupContent(popupHtml);
-      } else {
-        const marker = L.marker([data.lat, data.lng], { icon }).addTo(cmdMap);
-        marker.bindPopup(popupHtml);
-        cmdMarkers[row.id] = marker;
+      if(row.data && row.data.state === 'live'){
+        liveOnes.push({ id: row.id, data: row.data });
       }
     });
 
-    Object.keys(cmdMarkers).forEach(id => {
-      if(!seenIds.has(id)){
-        cmdMap.removeLayer(cmdMarkers[id]);
-        delete cmdMarkers[id];
+    if(liveOnes.length > 0){
+      const active = liveOnes[liveOnes.length - 1];
+      if(!commanderActiveBroadcast || commanderActiveBroadcast.id !== active.id){
+        commanderActiveBroadcast = active;
+        showBroadcastBar(active);
       }
-    });
-
-    const onlineEl = document.getElementById('cmdOnlineCount');
-    if(onlineEl) onlineEl.textContent = '🟢 ' + onlineCount + ' online';
-
-    const sosEl = document.getElementById('cmdSosCount');
-    if(sosEl){
-      if(sosCount > 0){
-        sosEl.style.display = 'inline-block';
-        sosEl.textContent = '🆘 ' + sosCount + ' SOS';
-      } else {
-        sosEl.style.display = 'none';
+      updateBroadcastTimer(active);
+    } else {
+      if(commanderActiveBroadcast){
+        hideBroadcastBar();
+        commanderActiveBroadcast = null;
       }
     }
-
-    if(!cmdMap._fittedOnce && Object.keys(cmdMarkers).length > 0){
-      centerMap();
-      cmdMap._fittedOnce = true;
-    }
-
-  }catch(err){
-    console.error('refreshOfficerPositions failed', err);
-  }
+  }catch(err){ console.error(err); }
 }
 
-function centerMap(){
-  if(!cmdMap) return;
-  const markers = Object.values(cmdMarkers);
-  if(markers.length === 0){
-    cmdMap.setView([-1.2864, 36.8172], 15);
+function showBroadcastBar(broadcast){
+  const bar = document.getElementById('broadcastBar');
+  if(!bar) return;
+  const officer = broadcast.data || {};
+  document.getElementById('broadcastBarName').textContent = (officer.fromOfficer || 'Officer') + ' broadcasting live';
+  bar.classList.add('show');
+}
+
+function hideBroadcastBar(){
+  const bar = document.getElementById('broadcastBar');
+  if(bar) bar.classList.remove('show');
+  const modal = document.getElementById('videoModal');
+  if(modal) modal.classList.remove('show');
+}
+
+function updateBroadcastTimer(broadcast){
+  const elapsed = Math.floor((Date.now() - (broadcast.data.created || Date.now())) / 1000);
+  const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
+  const ss = String(elapsed%60).padStart(2,'0');
+  const t = document.getElementById('broadcastBarTime');
+  if(t) t.textContent = mm + ':' + ss;
+  const t2 = document.getElementById('videoModalTimer');
+  if(t2) t2.textContent = mm + ':' + ss;
+}
+
+async function openBroadcastFromBar(){
+  if(!commanderActiveBroadcast) return;
+  document.getElementById('videoModal').classList.add('show');
+  await connectToBroadcast(commanderActiveBroadcast);
+}
+
+async function connectToBroadcast(broadcast){
+  const video = document.getElementById('videoRemoteEl');
+  const sigId = broadcast.id;
+
+  // Commander creates a peer connection and answers the officer's offer
+  const pc = new RTCPeerConnection({
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+  });
+
+  pc.ontrack = (event) => {
+    if(video && event.streams[0]){
+      video.srcObject = event.streams[0];
+      document.getElementById('videoModalOfficerName').textContent = broadcast.data.fromOfficer || 'Officer';
+      toast('🔴 LIVE FEED CONNECTED');
+    }
+  };
+
+  pc.onicecandidate = async (event) => {
+    if(event.candidate){
+      const data = await sbGet('video_signals', sigId) || broadcast.data;
+      data.signals = data.signals || [];
+      data.signals.push({ type: 'ice_candidate', candidate: event.candidate, from: 'commander', ts: Date.now() });
+      await sbSet('video_signals', sigId, data, state.event.code);
+    }
+  };
+
+  const offerSignals = (broadcast.data.signals || []).filter(s => s.from === 'officer' && s.type === 'offer');
+  if(offerSignals.length === 0){
+    if(video) video.parentElement.innerHTML = '<div class="placeholder">Officer hasn\'t sent video yet. Waiting…</div>';
     return;
   }
-  const group = L.featureGroup(markers);
-  cmdMap.fitBounds(group.getBounds().pad(0.3));
+
+  await pc.setRemoteDescription({ type: 'offer', sdp: offerSignals[offerSignals.length-1].sdp });
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+
+  const data = broadcast.data;
+  data.signals = data.signals || [];
+  data.signals.push({ type: 'answer', sdp: answer.sdp, from: 'commander', ts: Date.now() });
+  await sbSet('video_signals', sigId, data, state.event.code);
+
+  window._commanderPC = pc;
+
+  // Poll for officer ICE candidates
+  const pollIce = setInterval(async () => {
+    if(pc.connectionState === 'connected' || pc.connectionState === 'failed'){
+      clearInterval(pollIce); return;
+    }
+    const fresh = await sbGet('video_signals', sigId);
+    if(!fresh || !fresh.signals) return;
+    const newIces = fresh.signals.filter(s => s.from === 'officer' && s.type === 'ice_candidate');
+    for(const ice of newIces){
+      try{ await pc.addIceCandidate(ice.candidate); }catch(e){}
+    }
+  }, 2000);
 }
 
-/* ---------- URL PARAMETER HANDLING ---------- */
+function closeVideoModal(){
+  document.getElementById('videoModal').classList.remove('show');
+  if(window._commanderPC){ try{ window._commanderPC.close(); }catch(e){} window._commanderPC = null; }
+  const video = document.getElementById('videoRemoteEl');
+  if(video) video.srcObject = null;
+}
+
+function snapshotVideo(){
+  const video = document.getElementById('videoRemoteEl');
+  if(!video || !video.videoWidth){ toast('No video yet'); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'snapshot_' + Date.now() + '.png';
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('📷 Snapshot saved');
+  });
+}
+
+let recordingChunks = [];
+let mediaRecorder = null;
+
+function toggleRecordVideo(){
+  const video = document.getElementById('videoRemoteEl');
+  const btn = document.getElementById('recordBtn');
+  if(!video || !video.srcObject){ toast('No video to record'); return; }
+
+  if(mediaRecorder && mediaRecorder.state === 'recording'){
+    mediaRecorder.stop();
+    btn.textContent = '⏺ Record';
+    return;
+  }
+
+  try{
+    mediaRecorder = new MediaRecorder(video.srcObject, { mimeType: 'video/webm' });
+    recordingChunks = [];
+    mediaRecorder.ondataavailable = e => { if(e.data.size > 0) recordingChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordingChunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'broadcast_' + Date.now() + '.webm';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('⏺ Recording saved');
+    };
+    mediaRecorder.start();
+    btn.textContent = '⏹ Stop recording';
+    toast('⏺ Recording…');
+  }catch(err){
+    toast('Recording not supported on this device');
+  }
+}
+
+async function endVideoRequest(){
+  if(!confirm('End this broadcast? Officer will be notified.')) return;
+  if(commanderActiveBroadcast){
+    const data = commanderActiveBroadcast.data;
+    data.state = 'ended';
+    data.endedAt = Date.now();
+    await sbSet('video_signals', commanderActiveBroadcast.id, data, state.event.code);
+  }
+  closeVideoModal();
+  hideBroadcastBar();
+  commanderActiveBroadcast = null;
+}
+  
 async function handleUrlParams(){
-  const p = new URLSearchParams(location.search);
-  const code = p.get('code');
+  const p=new URLSearchParams(location.search);
+  const code=p.get('code');
   if(code){
-    document.getElementById('joinCode').value = code.toUpperCase();
-    const event = await sbGet('events', code.toUpperCase());
-    if(event){
-      document.getElementById('topSub').textContent = 'Event: ' + event.name;
-      toast('Event found: ' + event.name);
-    } else {
-      toast('Event not found');
-    }
+    document.getElementById('joinCode').value=code.toUpperCase();
+    const event=await sbGet('events',code.toUpperCase());
+    if(event){ document.getElementById('topSub').textContent='Event: '+event.name; toast('Event found: '+event.name); } else { toast('Event not found'); }
     showView('officer-join');
   }
-  const intent = p.get('intent');
-  if(intent === 'share'){ showView('share-location'); }
+  const intent=p.get('intent');
+  if(intent==='share'){ showView('share-location'); }
 }
 
-/* ---------- INIT ---------- */
 handleUrlParams();
-
-window.addEventListener('beforeunload', (e) => {
-  if(state.watchId != null){
-    e.preventDefault();
-    e.returnValue = 'You are still broadcasting your location.';
-    return e.returnValue;
-  }
-});
-
+window.addEventListener('beforeunload',(e)=>{ if(state.watchId!=null){ e.preventDefault(); e.returnValue='Still broadcasting'; return e.returnValue; } });
 console.log('🎯 InstantWay Events loaded');
-console.log('📡 Full app: Landing + Create + Join + Share + Commander Dashboard');
 </script>
 </body>
 </html>
