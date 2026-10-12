@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -38,6 +40,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .btn.ghost{background:transparent;}
 .btn.block{width:100%;}
 .btn.big{padding:20px;font-size:16px;}
+.btn.small{padding:6px 12px;font-size:12px;}
 
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:11px;color:var(--text2);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
@@ -73,17 +76,49 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 
 .footer{padding:16px;text-align:center;font-size:11px;color:var(--text2);}
 .footer a{color:var(--accent);text-decoration:none;}
+
+#cmdMap{width:100%;height:100vh;position:absolute;inset:0;z-index:0;background:#0a0a14;}
+.cmd-overlay{position:relative;z-index:10;pointer-events:none;height:100vh;}
+.cmd-overlay > *{pointer-events:auto;}
+.cmd-topbar{position:absolute;top:0;left:0;right:0;background:linear-gradient(180deg, rgba(12,13,18,0.95) 0%, rgba(12,13,18,0.7) 70%, transparent 100%);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.cmd-topbar .title{font-family:var(--font-display);font-weight:800;font-size:16px;color:var(--text);}
+.cmd-topbar .title .sub{font-size:11px;color:var(--text2);font-weight:600;display:block;margin-top:2px;}
+.cmd-topbar .stats{display:flex;gap:8px;align-items:center;}
+.cmd-pill{background:rgba(0,0,0,0.6);border:1px solid var(--border2);border-radius:20px;padding:6px 12px;font-size:12px;color:var(--text);font-weight:700;backdrop-filter:blur(6px);}
+.cmd-pill.green{color:var(--success);border-color:rgba(45,212,191,0.4);}
+.cmd-pill.red{color:var(--danger);border-color:rgba(239,68,68,0.5);animation:pulse-red 1s infinite;}
+.cmd-pill.yellow{color:var(--warn);border-color:rgba(251,191,36,0.4);}
+@keyframes pulse-red{0%,100%{background:rgba(239,68,68,0.15);}50%{background:rgba(239,68,68,0.35);}}
+
+.officer-marker{width:32px;height:32px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;cursor:pointer;transition:transform 0.2s;position:relative;}
+.officer-marker:hover{transform:scale(1.15);}
+.officer-marker.available{background:var(--success);}
+.officer-marker.busy{background:var(--warn);color:#0c0d12;}
+.officer-marker.break{background:#3b82f6;}
+.officer-marker.emergency{background:var(--danger);animation:pulse-marker 0.8s infinite;}
+@keyframes pulse-marker{0%,100%{box-shadow:0 2px 12px rgba(0,0,0,0.6),0 0 0 0 rgba(239,68,68,0.7);}50%{box-shadow:0 2px 12px rgba(0,0,0,0.6),0 0 0 14px rgba(239,68,68,0);}}
+.officer-marker .initial{font-family:var(--font-display);}
+
+.officer-popup{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:12px 14px;min-width:200px;box-shadow:var(--shadow);}
+.officer-popup h4{margin:0 0 4px 0;font-size:14px;color:var(--text);font-family:var(--font-display);}
+.officer-popup .role{font-size:11px;color:var(--text2);margin-bottom:6px;}
+.officer-popup .meta{font-size:11px;color:var(--text2);margin-bottom:4px;}
+.officer-popup .meta b{color:var(--text);}
+
+.cmd-bottom{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg, rgba(12,13,18,0.95) 0%, rgba(12,13,18,0.6) 70%, transparent 100%);padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.cmd-bottom .hint{font-size:11px;color:var(--text2);}
+
+.cmd-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;background:rgba(0,0,0,0.8);border-radius:12px;padding:20px 30px;text-align:center;backdrop-filter:blur(10px);}
+.cmd-loading .spinner{width:28px;height:28px;border-width:3px;}
 </style>
 </head>
-<body>
-<div id="app">
-  <!-- ═══════════ TOPBAR ═══════════ -->
+  <div id="app">
+
 <div class="topbar">
   <h1 onclick="goHome()">🎯 InstantWay Events</h1>
   <div class="sub" id="topSub"></div>
 </div>
 
-<!-- ═══════════ VIEW: LANDING ═══════════ -->
 <div id="view-landing" class="page">
   <div class="landing-hero">
     <div class="logo">🎯</div>
@@ -132,7 +167,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: ORGANIZER — CREATE ═══════════ -->
 <div id="view-organizer-create" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
 
@@ -159,7 +193,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: ORGANIZER — SHOW CODE ═══════════ -->
 <div id="view-organizer-code" class="page" style="display:none;">
   <div class="okbox">✅ Event created successfully</div>
 
@@ -190,7 +223,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: OFFICER — JOIN ═══════════ -->
 <div id="view-officer-join" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
 
@@ -225,7 +257,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: OFFICER — WAITING ═══════════ -->
 <div id="view-officer-waiting" class="page" style="display:none;">
   <div class="card" style="text-align:center;padding:40px 20px;">
     <div class="spinner" style="width:32px;height:32px;border-width:3px;"></div>
@@ -233,7 +264,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: OFFICER — ACTIVE ═══════════ -->
 <div id="view-officer-active" class="page" style="display:none;padding:0;">
   <div style="padding:24px 16px;text-align:center;">
     <div style="font-size:64px;margin-bottom:8px;">📡</div>
@@ -271,7 +301,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: SHARE LOCATION ═══════════ -->
 <div id="view-share-location" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
 
@@ -303,7 +332,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: SHARE — SHOW CODE ═══════════ -->
 <div id="view-share-code" class="page" style="display:none;">
   <div class="okbox">✅ Broadcasting your location</div>
 
@@ -329,7 +357,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: VIEW SHARED LOCATION ═══════════ -->
 <div id="view-view-shared" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
 
@@ -348,7 +375,6 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: COMMANDER LOGIN ═══════════ -->
 <div id="view-commander-login" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
 
@@ -369,22 +395,38 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: COMMANDER DASHBOARD (placeholder) ═══════════ -->
-<div id="view-commander-dash" class="page" style="display:none;">
-  <div class="card" style="text-align:center;padding:40px 20px;">
-    <div style="font-size:64px;margin-bottom:12px;">🎯</div>
-    <h2 style="font-size:22px;margin-bottom:8px;">Commander Dashboard</h2>
-    <p class="hint">Coming in Chunk 2 of the next update — the live officer map.</p>
-    <p class="hint" style="margin-top:12px;">Event: <strong id="cmdEventName"></strong></p>
-    <p class="hint">Code: <strong id="cmdEventCode"></strong></p>
-    <button class="btn primary" onclick="goHome()" style="margin-top:20px;">← Back to home</button>
+<div id="view-commander-dash" style="display:none;position:fixed;inset:0;">
+  <div id="cmdMap"></div>
+
+  <div class="cmd-overlay">
+    <div class="cmd-topbar">
+      <div class="title">
+        <span id="cmdEventName">—</span>
+        <span class="sub">Event code: <b id="cmdEventCode">------</b></span>
+      </div>
+      <div class="stats">
+        <div class="cmd-pill green" id="cmdOnlineCount">🟢 0 online</div>
+        <div class="cmd-pill red" id="cmdSosCount" style="display:none;">🆘 0 SOS</div>
+        <button class="btn small ghost" onclick="exitCommanderView()" style="background:rgba(0,0,0,0.5);">✕ Exit</button>
+      </div>
+    </div>
+
+    <div class="cmd-bottom">
+      <div class="hint">Auto-refreshing every 3 seconds · Tap a dot for details</div>
+      <button class="btn small" onclick="centerMap()">🎯 Center all</button>
+    </div>
+  </div>
+
+  <div class="cmd-loading" id="cmdLoading">
+    <div class="spinner"></div>
+    <p style="margin-top:10px;font-size:13px;color:var(--text2);">Loading live map…</p>
   </div>
 </div>
 
 </div>
-<script>
+  <script>
 /* =========================================================
-   INSTANTWAY EVENTS — Chunk 1: Landing + Event Creation + Officer Join
+   INSTANTWAY EVENTS — Full app
    Uses the SAME Supabase project as your existing index.html
    ========================================================= */
 
@@ -395,6 +437,7 @@ const SB_HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer '+SUPABAS
 
 /* ---------- utilities ---------- */
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escHtml(s){ return esc(s); }
 function uid(p){ return p+'_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-5); }
 function genCode(){ 
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -406,7 +449,7 @@ function toast(msg){
   let el = document.getElementById('toastEl');
   if(!el){ 
     el = document.createElement('div'); el.id='toastEl';
-    el.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90%;text-align:center;';
+    el.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90%;text-align:center;';
     document.body.appendChild(el);
   }
   el.textContent = msg; el.style.display='block';
@@ -478,6 +521,9 @@ function showView(name){
 }
 function goHome(){
   stopGeolocation();
+  if(typeof cmdRefreshTimer !== 'undefined' && cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer = null; }
+  if(typeof cmdMap !== 'undefined' && cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap = null; }
+  if(typeof cmdMarkers !== 'undefined'){ cmdMarkers = {}; }
   state.event = null;
   state.officer = null;
   state.share = null;
@@ -621,7 +667,7 @@ async function joinAsOfficer(){
   btn.innerHTML = '📍 Start broadcasting my location';
 }
 </script>
-<script>
+  <script>
 /* ---------- GEOLOCATION ---------- */
 function startGeolocation(){
   return new Promise((resolve, reject) => {
@@ -644,9 +690,13 @@ function startGeolocation(){
         resolve();
       },
       (err) => {
-        document.getElementById('gpsStatus').textContent = '❌ Location denied';
-        document.getElementById('gpsStatus').style.color = '#ef4444';
-        document.getElementById('gpsCoords').textContent = 'Enable location permission in browser settings';
+        const s = document.getElementById('gpsStatus');
+        if(s){
+          s.textContent = '❌ Location denied';
+          s.style.color = '#ef4444';
+        }
+        const c = document.getElementById('gpsCoords');
+        if(c) c.textContent = 'Enable location permission in browser settings';
         reject(new Error('Location permission denied'));
       },
       { enableHighAccuracy: true, timeout: 15000 }
@@ -859,10 +909,12 @@ async function viewSharedLocation(){
   if(!event || event.type !== 'share'){ toast('Share code not found or expired'); return; }
   if(event.expiresAt && Date.now() > event.expiresAt){ toast('This share has expired'); return; }
 
-  toast('Opening map view — coming in Chunk 3');
+  toast('Opening map view — coming in the next update');
 }
 
-/* ---------- COMMANDER LOGIN ---------- */
+/* ---------- COMMANDER DASHBOARD ---------- */
+let cmdMap = null, cmdMarkers = {}, cmdRefreshTimer = null;
+
 async function commanderLogin(){
   const pwEl = document.getElementById('cmdPassword');
   const errEl = document.getElementById('cmdLoginError');
@@ -876,7 +928,144 @@ async function commanderLogin(){
 
   document.getElementById('cmdEventName').textContent = state.event.name;
   document.getElementById('cmdEventCode').textContent = state.event.code;
+  document.getElementById('topSub').textContent = 'Commander: ' + state.event.name;
   showView('commander-dash');
+
+  setTimeout(() => initCommanderMap(), 100);
+}
+
+function initCommanderMap(){
+  if(cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap = null; }
+  cmdMarkers = {};
+
+  const container = document.getElementById('cmdMap');
+  if(!container) return;
+
+  cmdMap = L.map('cmdMap', {
+    center: [-1.2864, 36.8172],
+    zoom: 15,
+    zoomControl: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19
+  }).addTo(cmdMap);
+
+  const loading = document.getElementById('cmdLoading');
+  if(loading) loading.style.display = 'none';
+
+  refreshOfficerPositions();
+  cmdRefreshTimer = setInterval(refreshOfficerPositions, 3000);
+}
+
+function exitCommanderView(){
+  if(cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer = null; }
+  if(cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap = null; }
+  cmdMarkers = {};
+  goHome();
+}
+
+async function refreshOfficerPositions(){
+  if(!state.event || !cmdMap) return;
+  try{
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/positions?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,
+      { headers: SB_HEADERS }
+    );
+    if(!res.ok) return;
+    const rows = await res.json();
+
+    const seenIds = new Set();
+    let onlineCount = 0;
+    let sosCount = 0;
+
+    rows.forEach(row => {
+      const data = row.data;
+      if(!data || !data.lat || !data.lng) return;
+      seenIds.add(row.id);
+
+      const ageSec = Math.round((Date.now() - data.ts) / 1000);
+      const online = ageSec < 60;
+      if(online) onlineCount++;
+      if(data.status === 'emergency' && online) sosCount++;
+
+      let statusClass = 'available';
+      let statusEmoji = '🟢';
+      if(data.status === 'busy'){ statusClass = 'busy'; statusEmoji = '🟡'; }
+      else if(data.status === 'break'){ statusClass = 'break'; statusEmoji = '🔵'; }
+      else if(data.status === 'emergency'){ statusClass = 'emergency'; statusEmoji = '🔴'; }
+
+      const opacity = online ? 1 : 0.35;
+      const initial = (data.name || '?').charAt(0).toUpperCase();
+      const iconHtml = `<div class="officer-marker ${statusClass}" style="opacity:${opacity};"><span class="initial">${initial}</span></div>`;
+      const icon = L.divIcon({
+        html: iconHtml,
+        className: '',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+
+      const popupHtml = `
+        <div class="officer-popup">
+          <h4>${escHtml(data.name || 'Officer')}</h4>
+          <div class="role">${escHtml(data.role || 'Officer')}</div>
+          <div class="meta">Status: <b>${statusEmoji} ${escHtml(data.status || 'available')}</b></div>
+          <div class="meta">Last seen: <b>${ageSec < 5 ? 'just now' : ageSec + 's ago'}</b></div>
+          <div class="meta">Accuracy: ±${Math.round(data.accuracy||0)}m</div>
+        </div>
+      `;
+
+      if(cmdMarkers[row.id]){
+        cmdMarkers[row.id].setLatLng([data.lat, data.lng]);
+        cmdMarkers[row.id].setIcon(icon);
+        cmdMarkers[row.id].setPopupContent(popupHtml);
+      } else {
+        const marker = L.marker([data.lat, data.lng], { icon }).addTo(cmdMap);
+        marker.bindPopup(popupHtml);
+        cmdMarkers[row.id] = marker;
+      }
+    });
+
+    Object.keys(cmdMarkers).forEach(id => {
+      if(!seenIds.has(id)){
+        cmdMap.removeLayer(cmdMarkers[id]);
+        delete cmdMarkers[id];
+      }
+    });
+
+    const onlineEl = document.getElementById('cmdOnlineCount');
+    if(onlineEl) onlineEl.textContent = '🟢 ' + onlineCount + ' online';
+
+    const sosEl = document.getElementById('cmdSosCount');
+    if(sosEl){
+      if(sosCount > 0){
+        sosEl.style.display = 'inline-block';
+        sosEl.textContent = '🆘 ' + sosCount + ' SOS';
+      } else {
+        sosEl.style.display = 'none';
+      }
+    }
+
+    if(!cmdMap._fittedOnce && Object.keys(cmdMarkers).length > 0){
+      centerMap();
+      cmdMap._fittedOnce = true;
+    }
+
+  }catch(err){
+    console.error('refreshOfficerPositions failed', err);
+  }
+}
+
+function centerMap(){
+  if(!cmdMap) return;
+  const markers = Object.values(cmdMarkers);
+  if(markers.length === 0){
+    cmdMap.setView([-1.2864, 36.8172], 15);
+    return;
+  }
+  const group = L.featureGroup(markers);
+  cmdMap.fitBounds(group.getBounds().pad(0.3));
 }
 
 /* ---------- URL PARAMETER HANDLING ---------- */
@@ -910,7 +1099,8 @@ window.addEventListener('beforeunload', (e) => {
 });
 
 console.log('🎯 InstantWay Events loaded');
-console.log('📡 Chunk 1: Landing + Create + Join complete');
+console.log('📡 Full app: Landing + Create + Join + Share + Commander Dashboard');
 </script>
 </body>
 </html>
+<body>
