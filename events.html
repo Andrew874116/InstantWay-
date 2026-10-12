@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>InstantWay Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --radius:14px;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --bg:#0c0d12; --bg2:#15161f; --bg3:#20222f; --card:#181a24;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.16);
+  --text:#f2f3f7; --text2:#8b8fa3;
+  --accent:#ff6b35; --accent2:#ff8955;
+  --success:#2dd4bf; --danger:#ef4444; --warn:#fbbf24;
+  --shadow:0 12px 40px rgba(0,0,0,0.55);
+}
+html,body{height:100%;}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+h1,h2,h3,.font-display{font-family:var(--font-display);}
+#app{min-height:100vh;display:flex;flex-direction:column;max-width:600px;margin:0 auto;}
+
+/* ---- topbar ---- */
+.topbar{background:var(--bg2);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent);flex-shrink:0;gap:10px;}
+.topbar h1{font-size:18px;color:var(--accent);display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;}
+.topbar .sub{font-size:11px;color:var(--text2);font-weight:600;}
+
+/* ---- buttons ---- */
+.btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:11px 18px;border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.primary:hover{background:var(--accent2);}
+.btn.success{background:var(--success);border-color:var(--success);color:#0c0d12;}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff;}
+.btn.ghost{background:transparent;}
+.btn.block{width:100%;}
+.btn.big{padding:20px;font-size:16px;}
+
+/* ---- fields ---- */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;color:var(--text2);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:15px;outline:none;font-family:inherit;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+
+/* ---- page ---- */
+.page{flex:1;padding:20px 16px;overflow-y:auto;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
+
+/* ---- landing tiles ---- */
+.landing-hero{text-align:center;padding:24px 0 20px;}
+.landing-hero .logo{font-size:56px;margin-bottom:8px;}
+.landing-hero h1{font-size:26px;color:var(--text);margin-bottom:4px;}
+.landing-hero p{color:var(--text2);font-size:13px;}
+.tile{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;}
+.tile:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow);}
+.tile .icon{font-size:32px;flex-shrink:0;}
+.tile .text{flex:1;min-width:0;}
+.tile .text h3{font-size:16px;margin-bottom:2px;color:var(--text);}
+.tile .text p{font-size:12px;color:var(--text2);line-height:1.4;}
+.tile .arrow{color:var(--text2);font-size:20px;}
+
+/* ---- error/success boxes ---- */
+.errbox{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
+.okbox{background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.4);color:var(--success);padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
+.warnbox{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:var(--warn);padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
+.hint{font-size:12px;color:var(--text2);line-height:1.5;}
+
+/* ---- code display ---- */
+.bigcode{background:var(--bg3);border:2px dashed var(--accent);border-radius:12px;padding:20px;text-align:center;margin:16px 0;}
+.bigcode .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.bigcode .code{font-family:var(--font-display);font-size:42px;font-weight:800;color:var(--accent);letter-spacing:8px;}
+
+/* ---- spinners ---- */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---- footer ---- */
+.footer{padding:16px;text-align:center;font-size:11px;color:var(--text2);}
+.footer a{color:var(--accent);text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══════════ TOPBAR ═══════════ -->
+<div class="topbar">
+  <h1 onclick="goHome()">🎯 InstantWay Events</h1>
+  <div class="sub" id="topSub"></div>
+</div>
+
+<!-- ═══════════ VIEW: LANDING ═══════════ -->
+<div id="view-landing" class="page">
+  <div class="landing-hero">
+    <div class="logo">🎯</div>
+    <h1>InstantWay Events</h1>
+    <p>Live officer tracking for events — no app install</p>
+  </div>
+
+  <div class="tile" onclick="showView('organizer-create')">
+    <div class="icon">🎯</div>
+    <div class="text">
+      <h3>I'm an event organizer</h3>
+      <p>Create an event, get a code, share with your team</p>
+    </div>
+    <div class="arrow">→</div>
+  </div>
+
+  <div class="tile" onclick="showView('officer-join')">
+    <div class="icon">👮</div>
+    <div class="text">
+      <h3>I'm an officer</h3>
+      <p>Join with a code from your commander</p>
+    </div>
+    <div class="arrow">→</div>
+  </div>
+
+  <div class="tile" onclick="showView('share-location')">
+    <div class="icon">📍</div>
+    <div class="text">
+      <h3>Share my location</h3>
+      <p>Get a code — friend enters it and sees you live</p>
+    </div>
+    <div class="arrow">→</div>
+  </div>
+
+  <div class="tile" onclick="window.location.href='index.html'">
+    <div class="icon">🏪</div>
+    <div class="text">
+      <h3>I'm a shopper</h3>
+      <p>Store navigation — scan a QR code inside</p>
+    </div>
+    <div class="arrow">→</div>
+  </div>
+
+  <div class="footer">
+    <p>InstantWay · Live locator for events</p>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: ORGANIZER — CREATE ═══════════ -->
+<div id="view-organizer-create" class="page" style="display:none;">
+  <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
+
+  <div class="card">
+    <h2 style="font-size:20px;margin-bottom:6px;">Create an event</h2>
+    <p class="hint" style="margin-bottom:18px;">You'll get a code. Officers enter it to join your live map.</p>
+
+    <div id="createError"></div>
+
+    <div class="field">
+      <label>Event name</label>
+      <input id="newEventName" placeholder="e.g. Blankets & Wine 15 Feb" maxlength="60">
+    </div>
+
+    <div class="field">
+      <label>Commander password</label>
+      <input id="newEventPassword" type="password" placeholder="Protect your command screen">
+      <p class="hint" style="margin-top:4px;">Only you (the commander) need this. Officers just use the event code.</p>
+    </div>
+
+    <button class="btn primary block" id="createEventBtn" onclick="createEvent()">
+      Create event & get code
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: ORGANIZER — SHOW CODE ═══════════ -->
+<div id="view-organizer-code" class="page" style="display:none;">
+  <div class="okbox">✅ Event created successfully</div>
+
+  <div class="card">
+    <h2 style="font-size:18px;margin-bottom:4px;" id="eventTitle"></h2>
+    <p class="hint">Share this code with your officers</p>
+
+    <div class="bigcode">
+      <div class="lbl">Event code</div>
+      <div class="code" id="eventCode">------</div>
+    </div>
+
+    <button class="btn primary block" onclick="copyOfficerLink()" style="margin-bottom:10px;">
+      📋 Copy officer invite link
+    </button>
+    <button class="btn block" onclick="copyEventCode()">
+      🔢 Copy code only
+    </button>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+
+    <button class="btn primary block big" onclick="enterCommanderView()">
+      🎯 Enter Commander Dashboard →
+    </button>
+    <p class="hint" style="margin-top:8px;text-align:center;">
+      You'll need your commander password (set earlier)
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: OFFICER — JOIN ═══════════ -->
+<div id="view-officer-join" class="page" style="display:none;">
+  <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
+
+  <div class="card">
+    <h2 style="font-size:20px;margin-bottom:6px;">Join as officer</h2>
+    <p class="hint" style="margin-bottom:18px;">Enter the code your commander sent you.</p>
+
+    <div id="joinError"></div>
+
+    <div class="field">
+      <label>Event code</label>
+      <input id="joinCode" placeholder="e.g. AB12CD" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:22px;text-align:center;font-weight:700;font-family:var(--font-display);" oninput="this.value=this.value.toUpperCase()">
+    </div>
+
+    <div class="field">
+      <label>Your name</label>
+      <input id="joinName" placeholder="e.g. Officer Kamau" maxlength="40">
+    </div>
+
+    <div class="field">
+      <label>Your role (optional)</label>
+      <input id="joinRole" placeholder="e.g. Gate C supervisor" maxlength="40">
+    </div>
+
+    <button class="btn primary block big" id="joinBtn" onclick="joinAsOfficer()">
+      📍 Start broadcasting my location
+    </button>
+
+    <p class="hint" style="margin-top:12px;text-align:center;">
+      Your commander will see you on the live map
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: OFFICER — ACTIVE ═══════════ -->
+<div id="view-officer-active" class="page" style="display:none;padding:0;">
+  <div style="padding:24px 16px;text-align:center;">
+    <div style="font-size:64px;margin-bottom:8px;">📡</div>
+    <h2 style="font-size:22px;margin-bottom:6px;">Broadcasting live</h2>
+    <p class="hint" id="officerEventName"></p>
+  </div>
+
+  <div style="padding:0 16px;">
+    <div class="card" style="text-align:center;padding:16px;">
+      <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">GPS status</div>
+      <div id="gpsStatus" style="font-size:16px;font-weight:700;color:var(--success);">Getting location…</div>
+      <div id="gpsCoords" class="hint" style="margin-top:6px;"></div>
+      <div id="lastSent" class="hint" style="margin-top:4px;"></div>
+    </div>
+
+    <div class="card" style="padding:16px;">
+      <div class="field" style="margin-bottom:10px;">
+        <label>My status</label>
+        <select id="officerStatus" onchange="updateMyStatus(this.value)">
+          <option value="available">🟢 Available</option>
+          <option value="busy">🟡 Busy</option>
+          <option value="break">🔵 On break</option>
+          <option value="emergency">🔴 Emergency</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn danger block big" onclick="triggerSOS()" style="margin-bottom:10px;padding:22px;font-size:18px;">
+      🆘 SOS — Alert commander
+    </button>
+
+    <button class="btn ghost block" onclick="stopBroadcasting()" style="margin-bottom:20px;">
+      ⏹ Stop broadcasting
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: SHARE LOCATION ═══════════ -->
+<div id="view-share-location" class="page" style="display:none;">
+  <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
+
+  <div class="card">
+    <h2 style="font-size:20px;margin-bottom:6px;">Share my location</h2>
+    <p class="hint" style="margin-bottom:18px;">Get a code. Your friend enters it in this app and sees you live for as long as you choose.</p>
+
+    <div id="shareError"></div>
+
+    <div class="field">
+      <label>Your name (shown to viewer)</label>
+      <input id="shareName" placeholder="e.g. Jane" maxlength="30">
+    </div>
+
+    <div class="field">
+      <label>Stop sharing after</label>
+      <select id="shareDuration">
+        <option value="15">15 minutes</option>
+        <option value="30">30 minutes</option>
+        <option value="60" selected>1 hour</option>
+        <option value="180">3 hours</option>
+        <option value="480">8 hours</option>
+      </select>
+    </div>
+
+    <button class="btn primary block big" onclick="startShareLocation()">
+      📍 Generate my share code
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: SHARE — SHOW CODE ═══════════ -->
+<div id="view-share-code" class="page" style="display:none;">
+  <div class="okbox">✅ Broadcasting your location</div>
+
+  <div class="card">
+    <p class="hint" style="text-align:center;">Give this code to the person you want to see you</p>
+
+    <div class="bigcode">
+      <div class="lbl">Share code</div>
+      <div class="code" id="shareCode">------</div>
+    </div>
+
+    <button class="btn primary block" onclick="copyShareCode()" style="margin-bottom:10px;">
+      📋 Copy code
+    </button>
+
+    <div style="text-align:center;font-size:12px;color:var(--text2);" id="shareExpiry"></div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0;">
+
+    <button class="btn ghost block" onclick="stopSharing()">
+      ⏹ Stop sharing
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: VIEW SHARED LOCATION (enter code) ═══════════ -->
+<div id="view-view-shared" class="page" style="display:none;">
+  <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
+
+  <div class="card">
+    <h2 style="font-size:20px;margin-bottom:6px;">See someone's location</h2>
+    <p class="hint" style="margin-bottom:18px;">Enter the 6-digit code they shared with you.</p>
+
+    <div class="field">
+      <label>Share code</label>
+      <input id="viewCode" placeholder="------" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:22px;text-align:center;font-weight:700;font-family:var(--font-display);" oninput="this.value=this.value.toUpperCase()">
+    </div>
+
+    <button class="btn primary block big" onclick="viewSharedLocation()">
+      👀 View location
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: COMMANDER LOGIN ═══════════ -->
+<div id="view-commander-login" class="page" style="display:none;">
+  <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
+
+  <div class="card">
+    <h2 style="font-size:20px;margin-bottom:6px;" id="cmdLoginTitle">Commander login</h2>
+    <p class="hint" style="margin-bottom:18px;">Enter the password you set when creating this event.</p>
+
+    <div id="cmdLoginError"></div>
+
+    <div class="field">
+      <label>Commander password</label>
+      <input id="cmdPassword" type="password" placeholder="••••••••">
+    </div>
+
+    <button class="btn primary block big" id="cmdLoginBtn" onclick="commanderLogin()">
+      🎯 Enter Command Dashboard
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: COMMANDER DASHBOARD (placeholder for Chunk 2) ═══════════ -->
+<div id="view-commander-dash" class="page" style="display:none;">
+  <div class="card" style="text-align:center;padding:40px 20px;">
+    <div style="font-size:64px;margin-bottom:12px;">🎯</div>
+    <h2 style="font-size:22px;margin-bottom:8px;">Commander Dashboard</h2>
+    <p class="hint">Coming in Chunk 2 — the live officer map.</p>
+    <p class="hint" style="margin-top:12px;">Event: <strong id="cmdEventName"></strong></p>
+    <p class="hint">Code: <strong id="cmdEventCode"></strong></p>
+    <button class="btn primary" onclick="goHome()" style="margin-top:20px;">← Back to home</button>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: OFFICER — WAITING (between join and active) ═══════════ -->
+<div id="view-officer-waiting" class="page" style="display:none;">
+  <div class="card" style="text-align:center;padding:40px 20px;">
+    <div class="spinner" style="width:32px;height:32px;border-width:3px;"></div>
+    <p style="margin-top:16px;" id="waitingMsg">Joining event…</p>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* =========================================================
+   INSTANTWAY EVENTS — Chunk 1: Landing + Event Creation + Officer Join
+   Uses the SAME Supabase project as your existing index.html
+   ========================================================= */
+
+/* ---------- Supabase config (same as index.html) ---------- */
+const SUPABASE_URL = 'https://xrfrpilaztdczednjyhg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhyZnJwaWxhenRkY3plZG5qeWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUxNTczMTEsImV4cCI6MjEwMDczMzMxMX0.uJWhXjUdnuQux24hs1_BCHT70gQUyf0v_Fc0WYMHarM';
+const SB_HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer '+SUPABASE_ANON_KEY };
+
+/* ---------- utilities ---------- */
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid(p){ return p+'_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-5); }
+function genCode(){ 
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I, O, 0, 1 (avoid confusion)
+  let code = '';
+  for(let i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  return code;
+}
+function toast(msg){
+  let el = document.getElementById('toastEl');
+  if(!el){ 
+    el = document.createElement('div'); el.id='toastEl';
+    el.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:90%;text-align:center;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg; el.style.display='block';
+  clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.display='none'; }, 2500);
+}
+
+/* ---------- Supabase helpers ---------- */
+async function sbGet(table, id){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}&select=data`, { headers: SB_HEADERS });
+    if(!res.ok) return null;
+    const rows = await res.json();
+    return rows.length ? rows[0].data : null;
+  }catch(e){ console.error('sbGet failed', e); return null; }
+}
+async function sbSet(table, id, data, eventId){
+  try{
+    const body = { id, data };
+    if(eventId) body.event_id = eventId;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method:'POST',
+      headers: Object.assign({}, SB_HEADERS, {'Content-Type':'application/json', 'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body: JSON.stringify(body)
+    });
+    return res.ok;
+  }catch(e){ console.error('sbSet failed', e); return false; }
+}
+async function sbDelete(table, id){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, { method:'DELETE', headers: SB_HEADERS });
+    return res.ok;
+  }catch(e){ return false; }
+}
+
+/* ---------- state ---------- */
+const state = {
+  currentView: 'landing',
+  event: null,        // { code, name, password, createdAt }
+  officer: null,      // { id, name, role, status }
+  share: null,        // { code, name, expiresAt }
+  watchId: null,      // geolocation watch id
+  broadcastTimer: null,
+  lastPosition: null
+};
+
+/* ---------- view management ---------- */
+const VIEWS = {
+  landing: 'view-landing',
+  'organizer-create': 'view-organizer-create',
+  'organizer-code': 'view-organizer-code',
+  'officer-join': 'view-officer-join',
+  'officer-waiting': 'view-officer-waiting',
+  'officer-active': 'view-officer-active',
+  'share-location': 'view-share-location',
+  'share-code': 'view-share-code',
+  'view-shared': 'view-view-shared',
+  'commander-login': 'view-commander-login',
+  'commander-dash': 'view-commander-dash'
+};
+function showView(name){
+  Object.values(VIEWS).forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  const target = document.getElementById(VIEWS[name]);
+  if(target) target.style.display = 'block';
+  state.currentView = name;
+  window.scrollTo(0,0);
+}
+function goHome(){
+  stopGeolocation();
+  state.event = null;
+  state.officer = null;
+  state.share = null;
+  document.getElementById('topSub').textContent = '';
+  showView('landing');
+}
+
+/* ---------- ORGANIZER: CREATE EVENT ---------- */
+async function createEvent(){
+  const nameEl = document.getElementById('newEventName');
+  const pwEl = document.getElementById('newEventPassword');
+  const errEl = document.getElementById('createError');
+  errEl.innerHTML = '';
+
+  const name = nameEl.value.trim();
+  const password = pwEl.value.trim();
+
+  if(!name){ errEl.innerHTML = '<div class="errbox">Please enter an event name.</div>'; return; }
+  if(password.length < 4){ errEl.innerHTML = '<div class="errbox">Password must be at least 4 characters.</div>'; return; }
+
+  const btn = document.getElementById('createEventBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Creating event…';
+
+  try{
+    // Generate unique code (retry if collision)
+    let code, attempts = 0;
+    do{
+      code = genCode();
+      const existing = await sbGet('events', code);
+      if(!existing) break;
+      attempts++;
+    } while(attempts < 5);
+
+    const eventData = {
+      code,
+      name,
+      password,   // ⚠️ Note: not hashed for v1 — acceptable for event use case
+      createdAt: Date.now(),
+      status: 'active'
+    };
+
+    const ok = await sbSet('events', code, eventData);
+    if(!ok) throw new Error('Failed to save event');
+
+    state.event = eventData;
+
+    // Show the code view
+    document.getElementById('eventTitle').textContent = name;
+    document.getElementById('eventCode').textContent = code;
+    document.getElementById('topSub').textContent = 'Event: ' + name;
+    showView('organizer-code');
+
+  }catch(err){
+    console.error(err);
+    errEl.innerHTML = '<div class="errbox">Error creating event: ' + esc(err.message) + '</div>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Create event & get code';
+}
+
+function copyOfficerLink(){
+  if(!state.event) return;
+  const link = location.origin + location.pathname + '?code=' + state.event.code;
+  copyText(link, 'Officer link copied — send via WhatsApp to your team');
+}
+function copyEventCode(){
+  if(!state.event) return;
+  copyText(state.event.code, 'Event code copied');
+}
+function copyShareCode(){
+  if(!state.share) return;
+  copyText(state.share.code, 'Share code copied');
+}
+function copyText(text, successMsg){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>toast(successMsg)).catch(()=>{
+      // Fallback
+      const el = document.createElement('textarea'); el.value = text;
+      document.body.appendChild(el); el.select(); document.execCommand('copy');
+      document.body.removeChild(el); toast(successMsg);
+    });
+  } else {
+    const el = document.createElement('textarea'); el.value = text;
+    document.body.appendChild(el); el.select(); document.execCommand('copy');
+    document.body.removeChild(el); toast(successMsg);
+  }
+}
+
+function enterCommanderView(){
+  if(!state.event) return;
+  document.getElementById('cmdLoginTitle').textContent = 'Commander login — ' + state.event.name;
+  showView('commander-login');
+}
+
+/* ---------- OFFICER: JOIN ---------- */
+async function joinAsOfficer(){
+  const codeEl = document.getElementById('joinCode');
+  const nameEl = document.getElementById('joinName');
+  const roleEl = document.getElementById('joinRole');
+  const errEl = document.getElementById('joinError');
+  errEl.innerHTML = '';
+
+  const code = codeEl.value.trim().toUpperCase();
+  const name = nameEl.value.trim();
+  const role = roleEl.value.trim();
+
+  if(code.length !== 6){ errEl.innerHTML = '<div class="errbox">Event code must be 6 characters.</div>'; return; }
+  if(!name){ errEl.innerHTML = '<div class="errbox">Please enter your name.</div>'; return; }
+
+  const btn = document.getElementById('joinBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Joining…';
+
+  try{
+    // Verify event exists
+    const event = await sbGet('events', code);
+    if(!event){ errEl.innerHTML = '<div class="errbox">Event not found. Check the code with your commander.</div>'; btn.disabled=false; btn.innerHTML='📍 Start broadcasting my location'; return; }
+
+    state.event = event;
+    state.officer = {
+      id: uid('off'),
+      name,
+      role: role || 'Officer',
+      status: 'available',
+      joinedAt: Date.now()
+    };
+
+    // Show waiting view briefly
+    document.getElementById('waitingMsg').textContent = 'Requesting location permission…';
+    showView('officer-waiting');
+
+    // Request geolocation
+    await startGeolocation();
+
+    // Move to active view
+    document.getElementById('officerEventName').textContent = event.name;
+    document.getElementById('topSub').textContent = 'Officer: ' + name;
+    showView('officer-active');
+
+  }catch(err){
+    console.error(err);
+    errEl.innerHTML = '<div class="errbox">Error joining: ' + esc(err.message) + '</div>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '📍 Start broadcasting my location';
+}
+
+/* ---------- GEOLOCATION ---------- */
+function startGeolocation(){
+  return new Promise((resolve, reject) => {
+    if(!navigator.geolocation){ 
+      reject(new Error('Geolocation not supported on this device'));
+      return;
+    }
+
+    // Get initial position immediately
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        handlePosition(pos);
+        // Then start continuous watching
+        state.watchId = navigator.geolocation.watchPosition(
+          handlePosition,
+          (err) => console.error('Watch error:', err),
+          { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
+        );
+        // Also start a periodic broadcast in case watch doesn't fire often enough
+        state.broadcastTimer = setInterval(() => {
+          if(state.lastPosition) broadcastPosition(state.lastPosition);
+        }, 5000);
+        resolve();
+      },
+      (err) => {
+        document.getElementById('gpsStatus').textContent = '❌ Location denied';
+        document.getElementById('gpsStatus').style.color = '#ef4444';
+        document.getElementById('gpsCoords').textContent = 'Enable location permission in browser settings';
+        reject(new Error('Location permission denied'));
+      },
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
+  });
+}
+
+function handlePosition(pos){
+  const coords = {
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude,
+    accuracy: pos.coords.accuracy,
+    ts: Date.now()
+  };
+  state.lastPosition = coords;
+
+  // Update UI
+  const statusEl = document.getElementById('gpsStatus');
+  const coordsEl = document.getElementById('gpsCoords');
+  const sentEl = document.getElementById('lastSent');
+  if(statusEl){
+    statusEl.textContent = '🟢 GPS active';
+    statusEl.style.color = '#2dd4bf';
+  }
+  if(coordsEl) coordsEl.textContent = coords.lat.toFixed(5) + ', ' + coords.lng.toFixed(5) + ' (±' + Math.round(coords.accuracy) + 'm)';
+
+  // Broadcast to Supabase
+  broadcastPosition(coords);
+}
+
+async function broadcastPosition(coords){
+  if(!state.event || !state.officer) return;
+
+  const positionId = state.event.code + '_' + state.officer.id;
+  const positionData = {
+    officerId: state.officer.id,
+    name: state.officer.name,
+    role: state.officer.role,
+    status: state.officer.status,
+    lat: coords.lat,
+    lng: coords.lng,
+    accuracy: coords.accuracy,
+    ts: coords.ts
+  };
+
+  const ok = await sbSet('positions', positionId, positionData, state.event.code);
+  if(ok){
+    const sentEl = document.getElementById('lastSent');
+    if(sentEl) sentEl.textContent = 'Sent ' + new Date().toLocaleTimeString();
+  }
+}
+
+async function updateMyStatus(newStatus){
+  if(!state.officer) return;
+  state.officer.status = newStatus;
+  if(state.lastPosition) await broadcastPosition(state.lastPosition);
+  toast('Status: ' + newStatus);
+}
+
+async function triggerSOS(){
+  if(!state.officer || !state.lastPosition){ toast('No position yet — wait for GPS'); return; }
+  const ok = confirm('Send SOS to commander?');
+  if(!ok) return;
+
+  state.officer.status = 'emergency';
+  document.getElementById('officerStatus').value = 'emergency';
+  await broadcastPosition(state.lastPosition);
+  toast('🆘 SOS sent — commander notified');
+}
+
+async function stopBroadcasting(){
+  const ok = confirm('Stop broadcasting? Your commander will no longer see you.');
+  if(!ok) return;
+
+  stopGeolocation();
+
+  // Remove position from Supabase
+  if(state.event && state.officer){
+    const positionId = state.event.code + '_' + state.officer.id;
+    await sbDelete('positions', positionId);
+  }
+
+  goHome();
+}
+
+function stopGeolocation(){
+  if(state.watchId != null){
+    navigator.geolocation.clearWatch(state.watchId);
+    state.watchId = null;
+  }
+  if(state.broadcastTimer){
+    clearInterval(state.broadcastTimer);
+    state.broadcastTimer = null;
+  }
+}
+
+/* ---------- SHARE LOCATION (B2C) ---------- */
+async function startShareLocation(){
+  const nameEl = document.getElementById('shareName');
+  const durEl = document.getElementById('shareDuration');
+  const errEl = document.getElementById('shareError');
+  errEl.innerHTML = '';
+
+  const name = nameEl.value.trim() || 'Someone';
+  const durationMin = parseInt(durEl.value);
+
+  const btn = document.querySelector('#view-share-location .btn.primary');
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Requesting location…'; }
+
+  try{
+    // Generate unique code
+    let code, attempts = 0;
+    do{
+      code = genCode();
+      const existing = await sbGet('events', code);
+      if(!existing) break;
+      attempts++;
+    } while(attempts < 5);
+
+    const expiresAt = Date.now() + durationMin*60*1000;
+    const shareData = {
+      code,
+      name,
+      type: 'share',
+      expiresAt,
+      createdAt: Date.now()
+    };
+
+    const ok = await sbSet('events', code, shareData);
+    if(!ok) throw new Error('Failed to create share code');
+
+    state.share = shareData;
+
+    // Request location and start broadcasting
+    await startShareGeolocation();
+
+    // Show code view
+    document.getElementById('shareCode').textContent = code;
+    document.getElementById('shareExpiry').textContent = 'Stops sharing at ' + new Date(expiresAt).toLocaleTimeString();
+    document.getElementById('topSub').textContent = 'Sharing as ' + name;
+    showView('share-code');
+
+  }catch(err){
+    console.error(err);
+    errEl.innerHTML = '<div class="errbox">Error: ' + esc(err.message) + '</div>';
+  }
+
+  if(btn){ btn.disabled = false; btn.innerHTML = '📍 Generate my share code'; }
+}
+
+function startShareGeolocation(){
+  return new Promise((resolve, reject) => {
+    if(!navigator.geolocation){ reject(new Error('Geolocation not supported')); return; }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        handleSharePosition(pos);
+        state.watchId = navigator.geolocation.watchPosition(
+          handleSharePosition,
+          (err) => console.error('Watch error:', err),
+          { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
+        );
+        state.broadcastTimer = setInterval(() => {
+          if(state.lastPosition) broadcastSharePosition(state.lastPosition);
+        }, 5000);
+        resolve();
+      },
+      (err) => reject(new Error('Location permission denied')),
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
+  });
+}
+
+function handleSharePosition(pos){
+  const coords = {
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude,
+    accuracy: pos.coords.accuracy,
+    ts: Date.now()
+  };
+  state.lastPosition = coords;
+  broadcastSharePosition(coords);
+}
+
+async function broadcastSharePosition(coords){
+  if(!state.share) return;
+  const positionId = state.share.code + '_sharer';
+  const data = {
+    name: state.share.name,
+    lat: coords.lat,
+    lng: coords.lng,
+    accuracy: coords.accuracy,
+    ts: coords.ts,
+    expiresAt: state.share.expiresAt
+  };
+  await sbSet('positions', positionId, data, state.share.code);
+}
+
+async function stopSharing(){
+  const ok = confirm('Stop sharing your location?');
+  if(!ok) return;
+  stopGeolocation();
+  if(state.share){
+    await sbDelete('positions', state.share.code + '_sharer');
+    await sbDelete('events', state.share.code);
+  }
+  goHome();
+}
+
+async function viewSharedLocation(){
+  const codeEl = document.getElementById('viewCode');
+  const code = codeEl.value.trim().toUpperCase();
+  if(code.length !== 6){ toast('Code must be 6 characters'); return; }
+
+  const event = await sbGet('events', code);
+  if(!event || event.type !== 'share'){ toast('Share code not found or expired'); return; }
+  if(event.expiresAt && Date.now() > event.expiresAt){ toast('This share has expired'); return; }
+
+  toast('Opening map view — coming in Chunk 3');
+  // Will be replaced with actual viewer in Chunk 3
+}
+
+/* ---------- COMMANDER LOGIN ---------- */
+async function commanderLogin(){
+  const pwEl = document.getElementById('cmdPassword');
+  const errEl = document.getElementById('cmdLoginError');
+  errEl.innerHTML = '';
+
+  if(!state.event){ errEl.innerHTML = '<div class="errbox">No event loaded.</div>'; return; }
+  if(pwEl.value !== state.event.password){
+    errEl.innerHTML = '<div class="errbox">Incorrect password.</div>';
+    return;
+  }
+
+  document.getElementById('cmdEventName').textContent = state.event.name;
+  document.getElementById('cmdEventCode').textContent = state.event.code;
+  showView('commander-dash');
+}
+
+/* ---------- URL PARAMETER HANDLING ---------- */
+async function handleUrlParams(){
+  const p = new URLSearchParams(location.search);
+  const code = p.get('code');
+  if(code){
+    // Auto-fill join form
+    document.getElementById('joinCode').value = code.toUpperCase();
+    // Pre-verify the event
+    const event = await sbGet('events', code.toUpperCase());
+    if(event){
+      document.getElementById('topSub').textContent = 'Event: ' + event.name;
+      toast('Event found: ' + event.name);
+    } else {
+      toast('Event not found');
+    }
+    showView('officer-join');
+  }
+}
+
+/* ---------- INIT ---------- */
+handleUrlParams();
+
+// Warn if leaving while broadcasting
+window.addEventListener('beforeunload', (e) => {
+  if(state.watchId != null){
+    e.preventDefault();
+    e.returnValue = 'You are still broadcasting your location.';
+    return e.returnValue;
+  }
+});
+
+console.log('🎯 InstantWay Events loaded');
+console.log('📡 Chunk 1: Landing + Create + Join complete');
+</script>
+</body>
+</html>
