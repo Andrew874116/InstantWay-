@@ -25,12 +25,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 h1,h2,h3,.font-display{font-family:var(--font-display);}
 #app{min-height:100vh;display:flex;flex-direction:column;max-width:600px;margin:0 auto;}
 
-/* ---- topbar ---- */
 .topbar{background:var(--bg2);padding:12px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent);flex-shrink:0;gap:10px;}
 .topbar h1{font-size:18px;color:var(--accent);display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;}
 .topbar .sub{font-size:11px;color:var(--text2);font-weight:600;}
 
-/* ---- buttons ---- */
 .btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:11px 18px;border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;}
 .btn:hover{background:var(--accent);border-color:var(--accent);color:#fff;}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
@@ -41,17 +39,14 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .btn.block{width:100%;}
 .btn.big{padding:20px;font-size:16px;}
 
-/* ---- fields ---- */
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:11px;color:var(--text2);font-weight:700;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
 .field input,.field select,.field textarea{width:100%;padding:12px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:15px;outline:none;font-family:inherit;}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
 
-/* ---- page ---- */
 .page{flex:1;padding:20px 16px;overflow-y:auto;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px;}
 
-/* ---- landing tiles ---- */
 .landing-hero{text-align:center;padding:24px 0 20px;}
 .landing-hero .logo{font-size:56px;margin-bottom:8px;}
 .landing-hero h1{font-size:26px;color:var(--text);margin-bottom:4px;}
@@ -64,30 +59,25 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .tile .text p{font-size:12px;color:var(--text2);line-height:1.4;}
 .tile .arrow{color:var(--text2);font-size:20px;}
 
-/* ---- error/success boxes ---- */
 .errbox{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
 .okbox{background:rgba(45,212,191,.12);border:1px solid rgba(45,212,191,.4);color:var(--success);padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
 .warnbox{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.4);color:var(--warn);padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:12px;line-height:1.5;}
 .hint{font-size:12px;color:var(--text2);line-height:1.5;}
 
-/* ---- code display ---- */
 .bigcode{background:var(--bg3);border:2px dashed var(--accent);border-radius:12px;padding:20px;text-align:center;margin:16px 0;}
 .bigcode .lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
 .bigcode .code{font-family:var(--font-display);font-size:42px;font-weight:800;color:var(--accent);letter-spacing:8px;}
 
-/* ---- spinners ---- */
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ---- footer ---- */
 .footer{padding:16px;text-align:center;font-size:11px;color:var(--text2);}
 .footer a{color:var(--accent);text-decoration:none;}
 </style>
 </head>
 <body>
 <div id="app">
-
-<!-- ═══════════ TOPBAR ═══════════ -->
+  <!-- ═══════════ TOPBAR ═══════════ -->
 <div class="topbar">
   <h1 onclick="goHome()">🎯 InstantWay Events</h1>
   <div class="sub" id="topSub"></div>
@@ -163,7 +153,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
       <p class="hint" style="margin-top:4px;">Only you (the commander) need this. Officers just use the event code.</p>
     </div>
 
-    <button class="btn primary block" id="createEventBtn" onclick="createEvent()">
+    <button class="btn primary block" id="createEventBtn" onclick="doCreateEvent()">
       Create event & get code
     </button>
   </div>
@@ -232,6 +222,14 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
     <p class="hint" style="margin-top:12px;text-align:center;">
       Your commander will see you on the live map
     </p>
+  </div>
+</div>
+
+<!-- ═══════════ VIEW: OFFICER — WAITING ═══════════ -->
+<div id="view-officer-waiting" class="page" style="display:none;">
+  <div class="card" style="text-align:center;padding:40px 20px;">
+    <div class="spinner" style="width:32px;height:32px;border-width:3px;"></div>
+    <p style="margin-top:16px;" id="waitingMsg">Joining event…</p>
   </div>
 </div>
 
@@ -331,7 +329,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: VIEW SHARED LOCATION (enter code) ═══════════ -->
+<!-- ═══════════ VIEW: VIEW SHARED LOCATION ═══════════ -->
 <div id="view-view-shared" class="page" style="display:none;">
   <button class="btn ghost" onclick="goHome()" style="margin-bottom:16px;">← Back</button>
 
@@ -371,28 +369,19 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   </div>
 </div>
 
-<!-- ═══════════ VIEW: COMMANDER DASHBOARD (placeholder for Chunk 2) ═══════════ -->
+<!-- ═══════════ VIEW: COMMANDER DASHBOARD (placeholder) ═══════════ -->
 <div id="view-commander-dash" class="page" style="display:none;">
   <div class="card" style="text-align:center;padding:40px 20px;">
     <div style="font-size:64px;margin-bottom:12px;">🎯</div>
     <h2 style="font-size:22px;margin-bottom:8px;">Commander Dashboard</h2>
-    <p class="hint">Coming in Chunk 2 — the live officer map.</p>
+    <p class="hint">Coming in Chunk 2 of the next update — the live officer map.</p>
     <p class="hint" style="margin-top:12px;">Event: <strong id="cmdEventName"></strong></p>
     <p class="hint">Code: <strong id="cmdEventCode"></strong></p>
     <button class="btn primary" onclick="goHome()" style="margin-top:20px;">← Back to home</button>
   </div>
 </div>
 
-<!-- ═══════════ VIEW: OFFICER — WAITING (between join and active) ═══════════ -->
-<div id="view-officer-waiting" class="page" style="display:none;">
-  <div class="card" style="text-align:center;padding:40px 20px;">
-    <div class="spinner" style="width:32px;height:32px;border-width:3px;"></div>
-    <p style="margin-top:16px;" id="waitingMsg">Joining event…</p>
-  </div>
 </div>
-
-</div>
-
 <script>
 /* =========================================================
    INSTANTWAY EVENTS — Chunk 1: Landing + Event Creation + Officer Join
@@ -408,7 +397,7 @@ const SB_HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer '+SUPABAS
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function uid(p){ return p+'_'+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-5); }
 function genCode(){ 
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I, O, 0, 1 (avoid confusion)
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = '';
   for(let i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
   return code;
@@ -455,10 +444,10 @@ async function sbDelete(table, id){
 /* ---------- state ---------- */
 const state = {
   currentView: 'landing',
-  event: null,        // { code, name, password, createdAt }
-  officer: null,      // { id, name, role, status }
-  share: null,        // { code, name, expiresAt }
-  watchId: null,      // geolocation watch id
+  event: null,
+  officer: null,
+  share: null,
+  watchId: null,
   broadcastTimer: null,
   lastPosition: null
 };
@@ -497,7 +486,7 @@ function goHome(){
 }
 
 /* ---------- ORGANIZER: CREATE EVENT ---------- */
-async function createEvent(){
+async function doCreateEvent(){
   const nameEl = document.getElementById('newEventName');
   const pwEl = document.getElementById('newEventPassword');
   const errEl = document.getElementById('createError');
@@ -514,7 +503,6 @@ async function createEvent(){
   btn.innerHTML = '<span class="spinner"></span> Creating event…';
 
   try{
-    // Generate unique code (retry if collision)
     let code, attempts = 0;
     do{
       code = genCode();
@@ -526,7 +514,7 @@ async function createEvent(){
     const eventData = {
       code,
       name,
-      password,   // ⚠️ Note: not hashed for v1 — acceptable for event use case
+      password,
       createdAt: Date.now(),
       status: 'active'
     };
@@ -536,7 +524,6 @@ async function createEvent(){
 
     state.event = eventData;
 
-    // Show the code view
     document.getElementById('eventTitle').textContent = name;
     document.getElementById('eventCode').textContent = code;
     document.getElementById('topSub').textContent = 'Event: ' + name;
@@ -567,7 +554,6 @@ function copyShareCode(){
 function copyText(text, successMsg){
   if(navigator.clipboard){
     navigator.clipboard.writeText(text).then(()=>toast(successMsg)).catch(()=>{
-      // Fallback
       const el = document.createElement('textarea'); el.value = text;
       document.body.appendChild(el); el.select(); document.execCommand('copy');
       document.body.removeChild(el); toast(successMsg);
@@ -605,7 +591,6 @@ async function joinAsOfficer(){
   btn.innerHTML = '<span class="spinner"></span> Joining…';
 
   try{
-    // Verify event exists
     const event = await sbGet('events', code);
     if(!event){ errEl.innerHTML = '<div class="errbox">Event not found. Check the code with your commander.</div>'; btn.disabled=false; btn.innerHTML='📍 Start broadcasting my location'; return; }
 
@@ -618,14 +603,11 @@ async function joinAsOfficer(){
       joinedAt: Date.now()
     };
 
-    // Show waiting view briefly
     document.getElementById('waitingMsg').textContent = 'Requesting location permission…';
     showView('officer-waiting');
 
-    // Request geolocation
     await startGeolocation();
 
-    // Move to active view
     document.getElementById('officerEventName').textContent = event.name;
     document.getElementById('topSub').textContent = 'Officer: ' + name;
     showView('officer-active');
@@ -638,7 +620,8 @@ async function joinAsOfficer(){
   btn.disabled = false;
   btn.innerHTML = '📍 Start broadcasting my location';
 }
-
+</script>
+<script>
 /* ---------- GEOLOCATION ---------- */
 function startGeolocation(){
   return new Promise((resolve, reject) => {
@@ -647,17 +630,14 @@ function startGeolocation(){
       return;
     }
 
-    // Get initial position immediately
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         handlePosition(pos);
-        // Then start continuous watching
         state.watchId = navigator.geolocation.watchPosition(
           handlePosition,
           (err) => console.error('Watch error:', err),
           { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 }
         );
-        // Also start a periodic broadcast in case watch doesn't fire often enough
         state.broadcastTimer = setInterval(() => {
           if(state.lastPosition) broadcastPosition(state.lastPosition);
         }, 5000);
@@ -683,7 +663,6 @@ function handlePosition(pos){
   };
   state.lastPosition = coords;
 
-  // Update UI
   const statusEl = document.getElementById('gpsStatus');
   const coordsEl = document.getElementById('gpsCoords');
   const sentEl = document.getElementById('lastSent');
@@ -693,7 +672,6 @@ function handlePosition(pos){
   }
   if(coordsEl) coordsEl.textContent = coords.lat.toFixed(5) + ', ' + coords.lng.toFixed(5) + ' (±' + Math.round(coords.accuracy) + 'm)';
 
-  // Broadcast to Supabase
   broadcastPosition(coords);
 }
 
@@ -743,7 +721,6 @@ async function stopBroadcasting(){
 
   stopGeolocation();
 
-  // Remove position from Supabase
   if(state.event && state.officer){
     const positionId = state.event.code + '_' + state.officer.id;
     await sbDelete('positions', positionId);
@@ -777,7 +754,6 @@ async function startShareLocation(){
   if(btn){ btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Requesting location…'; }
 
   try{
-    // Generate unique code
     let code, attempts = 0;
     do{
       code = genCode();
@@ -800,10 +776,8 @@ async function startShareLocation(){
 
     state.share = shareData;
 
-    // Request location and start broadcasting
     await startShareGeolocation();
 
-    // Show code view
     document.getElementById('shareCode').textContent = code;
     document.getElementById('shareExpiry').textContent = 'Stops sharing at ' + new Date(expiresAt).toLocaleTimeString();
     document.getElementById('topSub').textContent = 'Sharing as ' + name;
@@ -886,7 +860,6 @@ async function viewSharedLocation(){
   if(event.expiresAt && Date.now() > event.expiresAt){ toast('This share has expired'); return; }
 
   toast('Opening map view — coming in Chunk 3');
-  // Will be replaced with actual viewer in Chunk 3
 }
 
 /* ---------- COMMANDER LOGIN ---------- */
@@ -911,9 +884,7 @@ async function handleUrlParams(){
   const p = new URLSearchParams(location.search);
   const code = p.get('code');
   if(code){
-    // Auto-fill join form
     document.getElementById('joinCode').value = code.toUpperCase();
-    // Pre-verify the event
     const event = await sbGet('events', code.toUpperCase());
     if(event){
       document.getElementById('topSub').textContent = 'Event: ' + event.name;
@@ -923,12 +894,13 @@ async function handleUrlParams(){
     }
     showView('officer-join');
   }
+  const intent = p.get('intent');
+  if(intent === 'share'){ showView('share-location'); }
 }
 
 /* ---------- INIT ---------- */
 handleUrlParams();
 
-// Warn if leaving while broadcasting
 window.addEventListener('beforeunload', (e) => {
   if(state.watchId != null){
     e.preventDefault();
