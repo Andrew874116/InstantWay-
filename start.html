@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>InstantWay — Choose Mode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --radius:16px;
+  --font-display:'Space Grotesk',system-ui,sans-serif;
+  --font-body:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --bg:#0c0d12; --bg2:#15161f; --bg3:#20222f; --card:#181a24;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.16);
+  --text:#f2f3f7; --text2:#8b8fa3;
+  --accent:#ff6b35; --accent2:#ff8955;
+  --events:#2dd4bf; --events2:#14b8a6;
+  --share:#a78bfa; --share2:#8b5cf6;
+  --shadow:0 12px 40px rgba(0,0,0,0.55);
+}
+html,body{height:100%;}
+body{
+  font-family:var(--font-body);background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(255,107,53,0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(45,212,191,0.08) 0%, transparent 40%);
+}
+#app{min-height:100vh;display:flex;flex-direction:column;max-width:520px;margin:0 auto;padding:24px 20px;}
+h1,h2,h3,.font-display{font-family:var(--font-display);}
+
+/* ---- hero ---- */
+.hero{text-align:center;padding:32px 0 24px;flex-shrink:0;}
+.hero .logo{
+  font-size:64px;margin-bottom:12px;
+  animation:float 3s ease-in-out infinite;
+  display:inline-block;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.hero h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;}
+.hero .tag{font-size:14px;color:var(--text2);line-height:1.5;}
+
+/* ---- mode tiles ---- */
+.modes{flex:1;display:flex;flex-direction:column;gap:14px;padding:12px 0;}
+.tile{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:20px;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;gap:16px;
+  text-decoration:none;color:var(--text);position:relative;overflow:hidden;
+}
+.tile::before{
+  content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;
+  background:linear-gradient(135deg, var(--tile-color,var(--accent))22 0%, transparent 60%);
+  pointer-events:none;
+}
+.tile:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--tile-color,var(--accent));}
+.tile:hover::before{opacity:1;}
+.tile:active{transform:translateY(-1px);}
+.tile .icon{
+  font-size:36px;flex-shrink:0;width:56px;height:56px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--tile-color,var(--accent))18;
+  border-radius:14px;
+  border:1px solid var(--tile-color,var(--accent))33;
+}
+.tile .text{flex:1;min-width:0;position:relative;z-index:1;}
+.tile .text h3{font-size:17px;font-weight:700;margin-bottom:3px;color:var(--text);}
+.tile .text p{font-size:12.5px;color:var(--text2);line-height:1.4;}
+.tile .arrow{
+  color:var(--tile-color,var(--accent));font-size:22px;font-weight:700;
+  transition:transform .2s;position:relative;z-index:1;
+}
+.tile:hover .arrow{transform:translateX(4px);}
+
+/* ---- mode-specific colors ---- */
+.tile.events{--tile-color:var(--events);}
+.tile.store{--tile-color:var(--accent);}
+.tile.share{--tile-color:var(--share);}
+
+/* ---- footer links ---- */
+.footer-links{
+  display:flex;justify-content:center;gap:20px;
+  padding:20px 0 8px;flex-wrap:wrap;flex-shrink:0;
+}
+.footer-links a{
+  color:var(--text2);font-size:12px;text-decoration:none;
+  transition:color .2s;font-weight:600;padding:8px 12px;border-radius:8px;
+}
+.footer-links a:hover{color:var(--accent);background:var(--bg2);}
+
+.version{
+  text-align:center;font-size:10px;color:var(--text2);
+  opacity:0.4;padding-top:12px;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="hero">
+    <div class="logo">🧭</div>
+    <h1>InstantWay</h1>
+    <div class="tag">Choose how you want to use it</div>
+  </div>
+
+  <div class="modes">
+
+    <a class="tile events" href="events.html">
+      <div class="icon">🎯</div>
+      <div class="text">
+        <h3>Events Mode</h3>
+        <p>Live officer tracking & share location for events</p>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="tile store" href="index.html">
+      <div class="icon">🏪</div>
+      <div class="text">
+        <h3>Store Mode</h3>
+        <p>In-store navigation for shoppers — scan a QR code</p>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <a class="tile share" href="events.html#share">
+      <div class="icon">📍</div>
+      <div class="text">
+        <h3>Share My Location</h3>
+        <p>Send a code — someone enters it and sees you live</p>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+  </div>
+
+  <div class="footer-links">
+    <a href="index.html?owner=1">Platform Owner</a>
+    <a href="events.html?mode=organizer">Event Organizer</a>
+    <a href="events.html?mode=officer">Join as Officer</a>
+  </div>
+
+  <div class="version">InstantWay v1 · Mode Picker</div>
+
+</div>
+
+<script>
+/* ============================================================
+   Mode Picker — Quick navigation hub
+   Auto-redirects if a URL parameter hints at the intended mode.
+   ============================================================ */
+
+(function(){
+  const p = new URLSearchParams(location.search);
+  // If someone lands on start.html with ?mode= or ?code= or ?owner=,
+  // redirect them straight to the right page — no need to pick again.
+  const ownerParam = p.get('owner');
+  const codeParam = p.get('code');
+  const storeParam = p.get('store');
+  const modeParam = p.get('mode');
+
+  if(ownerParam === '1'){ location.replace('index.html?owner=1'); return; }
+  if(codeParam){ location.replace('events.html?code=' + codeParam); return; }
+  if(storeParam){ location.replace('index.html?store=' + storeParam); return; }
+  if(modeParam === 'organizer'){ location.replace('events.html'); return; }
+  if(modeParam === 'officer'){ location.replace('events.html'); return; }
+
+  // Deep-link hash routing: #share → events share location flow
+  if(location.hash === '#share'){
+    // events.html handles its own internal routing; pass the intent through
+    setTimeout(()=>{ location.replace('events.html?intent=share'); }, 100);
+  }
+})();
+</script>
+
+</body>
+</html>
