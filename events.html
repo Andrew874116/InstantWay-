@@ -443,6 +443,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
     </div>
     <div class="officer-golive-card">
   <div style="font-family:var(--op-font-mono);font-size:10px;color:var(--op-text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">LIVE VIDEO TO COMMAND</div>
+  <video id="videoLocalPreview" autoplay muted playsinline style="display:none;width:100%;max-height:220px;object-fit:cover;border-radius:8px;background:#000;margin-bottom:12px;"></video>
   <button id="goLiveBtn" class="officer-golive-btn" onclick="toggleGoLive()">
     <span class="rec-dot"></span> GO LIVE
   </button>
@@ -546,6 +547,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
     <div class="op-video-header">
       <div class="live-dot"></div>
       <div class="info">LIVE — <b id="videoModalOfficerName">Officer</b></div>
+      <select id="broadcastSelect" onchange="selectCommanderBroadcast(this.value)" style="max-width:150px;background:#111820;color:#e5e7eb;border:1px solid #2a3543;padding:6px;border-radius:3px;font-size:11px;"><option value="">Choose officer…</option></select>
       <div class="timer" id="videoModalTimer">00:00</div>
       <button onclick="closeVideoModal()">✕ Close</button>
     </div>
@@ -870,7 +872,7 @@ function renderEventZones(){
   (Array.isArray(state.event&&state.event.zones)?state.event.zones:[]).forEach(zone=>{
     if(!zone.geometry)return;
     const layer=L.geoJSON(zone.geometry,{style:{color:'#f59e0b',weight:2,fillOpacity:.10}}).getLayers()[0];
-    if(layer){layer._instantZoneId=zone.id;layer.bindTooltip(escHtml(zone.name),{permanent:true,direction:'center',className:'zone-label'});layer.bindPopup('<b>'+escHtml(zone.name)+'</b><br><small>Snap uses zone center only when GPS accuracy is adequate.</small>');cmdZoneLayers.addLayer(layer);}
+    if(layer){layer._instantZoneId=zone.id;layer.bindTooltip(escHtml(zone.name),{permanent:true,direction:'center',className:'zone-label'});layer.bindPopup('<b>'+escHtml(zone.name)+'</b><br><small>Click to rename this zone. Snap uses its center when GPS accuracy is adequate.</small>');layer.on('click',async function(){const next=prompt('Rename zone:',zone.name);if(!next||!next.trim()||next.trim()===zone.name)return;await saveEventZones((state.event.zones||[]).map(z=>z.id===zone.id?Object.assign({},z,{name:next.trim(),updatedAt:Date.now()}):z));});cmdZoneLayers.addLayer(layer);}
     const editable=L.geoJSON(zone.geometry).getLayers()[0];
     if(editable){editable._instantZoneId=zone.id;cmdDrawnZones.addLayer(editable);}
   });
@@ -950,7 +952,7 @@ function initCommanderMap(){
   cmdMap.on(L.Draw.Event.DELETED,async e=>{const ids=new Set();e.layers.eachLayer(l=>{if(l._instantZoneId)ids.add(l._instantZoneId);});await saveEventZones((state.event.zones||[]).filter(z=>!ids.has(z.id)));});
   const loading=document.getElementById('cmdLoading'); if(loading) loading.style.display='none';
   renderEventZones();refreshOfficerPositions();
-  cmdRefreshTimer=setInterval(refreshOfficerPositions,3000);
+  cmdRefreshTimer=setInterval(()=>{refreshOfficerPositions();if(currentOfficerId)refreshSelectedOfficerMessages();},3000);
   startCommanderBroadcastPolling();
 }
 function exitCommanderView(){
@@ -959,7 +961,7 @@ function exitCommanderView(){
   if(state.zoneRefreshTimer){clearInterval(state.zoneRefreshTimer);state.zoneRefreshTimer=null;}
   if(commanderBroadcastPoll){ clearInterval(commanderBroadcastPoll); commanderBroadcastPoll=null; }
   if(window._commanderPC){ try{ window._commanderPC.close(); }catch(e){} window._commanderPC = null; }
-  commanderActiveBroadcast = null;
+  commanderActiveBroadcast = null;commanderLiveBroadcasts=[];
 }
 async function refreshOfficerPositions(){
   if(!state.event||!cmdMap) return;
@@ -1114,6 +1116,8 @@ async function startGoLive(){
       video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: true
     });
+    const preview=document.getElementById('videoLocalPreview');
+    if(preview){preview.srcObject=myLocalStream;preview.style.display='block';preview.play().catch(()=>{});}
 
     broadcasting = true;
     broadcastStartTs = Date.now();
@@ -1158,6 +1162,7 @@ async function startGoLive(){
   }catch(err){
     console.error('Camera start failed:',err);broadcasting=false;
     if(myLocalStream){myLocalStream.getTracks().forEach(t=>t.stop());myLocalStream=null;}
+    const preview=document.getElementById('videoLocalPreview');if(preview){preview.srcObject=null;preview.style.display='none';}
     if(myPeerConnection){try{myPeerConnection.close();}catch(e){}myPeerConnection=null;}
     if(btn){ btn.disabled = false; btn.innerHTML = '<span class="rec-dot"></span> GO LIVE'; }
     const reason=err&&err.name==='NotAllowedError'?'Allow camera and microphone permissions in browser settings.':err&&err.name==='NotFoundError'?'No camera or microphone was found.':err&&err.name==='NotReadableError'?'Camera is busy in another app. Close it and retry.':err&&err.name==='SecurityError'?'Camera requires HTTPS. Open the secure Vercel URL.':'Could not start camera: '+(err&&err.message?err.message:'unknown error');
@@ -1201,6 +1206,7 @@ async function stopGoLive(){
 
   if(myPeerConnection){ try{ myPeerConnection.close(); }catch(e){} myPeerConnection = null; }
   if(myLocalStream){ myLocalStream.getTracks().forEach(t => t.stop()); myLocalStream = null; }
+  const preview=document.getElementById('videoLocalPreview');if(preview){preview.srcObject=null;preview.style.display='none';}
 
   // Mark as ended in Supabase
   if(state.event && state.officer){
@@ -1218,6 +1224,7 @@ async function stopGoLive(){
 /* ═══════════ GO LIVE VIDEO — COMMANDER SIDE ═══════════ */
 let commanderBroadcastPoll = null;
 let commanderActiveBroadcast = null;
+let commanderLiveBroadcasts = [];
 
 function startCommanderBroadcastPolling(){
   if(commanderBroadcastPoll) return;
@@ -1242,18 +1249,21 @@ async function checkForBroadcasts(){
       }
     });
 
+    commanderLiveBroadcasts = liveOnes;
+    const select=document.getElementById('broadcastSelect');
+    if(select){
+      const selected=select.value;
+      select.innerHTML='<option value="">Choose officer…</option>'+liveOnes.map(b=>'<option value="'+escHtml(b.id)+'">'+escHtml((b.data&&b.data.fromOfficer)||b.id)+'</option>').join('');
+      if(liveOnes.some(b=>b.id===selected))select.value=selected;
+    }
     if(liveOnes.length > 0){
-      const active = liveOnes[liveOnes.length - 1];
-      if(!commanderActiveBroadcast || commanderActiveBroadcast.id !== active.id){
-        commanderActiveBroadcast = active;
-        showBroadcastBar(active);
-      }
+      const active=liveOnes.find(b=>b.id===(select&&select.value))||liveOnes[liveOnes.length-1];
+      commanderActiveBroadcast=active;if(select)select.value=active.id;showBroadcastBar(active);
+      const name=document.getElementById('broadcastBarName');if(name)name.textContent=liveOnes.length+' officer'+(liveOnes.length===1?'':'s')+' live · '+((active.data&&active.data.fromOfficer)||'Officer');
       updateBroadcastTimer(active);
     } else {
-      if(commanderActiveBroadcast){
-        hideBroadcastBar();
-        commanderActiveBroadcast = null;
-      }
+      if(commanderActiveBroadcast){hideBroadcastBar();commanderActiveBroadcast=null;}
+      if(select)select.innerHTML='<option value="">No live officers</option>';
     }
   }catch(err){ console.error(err); }
 }
@@ -1287,6 +1297,13 @@ async function openBroadcastFromBar(){
   if(!commanderActiveBroadcast) return;
   document.getElementById('videoModal').classList.add('show');
   await connectToBroadcast(commanderActiveBroadcast);
+}
+async function selectCommanderBroadcast(id){
+  if(!id)return;
+  const broadcast=commanderLiveBroadcasts.find(b=>b.id===id);if(!broadcast)return;
+  commanderActiveBroadcast=broadcast;
+  const name=document.getElementById('broadcastBarName');if(name)name.textContent=commanderLiveBroadcasts.length+' officer'+(commanderLiveBroadcasts.length===1?'':'s')+' live · '+((broadcast.data&&broadcast.data.fromOfficer)||'Officer');
+  if(document.getElementById('videoModal').classList.contains('show'))await connectToBroadcast(broadcast);
 }
 
 async function connectToBroadcast(broadcast){
