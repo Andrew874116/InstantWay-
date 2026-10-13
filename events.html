@@ -856,7 +856,9 @@ function pointInZone(lat,lng,zone){
 function findZoneForPosition(coords,zones){
   const zone=(Array.isArray(zones)?zones:[]).find(z=>pointInZone(coords.lat,coords.lng,z));
   if(!zone)return {zone:null,lowConfidence:(coords.accuracy||999)>25};
-  return {zone,lowConfidence:(coords.accuracy||999)>35};
+  // Only snap to a zone center when reported GPS accuracy is within 15m.
+  // Poorer fixes retain raw coordinates and are visibly marked low confidence.
+  return {zone,lowConfidence:(coords.accuracy||999)>15};
 }
 async function saveEventZones(zones){
   if(!state.event)return;
