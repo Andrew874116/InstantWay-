@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -314,6 +316,13 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   0%,100%{ box-shadow:0 0 0 1px rgba(0,0,0,0.6), 0 0 0 4px rgba(239,68,68,0.5), 0 0 12px rgba(239,68,68,0.6); }
   50%{ box-shadow:0 0 0 1px rgba(0,0,0,0.6), 0 0 0 8px rgba(239,68,68,0.2), 0 0 20px rgba(239,68,68,0.8); }
 }
+.zone-label{background:#111820;color:#fff;border:1px solid #f59e0b;border-radius:3px;padding:3px 6px;font:700 11px 'JetBrains Mono',monospace;white-space:nowrap;box-shadow:0 2px 8px #0008;}
+.zone-help{position:absolute;left:12px;top:76px;z-index:1000;background:rgba(10,14,20,.94);border:1px solid #2a3543;color:#e5e7eb;border-radius:5px;padding:8px 10px;font:10px 'JetBrains Mono',monospace;max-width:220px;pointer-events:none;}
+.officer-zone-banner{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);padding:12px;border-radius:8px;margin-bottom:12px;font-size:13px;color:#fcd34d;}
+.op-comms-log .op-msg{margin:6px 0;padding:8px 10px;border-radius:6px;background:#1b2632;font-size:12px;overflow-wrap:anywhere;}
+.op-comms-log .op-msg.from-command{border-left:3px solid #f59e0b;}
+.op-comms-log .op-msg.from-officer{border-left:3px solid #10b981;}
+#officerChatLog{max-height:180px;overflow:auto;}
 </style>
 </head>
 <body>
@@ -413,6 +422,15 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
       <div id="gpsCoords" class="hint" style="margin-top:6px;"></div>
       <div id="lastSent" class="hint" style="margin-top:4px;"></div>
     </div>
+    <div id="officerZoneBanner" class="officer-zone-banner" style="display:none;"></div>
+    <div class="card" style="padding:16px;">
+      <div style="font-family:var(--op-font-mono);font-size:10px;color:var(--op-text-muted);margin-bottom:8px;">COMMAND CHAT</div>
+      <div id="officerChatLog" class="op-comms-log"><div class="op-comms-empty">No messages yet</div></div>
+      <div class="op-comms-input" style="display:flex;gap:6px;margin-top:8px;">
+        <input id="officerChatInput" placeholder="Reply to command…" onkeydown="if(event.key==='Enter') officerSendMessage()" style="min-width:0;flex:1;background:var(--op-panel-2);color:var(--op-text);border:1px solid var(--op-border-2);padding:10px;border-radius:4px;">
+        <button class="btn small" onclick="officerSendMessage()">Send</button>
+      </div>
+    </div>
     <div class="card" style="padding:16px;">
       <div class="field" style="margin-bottom:10px;"><label>My status</label>
         <select id="officerStatus" onchange="updateMyStatus(this.value)">
@@ -503,8 +521,9 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
         <button class="btn small ghost" onclick="exitCommanderView()" style="background:rgba(0,0,0,0.5);">✕ Exit</button>
       </div>
     </div>
+    <div class="zone-help">ZONE SETUP: use the draw tools on the map to add a rectangle or polygon. Tap a zone to rename it.</div>
     <div class="cmd-bottom">
-      <div class="hint">Auto-refreshing every 3 seconds · Tap a dot for details</div>
+      <div class="hint">Live map · draw venue zones from the map toolbar</div>
       <button class="btn small" onclick="centerMap()">🎯 Center all</button>
     </div>
   </div>
@@ -618,7 +637,9 @@ async function sbDelete(table,id){
   }catch(e){ return false; }
 }
 
-const state={ currentView:'landing', event:null, officer:null, share:null, watchId:null, broadcastTimer:null, lastPosition:null };
+const state={ currentView:'landing', event:null, officer:null, share:null, watchId:null, broadcastTimer:null, lastPosition:null, officerInboxTimer:null, zoneRefreshTimer:null };
+let officerSeenInbox = new Set();
+let officerChatMessages = [];
 const VIEWS={ landing:'view-landing','organizer-create':'view-organizer-create','organizer-code':'view-organizer-code','officer-join':'view-officer-join','officer-waiting':'view-officer-waiting','officer-active':'view-officer-active','share-location':'view-share-location','share-code':'view-share-code','view-shared':'view-view-shared','commander-login':'view-commander-login','commander-dash':'view-commander-dash' };
 function showView(name){
   Object.values(VIEWS).forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
@@ -691,6 +712,8 @@ function startGeolocation(){
       (pos)=>{ handlePosition(pos);
         state.watchId=navigator.geolocation.watchPosition(handlePosition,(err)=>console.error('Watch error:',err),{enableHighAccuracy:true,maximumAge:2000,timeout:15000});
         state.broadcastTimer=setInterval(()=>{ if(state.lastPosition) broadcastPosition(state.lastPosition); },5000);
+        startOfficerInboxPolling();
+        state.zoneRefreshTimer=setInterval(refreshOfficerEventZones,15000);
         resolve();
       },
       (err)=>{ const s=document.getElementById('gpsStatus'); if(s){ s.textContent='❌ Location denied'; s.style.color='#ef4444'; }
@@ -704,6 +727,13 @@ function startGeolocation(){
 function handlePosition(pos){
   const coords={lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy,ts:Date.now()};
   state.lastPosition=coords;
+  const zoneResult=findZoneForPosition(coords,state.event&&state.event.zones||[]);
+  const banner=document.getElementById('officerZoneBanner');
+  if(banner){
+    banner.style.display='block';
+    banner.textContent=zoneResult.zone ? ('📍 Assigned zone: '+zoneResult.zone.name+(zoneResult.lowConfidence?' · GPS confidence low':' · inside zone')) : '⚠ Outside defined zones — sharing raw GPS location';
+    banner.style.color=zoneResult.zone?(zoneResult.lowConfidence?'#fcd34d':'#6ee7b7'):'#fcd34d';
+  }
   const s=document.getElementById('gpsStatus'); const c=document.getElementById('gpsCoords');
   if(s){ s.textContent='🟢 GPS active'; s.style.color='#2dd4bf'; }
   if(c) c.textContent=coords.lat.toFixed(5)+', '+coords.lng.toFixed(5)+' (±'+Math.round(coords.accuracy)+'m)';
@@ -712,7 +742,10 @@ function handlePosition(pos){
 async function broadcastPosition(coords){
   if(!state.event||!state.officer) return;
   const positionId=state.event.code+'_'+state.officer.id;
-  const positionData={ officerId:state.officer.id,name:state.officer.name,role:state.officer.role,status:state.officer.status,lat:coords.lat,lng:coords.lng,accuracy:coords.accuracy,ts:coords.ts };
+  const zoneResult=findZoneForPosition(coords,state.event.zones||[]);
+  const displayLat=zoneResult.zone&&!zoneResult.lowConfidence?zoneResult.zone.center.lat:coords.lat;
+  const displayLng=zoneResult.zone&&!zoneResult.lowConfidence?zoneResult.zone.center.lng:coords.lng;
+  const positionData={ officerId:state.officer.id,name:state.officer.name,role:state.officer.role,status:state.officer.status,lat:displayLat,lng:displayLng,rawLat:coords.lat,rawLng:coords.lng,accuracy:coords.accuracy,zone:zoneResult.zone?zoneResult.zone.name:(zoneResult.lowConfidence?'Low confidence':'Outside zones'),zoneId:zoneResult.zone?zoneResult.zone.id:null,zoneConfidence:zoneResult.zone?(zoneResult.lowConfidence?'low':'high'):'low',ts:coords.ts };
   const ok=await sbSet('positions',positionId,positionData,state.event.code);
   if(ok){ const s=document.getElementById('lastSent'); if(s) s.textContent='Sent '+new Date().toLocaleTimeString(); }
 }
@@ -727,6 +760,8 @@ async function triggerSOS(){
 }
 async function stopBroadcasting(){
   if(!confirm('Stop broadcasting?')) return;
+  if(state.officerInboxTimer){clearInterval(state.officerInboxTimer);state.officerInboxTimer=null;}
+  if(state.zoneRefreshTimer){clearInterval(state.zoneRefreshTimer);state.zoneRefreshTimer=null;}
   stopGeolocation();
   if(state.event&&state.officer){ await sbDelete('positions',state.event.code+'_'+state.officer.id); }
   goHome();
@@ -734,6 +769,8 @@ async function stopBroadcasting(){
 function stopGeolocation(){
   if(state.watchId!=null){ navigator.geolocation.clearWatch(state.watchId); state.watchId=null; }
   if(state.broadcastTimer){ clearInterval(state.broadcastTimer); state.broadcastTimer=null; }
+  if(state.officerInboxTimer){clearInterval(state.officerInboxTimer);state.officerInboxTimer=null;}
+  if(state.zoneRefreshTimer){clearInterval(state.zoneRefreshTimer);state.zoneRefreshTimer=null;}
 }
 
 async function startShareLocation(){
@@ -796,7 +833,99 @@ async function viewSharedLocation(){
   toast('Opening map view — coming in the next update');
 }
 
+function zoneFromGeometry(geometry,name,id){
+  if(!geometry||geometry.type!=='Polygon'||!geometry.coordinates||!geometry.coordinates[0])return null;
+  const ring=geometry.coordinates[0];
+  if(ring.length<4)return null;
+  const points=ring.slice(0,-1).map(p=>({lat:p[1],lng:p[0]}));
+  const center={lat:points.reduce((a,p)=>a+p.lat,0)/points.length,lng:points.reduce((a,p)=>a+p.lng,0)/points.length};
+  return {id:id||uid('zone'),name,geometry:{type:'Polygon',coordinates:[ring]},points,center,updatedAt:Date.now()};
+}
+function pointInZone(lat,lng,zone){
+  const pts=zone&&zone.points;
+  if(!pts||pts.length<3)return false;
+  let inside=false;
+  for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+    const xi=pts[i].lng,yi=pts[i].lat,xj=pts[j].lng,yj=pts[j].lat;
+    if(((yi>lat)!==(yj>lat))&&(lng<(xj-xi)*(lat-yi)/((yj-yi)||1e-12)+xi))inside=!inside;
+  }
+  return inside;
+}
+function findZoneForPosition(coords,zones){
+  const zone=(Array.isArray(zones)?zones:[]).find(z=>pointInZone(coords.lat,coords.lng,z));
+  if(!zone)return {zone:null,lowConfidence:(coords.accuracy||999)>25};
+  return {zone,lowConfidence:(coords.accuracy||999)>35};
+}
+async function saveEventZones(zones){
+  if(!state.event)return;
+  const latest=await sbGet('events',state.event.code)||state.event;
+  latest.zones=zones;
+  const ok=await sbSet('events',state.event.code,latest);
+  if(!ok){toast('Could not save zones. Check Supabase permissions.');return;}
+  state.event=latest;renderEventZones();toast('Venue zones saved');
+}
+function renderEventZones(){
+  if(!cmdMap||!cmdZoneLayers||!cmdDrawnZones)return;
+  cmdZoneLayers.clearLayers();cmdDrawnZones.clearLayers();
+  (Array.isArray(state.event&&state.event.zones)?state.event.zones:[]).forEach(zone=>{
+    if(!zone.geometry)return;
+    const layer=L.geoJSON(zone.geometry,{style:{color:'#f59e0b',weight:2,fillOpacity:.10}}).getLayers()[0];
+    if(layer){layer._instantZoneId=zone.id;layer.bindTooltip(escHtml(zone.name),{permanent:true,direction:'center',className:'zone-label'});layer.bindPopup('<b>'+escHtml(zone.name)+'</b><br><small>Snap uses zone center only when GPS accuracy is adequate.</small>');cmdZoneLayers.addLayer(layer);}
+    const editable=L.geoJSON(zone.geometry).getLayers()[0];
+    if(editable){editable._instantZoneId=zone.id;cmdDrawnZones.addLayer(editable);}
+  });
+}
+async function refreshOfficerEventZones(){
+  if(!state.event||!state.officer)return;
+  const latest=await sbGet('events',state.event.code);
+  if(latest&&Array.isArray(latest.zones))state.event.zones=latest.zones;
+}
+async function refreshSelectedOfficerMessages(){
+  if(!state.event||!currentOfficerId)return;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/positions?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,{headers:SB_HEADERS});
+    if(!res.ok)return;
+    const officerId=currentOfficerId.replace(state.event.code+'_','');
+    const rows=await res.json();
+    commsLog[currentOfficerId]=rows.filter(r=>r.data&&r.data.type==='message'&&r.data.targetOfficerId===officerId).map(r=>({from:r.data.from||'command',text:r.data.text||'',ts:r.data.ts||0})).sort((a,b)=>a.ts-b.ts).slice(-60);
+    renderCommsLog();
+  }catch(e){console.warn('Chat refresh failed',e);}
+}
+function startOfficerInboxPolling(){
+  if(state.officerInboxTimer)clearInterval(state.officerInboxTimer);
+  state.officerInboxTimer=setInterval(pollOfficerInbox,3000);pollOfficerInbox();
+}
+async function pollOfficerInbox(){
+  if(!state.event||!state.officer)return;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/positions?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,{headers:SB_HEADERS});
+    if(!res.ok)return;
+    const rows=await res.json(), officerId=state.officer.id;
+    for(const row of rows){
+      const d=row.data||{};
+      if(d.targetOfficerId!==officerId)continue;
+      if(d.type==='message'&&d.from==='command'&&!officerSeenInbox.has(row.id)){officerSeenInbox.add(row.id);officerChatMessages.push({from:'command',text:d.text||'',ts:d.ts||Date.now()});}
+      if(d.type==='video_request'&&d.status==='pending'&&!officerSeenInbox.has(row.id)){
+        officerSeenInbox.add(row.id);
+        const accept=confirm('COMMAND REQUESTS LIVE VIDEO. Turn on your camera and microphone and share with command?');
+        if(accept){await sbSet('positions',row.id,Object.assign({},d,{status:'accepted',acceptedAt:Date.now()}),state.event.code);await startGoLive();}
+        else{await sbSet('positions',row.id,Object.assign({},d,{status:'declined',declinedAt:Date.now()}),state.event.code);toast('Video request declined');}
+      }
+      if(d.type==='alert'&&!officerSeenInbox.has(row.id)){officerSeenInbox.add(row.id);toast('⚠ URGENT ALERT FROM COMMAND');}
+    }
+    const log=document.getElementById('officerChatLog');
+    if(log){log.innerHTML=officerChatMessages.length?officerChatMessages.slice(-50).map(m=>'<div class="op-msg from-command"><div>'+escHtml(m.text)+'</div><div class="op-msg-time">'+new Date(m.ts).toLocaleTimeString()+'</div></div>').join(''):'<div class="op-comms-empty">No messages yet</div>';log.scrollTop=log.scrollHeight;}
+  }catch(e){console.warn('Officer inbox polling failed',e);}
+}
+async function officerSendMessage(){
+  const input=document.getElementById('officerChatInput'),message=input&&input.value.trim();
+  if(!message||!state.event||!state.officer)return;
+  const id=state.event.code+'_msg_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  const ok=await sbSet('positions',id,{type:'message',targetOfficerId:state.officer.id,from:'officer',text:message,ts:Date.now()},state.event.code);
+  if(ok){input.value='';officerChatMessages.push({from:'officer',text:message,ts:Date.now()});await pollOfficerInbox();}else toast('Message could not be sent');
+}
 let cmdMap=null, cmdMarkers={}, cmdRefreshTimer=null;
+let cmdZoneLayers=null, cmdDrawnZones=null;
 
 async function commanderLogin(){
   const pwEl=document.getElementById('cmdPassword'); const errEl=document.getElementById('cmdLoginError'); errEl.innerHTML='';
@@ -814,13 +943,20 @@ function initCommanderMap(){
   const container=document.getElementById('cmdMap'); if(!container) return;
   cmdMap=L.map('cmdMap',{center:[-1.2864,36.8172],zoom:15,zoomControl:true});
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(cmdMap);
+  cmdZoneLayers=L.layerGroup().addTo(cmdMap);cmdDrawnZones=new L.FeatureGroup().addTo(cmdMap);
+  cmdMap.addControl(new L.Control.Draw({position:'topright',draw:{polyline:false,circle:false,circlemarker:false,marker:false,rectangle:{shapeOptions:{color:'#f59e0b',weight:2,fillOpacity:.12}},polygon:{allowIntersection:false,showArea:true,shapeOptions:{color:'#10b981',weight:2,fillOpacity:.12}},},edit:{featureGroup:cmdDrawnZones,edit:true,remove:true}}));
+  cmdMap.on(L.Draw.Event.CREATED,async e=>{const name=prompt('Name this zone (e.g. Gate A, VIP Tent North):','Zone '+((state.event.zones||[]).length+1));if(!name||!name.trim())return;const zone=zoneFromGeometry(e.layer.toGeoJSON().geometry,name.trim());if(zone)await saveEventZones([...(state.event.zones||[]),zone]);});
+  cmdMap.on(L.Draw.Event.EDITED,async e=>{const zones=(state.event.zones||[]).slice();e.layers.eachLayer(layer=>{const id=layer._instantZoneId,old=zones.find(z=>z.id===id);if(!old)return;const next=zoneFromGeometry(layer.toGeoJSON().geometry,old.name,id);const ix=zones.findIndex(z=>z.id===id);if(next&&ix>=0)zones[ix]=next;});await saveEventZones(zones);});
+  cmdMap.on(L.Draw.Event.DELETED,async e=>{const ids=new Set();e.layers.eachLayer(l=>{if(l._instantZoneId)ids.add(l._instantZoneId);});await saveEventZones((state.event.zones||[]).filter(z=>!ids.has(z.id)));});
   const loading=document.getElementById('cmdLoading'); if(loading) loading.style.display='none';
-   refreshOfficerPositions();
+  renderEventZones();refreshOfficerPositions();
   cmdRefreshTimer=setInterval(refreshOfficerPositions,3000);
   startCommanderBroadcastPolling();
 }
 function exitCommanderView(){
   if(cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer=null; }
+  if(state.officerInboxTimer){clearInterval(state.officerInboxTimer);state.officerInboxTimer=null;}
+  if(state.zoneRefreshTimer){clearInterval(state.zoneRefreshTimer);state.zoneRefreshTimer=null;}
   if(commanderBroadcastPoll){ clearInterval(commanderBroadcastPoll); commanderBroadcastPoll=null; }
   if(window._commanderPC){ try{ window._commanderPC.close(); }catch(e){} window._commanderPC = null; }
   commanderActiveBroadcast = null;
@@ -846,7 +982,7 @@ async function refreshOfficerPositions(){
       const initial=(data.name||'?').charAt(0).toUpperCase();
       const iconHtml=`<div class="officer-marker ${statusClass}" style="opacity:${opacity};"><span class="initial">${initial}</span></div>`;
       const icon=L.divIcon({html:iconHtml,className:'',iconSize:[26,26],iconAnchor:[13,13]});
-      const popupHtml=`<div class="officer-popup"><h4>${escHtml(data.name||'Officer')}</h4><div class="role">${escHtml(data.role||'Officer')}</div><div class="meta"><span>STATUS</span><b>${statusEmoji} ${escHtml(data.status||'available')}</b></div><div class="meta"><span>LAST SEEN</span><b>${ageSec<5?'just now':ageSec+'s ago'}</b></div><div class="meta"><span>ACCURACY</span><b>±${Math.round(data.accuracy||0)}m</b></div></div>`;
+      const popupHtml=`<div class="officer-popup"><h4>${escHtml(data.name||'Officer')}</h4><div class="role">${escHtml(data.role||'Officer')}</div><div class="meta"><span>STATUS</span><b>${statusEmoji} ${escHtml(data.status||'available')}</b></div><div class="meta"><span>ZONE</span><b>${escHtml(data.zone||'Unassigned')}${data.zoneConfidence==='low'?' *':''}</b></div><div class="meta"><span>LAST SEEN</span><b>${ageSec<5?'just now':ageSec+'s ago'}</b></div><div class="meta"><span>GPS ACCURACY</span><b>±${Math.round(data.accuracy||0)}m</b></div></div>`;
       if(cmdMarkers[row.id]){
         cmdMarkers[row.id].setLatLng([data.lat,data.lng]);
         cmdMarkers[row.id].setIcon(icon);
@@ -883,7 +1019,7 @@ function openOfficerPanel(officerId,officerData){
   document.getElementById('opName').textContent=officerData.name||'Unknown';
   document.getElementById('opRole').textContent=officerData.role||'Officer';
   updateOfficerPanel(officerData);
-  renderCommsLog();
+  renderCommsLog();refreshSelectedOfficerMessages();
   document.getElementById('officerPanel').classList.add('open');
 }
 function closeOfficerPanel(){
@@ -925,20 +1061,20 @@ function renderCommsLog(){
 async function opSendMessage(){
   const input=document.getElementById('opCommsInput'); const text=input.value.trim();
   if(!text||!currentOfficerId) return;
-  commsLog[currentOfficerId]=commsLog[currentOfficerId]||[];
-  commsLog[currentOfficerId].push({from:'command',text,ts:Date.now()});
-  input.value=''; renderCommsLog();
+  input.value='';
   if(state.event&&state.event.code){
     const msgId=state.event.code+'_msg_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-    await sbSet('positions',msgId,{type:'message',targetOfficerId:currentOfficerId.replace(state.event.code+'_',''),from:'command',text,ts:Date.now()},state.event.code);
+    const ok=await sbSet('positions',msgId,{type:'message',targetOfficerId:currentOfficerId.replace(state.event.code+'_',''),from:'command',text,ts:Date.now()},state.event.code);
+    if(!ok){toast('Message could not be sent');return;}
   }
+  await refreshSelectedOfficerMessages();
 }
 function opActionMessage(){ document.getElementById('opCommsInput').focus(); }
 function opActionCall(){ toast('Radio channel — use walkie-talkie'); }
 function opActionRequestVideo(){
   if(!currentOfficerId) return;
   const officerIdOnly=currentOfficerId.replace(state.event.code+'_','');
-  sbSet('positions',state.event.code+'_video_req_'+officerIdOnly,{type:'video_request',targetOfficerId:officerIdOnly,ts:Date.now()},state.event.code).then(()=>toast('📹 Video request sent'));
+  sbSet('positions',state.event.code+'_video_req_'+officerIdOnly+'_'+Date.now(),{type:'video_request',targetOfficerId:officerIdOnly,from:'command',ts:Date.now(),status:'pending'},state.event.code).then(ok=>toast(ok?'📹 Request sent — officer must accept':'Video request failed'));
 }
 function opActionAssign(){ toast('Assign task — coming soon'); }
 function opActionMarkBreak(){ toast('Officer marked on break'); }
@@ -1020,9 +1156,12 @@ async function startGoLive(){
     toast('🔴 Broadcasting live to command');
 
   }catch(err){
-    console.error(err);
+    console.error('Camera start failed:',err);broadcasting=false;
+    if(myLocalStream){myLocalStream.getTracks().forEach(t=>t.stop());myLocalStream=null;}
+    if(myPeerConnection){try{myPeerConnection.close();}catch(e){}myPeerConnection=null;}
     if(btn){ btn.disabled = false; btn.innerHTML = '<span class="rec-dot"></span> GO LIVE'; }
-    toast('Camera access denied — check browser permissions');
+    const reason=err&&err.name==='NotAllowedError'?'Allow camera and microphone permissions in browser settings.':err&&err.name==='NotFoundError'?'No camera or microphone was found.':err&&err.name==='NotReadableError'?'Camera is busy in another app. Close it and retry.':err&&err.name==='SecurityError'?'Camera requires HTTPS. Open the secure Vercel URL.':'Could not start camera: '+(err&&err.message?err.message:'unknown error');
+    toast(reason);
   }
 }
 
