@@ -855,7 +855,7 @@ async function assignOfficerCallsign(code){
     const res=await fetch(`${SUPABASE_URL}/rest/v1/positions?event_id=eq.${encodeURIComponent(code)}&select=id,data`,{headers:SB_HEADERS});
     if(!res.ok)return 'K-'+String(Date.now()%1000).padStart(3,'0');
     const rows=await res.json();let max=0;
-    rows.forEach(row=>{const m=String(row.data&&row.data.callsign||'').match(/^K-(\\d+)$/);if(m)max=Math.max(max,Number(m[1]));});
+    rows.forEach(row=>{const m=String(row.data&&row.data.callsign||'').match(/^K-(\d+)$/);if(m)max=Math.max(max,Number(m[1]));});
     return 'K-'+String(max+1).padStart(3,'0');
   }catch(e){console.warn('Callsign assignment fallback',e);return 'K-'+String(Math.floor(Math.random()*900)+100);}
 }
@@ -1175,7 +1175,7 @@ async function sendBroadcastToAll(){
 function makeOfficerMapIcon(data,online,selected,id){
   const zoom=cmdMap?cmdMap.getZoom():15;
   const callsign=data.callsign||'K-000';let label=callsign;
-  if(zoom>=13)label+=' · '+String(data.name||'Officer').split(/\\s+/)[0];
+  if(zoom>=13)label+=' · '+String(data.name||'Officer').split(/\s+/)[0];
   if(zoom>15)label=callsign+' · '+String(data.name||'Officer')+' · '+String(data.role||'Officer');
   const status=data.status||'available';const width=Math.max(58,Math.min(230,label.length*6.3+18));
   const html='<div class="iw-map-tag '+escHtml(status)+' '+(selected?'selected':'')+'" style="width:'+width+'px;opacity:'+(online?1:.45)+'" title="'+escHtml((data.name||'Officer')+' · '+(data.role||'Officer'))+'"><span>'+escHtml(label)+'</span></div>';
