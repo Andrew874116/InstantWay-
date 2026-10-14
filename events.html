@@ -183,7 +183,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .op-comms{flex:1;display:flex;flex-direction:column;min-height:120px;overflow:hidden;}
 .op-comms-log{flex:1;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:6px;}
 .op-comms-empty{color:var(--op-text-dim);font-size:11px;text-align:center;padding:20px 0;font-family:var(--op-font-mono);}
-.op-msg{font-size:12px;line-height:1.4;padding:6px 10px;border-radius:4px;max-width:85%;}
+.op-msg{font-size:12px;line-height:1.4;padding:6px 10px;border-radius:4px;max-width:85%;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;}
 .op-msg.from-command{background:rgba(245,158,11,0.12);border-left:2px solid var(--op-amber);align-self:flex-end;color:var(--op-text);}
 .op-msg.from-officer{background:var(--op-panel-2);border-left:2px solid var(--op-text-muted);align-self:flex-start;color:var(--op-text);}
 .op-msg-time{font-family:var(--op-font-mono);font-size:9px;color:var(--op-text-dim);margin-top:3px;letter-spacing:0.3px;}
@@ -331,6 +331,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 <div class="topbar">
   <h1 onclick="goHome()">🎯 InstantWay Events</h1>
   <div class="sub" id="topSub"></div>
+  <button id="leaveEventBtn" class="btn small ghost" onclick="leaveEvent()" style="display:none;padding:6px 10px;white-space:nowrap;">Leave event</button>
 </div>
 
 <div id="view-landing" class="page">
@@ -553,6 +554,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
     </div>
     <div class="op-video-player">
       <video id="videoRemoteEl" autoplay playsinline></video>
+      <div class="placeholder" id="videoStatus">Choose a live officer to connect.</div>
     </div>
     <div class="op-video-actions">
       <button onclick="snapshotVideo()">📷 Snapshot</button>
@@ -585,7 +587,7 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
   <div class="op-actions">
     <button class="op-action" onclick="opActionMessage()">💬 Message</button>
     <button class="op-action" onclick="opActionCall()">📞 Radio</button>
-    <button class="op-action live" onclick="opActionRequestVideo()">📹 Request Video</button>
+    <button class="op-action live" id="opRequestVideoBtn" onclick="opActionRequestVideo()">📹 Request Video</button>
     <button class="op-action" onclick="opActionAssign()">🎯 Assign Task</button>
   </div>
   <div class="op-section-title">Comms Log</div>
@@ -639,21 +641,100 @@ async function sbDelete(table,id){
   }catch(e){ return false; }
 }
 
-const state={ currentView:'landing', event:null, officer:null, share:null, watchId:null, broadcastTimer:null, lastPosition:null, officerInboxTimer:null, zoneRefreshTimer:null };
+const SESSION_KEY='instantway_event_session_v1';
+const state={ currentView:'landing', event:null, officer:null, role:null, share:null, watchId:null, broadcastTimer:null, lastPosition:null, officerInboxTimer:null, zoneRefreshTimer:null };
+function saveAppSession(role,screen){
+  if(!state.event||!role)return;
+  try{
+    const session={role,screen:screen||state.currentView,code:state.event.code,password:role==='commander'?(state.event.password||''):'',event:state.event,officer:role==='officer'?state.officer:null,savedAt:Date.now()};
+    localStorage.setItem(SESSION_KEY,JSON.stringify(session));
+  }catch(e){console.warn('Session could not be saved',e);}
+}
+function clearAppSession(){try{localStorage.removeItem(SESSION_KEY);}catch(e){}}
+function showResumePrompt(session){
+  const old=document.getElementById('resumeSessionPrompt');if(old)old.remove();
+  const el=document.createElement('div');el.id='resumeSessionPrompt';
+  el.style.cssText='position:fixed;left:12px;right:12px;bottom:18px;z-index:10020;background:#111820;border:1px solid #596579;color:#e5e7eb;padding:12px 14px;box-shadow:0 8px 30px #0009;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font:13px system-ui;max-width:620px;margin:auto;';
+  const role=(session.role||'commander').toUpperCase();
+  const label=document.createElement('div');label.style.cssText='flex:1;min-width:180px;line-height:1.4;';label.textContent='Resume as '+role+' for '+((session.event&&session.event.name)||session.code)+'?';
+  const resume=document.createElement('button');resume.textContent='Resume';resume.style.cssText='background:#f59e0b;border:0;padding:8px 12px;font-weight:700;cursor:pointer;color:#111827;';
+  const dismiss=document.createElement('button');dismiss.textContent='Dismiss';dismiss.style.cssText='background:transparent;border:1px solid #374151;color:#d1d5db;padding:8px 12px;cursor:pointer;';
+  resume.onclick=async()=>{el.remove();await resumeSavedSession(session);};
+  dismiss.onclick=()=>{el.remove();clearAppSession();toast('Saved event session cleared');};
+  el.append(label,resume,dismiss);document.body.appendChild(el);
+}
+async function offerSessionResume(){
+  try{
+    const raw=localStorage.getItem(SESSION_KEY);if(!raw)return;
+    const session=JSON.parse(raw);if(!session||!session.code||!session.role)return;
+    if(Date.now()-(session.savedAt||0)>30*24*60*60*1000){clearAppSession();return;}
+    showResumePrompt(session);
+  }catch(e){console.warn('Saved session is unreadable',e);clearAppSession();}
+}
+async function resumeSavedSession(session){
+  let event=null;
+  try{event=await sbGet('events',String(session.code).toUpperCase());}catch(e){}
+  if(!event)event=session.event||null;
+  if(!event){clearAppSession();toast('This event could not be recovered.');return;}
+  if(session.role==='commander'){
+    event.password=session.password||event.password||'';
+    state.event=event;state.officer=null;state.role='commander';
+    document.getElementById('cmdEventName').textContent=event.name||'Event';
+    document.getElementById('cmdEventCode').textContent=event.code||session.code;
+    document.getElementById('topSub').textContent='Commander: '+(event.name||session.code);
+    document.getElementById('cmdLoginTitle').textContent='Commander login — '+event.name;
+    document.getElementById('cmdPassword').value=event.password;
+    if(session.screen==='organizer-code'){
+      document.getElementById('eventTitle').textContent=event.name||'';
+      document.getElementById('eventCode').textContent=event.code||session.code;
+      showView('organizer-code');
+    }else if(session.screen==='commander-login'){showView('commander-login');}
+    else{showView('commander-dash');setTimeout(()=>initCommanderMap(),160);}
+    toast('Session restored');
+    return;
+  }
+  if(session.role==='officer'&&session.officer){
+    state.event=event;state.officer=session.officer;state.role='officer';
+    document.getElementById('officerEventName').textContent=event.name||'Event';
+    document.getElementById('topSub').textContent='Officer: '+(session.officer.name||'Officer');
+    showView('officer-waiting');
+    try{await startGeolocation();showView('officer-active');toast('Officer session restored');}
+    catch(e){showView('officer-join');document.getElementById('joinCode').value=event.code||session.code;toast('Allow location access to resume duty.');}
+    return;
+  }
+  clearAppSession();toast('Saved session type was not recognized.');
+}
+function leaveEvent(){
+  clearAppSession();
+  if(typeof stopGoLive==='function'&&broadcasting)stopGoLive();
+  stopGeolocation();
+  if(typeof cmdRefreshTimer!=='undefined'&&cmdRefreshTimer){clearInterval(cmdRefreshTimer);cmdRefreshTimer=null;}
+  if(typeof commanderBroadcastPoll!=='undefined'&&commanderBroadcastPoll){clearInterval(commanderBroadcastPoll);commanderBroadcastPoll=null;}
+  if(typeof closeVideoModal==='function')closeVideoModal();
+  if(typeof cmdMap!=='undefined'&&cmdMap){try{cmdMap.remove();}catch(e){}cmdMap=null;}
+  if(typeof cmdMarkers!=='undefined')cmdMarkers={};
+  state.event=null;state.officer=null;state.role=null;state.share=null;
+  document.getElementById('topSub').textContent='';
+  showView('landing');toast('You have left the event');
+}
 let officerSeenInbox = new Set();
 let officerChatMessages = [];
 const VIEWS={ landing:'view-landing','organizer-create':'view-organizer-create','organizer-code':'view-organizer-code','officer-join':'view-officer-join','officer-waiting':'view-officer-waiting','officer-active':'view-officer-active','share-location':'view-share-location','share-code':'view-share-code','view-shared':'view-view-shared','commander-login':'view-commander-login','commander-dash':'view-commander-dash' };
 function showView(name){
   Object.values(VIEWS).forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display='none'; });
   const target=document.getElementById(VIEWS[name]); if(target) target.style.display='block';
-  state.currentView=name; window.scrollTo(0,0);
+  state.currentView=name;
+  const leaveBtn=document.getElementById('leaveEventBtn');if(leaveBtn)leaveBtn.style.display=state.event?'inline-flex':'none';
+  if(state.event&&state.role)saveAppSession(state.role,name);
+  window.scrollTo(0,0);
 }
 function goHome(){
+  clearAppSession();
   stopGeolocation();
   if(typeof cmdRefreshTimer!=='undefined' && cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer=null; }
   if(typeof cmdMap!=='undefined' && cmdMap){ try{ cmdMap.remove(); }catch(e){} cmdMap=null; }
   if(typeof cmdMarkers!=='undefined'){ cmdMarkers={}; }
-  state.event=null; state.officer=null; state.share=null;
+  state.event=null; state.officer=null; state.role=null; state.share=null;
   document.getElementById('topSub').textContent='';
   showView('landing');
 }
@@ -669,7 +750,7 @@ async function doCreateEvent(){
     do{ code=genCode(); const existing=await sbGet('events',code); if(!existing) break; attempts++; } while(attempts<5);
     const eventData={ code,name,password,createdAt:Date.now(),status:'active' };
     const ok=await sbSet('events',code,eventData); if(!ok) throw new Error('Failed to save event');
-    state.event=eventData;
+    state.event=eventData;state.role='commander';state.officer=null;
     document.getElementById('eventTitle').textContent=name;
     document.getElementById('eventCode').textContent=code;
     document.getElementById('topSub').textContent='Event: '+name;
@@ -684,7 +765,7 @@ function copyText(text,successMsg){
   if(navigator.clipboard){ navigator.clipboard.writeText(text).then(()=>toast(successMsg)).catch(()=>{ const el=document.createElement('textarea'); el.value=text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); toast(successMsg); }); }
   else { const el=document.createElement('textarea'); el.value=text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); toast(successMsg); }
 }
-function enterCommanderView(){ if(!state.event) return; document.getElementById('cmdLoginTitle').textContent='Commander login — '+state.event.name; showView('commander-login'); }
+function enterCommanderView(){ if(!state.event) return; state.role='commander';document.getElementById('cmdLoginTitle').textContent='Commander login — '+state.event.name; showView('commander-login'); }
 
 async function joinAsOfficer(){
   const codeEl=document.getElementById('joinCode'); const nameEl=document.getElementById('joinName'); const roleEl=document.getElementById('joinRole'); const errEl=document.getElementById('joinError'); errEl.innerHTML='';
@@ -695,11 +776,12 @@ async function joinAsOfficer(){
   try{
     const event=await sbGet('events',code);
     if(!event){ errEl.innerHTML='<div class="errbox">Event not found. Check code.</div>'; btn.disabled=false; btn.innerHTML='📍 Start broadcasting my location'; return; }
-    state.event=event;
+    state.event=event;state.role=null;
     state.officer={ id:uid('off'),name,role:role||'Officer',status:'available',joinedAt:Date.now() };
     document.getElementById('waitingMsg').textContent='Requesting location permission…';
     showView('officer-waiting');
     await startGeolocation();
+    state.role='officer';
     document.getElementById('officerEventName').textContent=event.name;
     document.getElementById('topSub').textContent='Officer: '+name;
     showView('officer-active');
@@ -937,6 +1019,7 @@ async function commanderLogin(){
   if(pwEl.value!==state.event.password){ errEl.innerHTML='<div class="errbox">Incorrect password.</div>'; return; }
   document.getElementById('cmdEventName').textContent=state.event.name;
   document.getElementById('cmdEventCode').textContent=state.event.code;
+  state.role='commander';
   document.getElementById('topSub').textContent='Commander: '+state.event.name;
   showView('commander-dash');
   setTimeout(()=>initCommanderMap(),100);
@@ -1075,10 +1158,45 @@ async function opSendMessage(){
 }
 function opActionMessage(){ document.getElementById('opCommsInput').focus(); }
 function opActionCall(){ toast('Radio channel — use walkie-talkie'); }
-function opActionRequestVideo(){
-  if(!currentOfficerId) return;
+const videoRequestCooldowns={};
+const videoRequestPollers={};
+async function opActionRequestVideo(){
+  if(!currentOfficerId||!state.event)return;
   const officerIdOnly=currentOfficerId.replace(state.event.code+'_','');
-  sbSet('positions',state.event.code+'_video_req_'+officerIdOnly+'_'+Date.now(),{type:'video_request',targetOfficerId:officerIdOnly,from:'command',ts:Date.now(),status:'pending'},state.event.code).then(ok=>toast(ok?'📹 Request sent — officer must accept':'Video request failed'));
+  const eventCode=state.event.code;
+  const cooldownKey='iw_video_req_last_'+eventCode+'_'+officerIdOnly;
+  const last=Number(localStorage.getItem(cooldownKey)||0);
+  const remaining=30000-(Date.now()-last);
+  if(remaining>0){toast('Video request cooldown: wait '+Math.ceil(remaining/1000)+'s');return;}
+  if(videoRequestCooldowns[officerIdOnly])return;
+  videoRequestCooldowns[officerIdOnly]=true;
+  const btn=document.getElementById('opRequestVideoBtn');
+  const original='📹 Request Video';
+  if(btn){btn.disabled=true;btn.textContent='REQUESTING…';}
+  const requestId=eventCode+'_video_req_'+officerIdOnly;
+  const requestTs=Date.now();
+  const ok=await sbSet('positions',requestId,{type:'video_request',targetOfficerId:officerIdOnly,from:'command',ts:requestTs,status:'pending'},eventCode);
+  if(!ok){
+    delete videoRequestCooldowns[officerIdOnly];
+    if(btn){btn.disabled=false;btn.textContent=original;}
+    toast('Video request failed — retry');
+    return;
+  }
+  localStorage.setItem(cooldownKey,String(requestTs));
+  toast('Video request sent');
+  if(videoRequestPollers[officerIdOnly])clearInterval(videoRequestPollers[officerIdOnly]);
+  const started=Date.now();
+  videoRequestPollers[officerIdOnly]=setInterval(async()=>{
+    const request=await sbGet('positions',requestId);
+    const timedOut=Date.now()-started>=30000;
+    if((request&&request.status&&request.status!=='pending')||timedOut){
+      clearInterval(videoRequestPollers[officerIdOnly]);delete videoRequestPollers[officerIdOnly];delete videoRequestCooldowns[officerIdOnly];
+      if(btn&&document.body.contains(btn)){btn.disabled=false;btn.textContent=original;}
+      if(request&&request.status==='accepted')toast('Officer accepted the video request');
+      else if(request&&request.status==='declined')toast('Officer declined the video request');
+      else toast('Video request timed out');
+    }
+  },2000);
 }
 function opActionAssign(){ toast('Assign task — coming soon'); }
 function opActionMarkBreak(){ toast('Officer marked on break'); }
@@ -1101,6 +1219,9 @@ let broadcasting = false;
 let broadcastStartTs = null;
 let broadcastTimerInterval = null;
 let broadcastSignalingInterval = null;
+let broadcastSessionId = null;
+let officerSeenRemoteIce = new Set();
+let officerAnswerAppliedSession = null;
 
 async function toggleGoLive(){
   if(broadcasting){ stopGoLive(); return; }
@@ -1109,6 +1230,7 @@ async function toggleGoLive(){
 
 async function startGoLive(){
   if(!state.event || !state.officer){ toast('No active event'); return; }
+  if(broadcasting||myPeerConnection){toast('You are already live. Stop the current broadcast first.');return;}
   const btn = document.getElementById('goLiveBtn');
   if(btn){ btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> STARTING…'; }
 
@@ -1123,6 +1245,12 @@ async function startGoLive(){
 
     broadcasting = true;
     broadcastStartTs = Date.now();
+    broadcastSessionId=uid('vid');
+    officerSeenRemoteIce.clear();officerAnswerAppliedSession=null;
+    const baseId=state.event.code+'_bc_'+state.officer.id;
+    await cleanupVideoSignalRows(baseId);
+    const baseData={fromOfficer:state.officer.id,eventCode:state.event.code,created:broadcastStartTs,state:'starting',sessionId:broadcastSessionId,signals:[]};
+    if(!await sbSet('video_signals',baseId,baseData,state.event.code))throw new Error('Could not initialize video signaling');
 
     // 2. Create the offer
     myPeerConnection = new RTCPeerConnection({
@@ -1133,15 +1261,17 @@ async function startGoLive(){
     });
     myLocalStream.getTracks().forEach(track => myPeerConnection.addTrack(track, myLocalStream));
 
+    const sessionId=broadcastSessionId;
     myPeerConnection.onicecandidate = (event) => {
-      if(event.candidate){
-        pushSignal({ type: 'ice_candidate', candidate: event.candidate, from: 'officer' });
-      }
+      if(event.candidate)addVideoSignal(baseId,sessionId,{type:'ice_candidate',candidate:event.candidate,from:'officer'});
     };
+    myPeerConnection.onconnectionstatechange=()=>console.info('[VIDEO] Officer peer state',myPeerConnection&&myPeerConnection.connectionState,sessionId);
 
     const offer = await myPeerConnection.createOffer();
     await myPeerConnection.setLocalDescription(offer);
-    await pushSignal({ type: 'offer', sdp: offer.sdp, from: 'officer' });
+    const offerData=Object.assign({},baseData,{state:'live',offer:{type:'offer',sdp:offer.sdp},liveAt:Date.now()});
+    if(!await sbSet('video_signals',baseId,offerData,state.event.code))throw new Error('Could not publish video offer');
+    console.info('[VIDEO] Officer offer published',sessionId);
 
     // 3. Poll for commander's answer
     broadcastSignalingInterval = setInterval(pollForAnswer, 2000);
@@ -1172,32 +1302,56 @@ async function startGoLive(){
   }
 }
 
-async function pushSignal(payload){
-  if(!state.event || !state.officer) return;
-  const sigId = state.event.code + '_bc_' + state.officer.id;
-  const existing = await sbGet('video_signals', sigId) || { fromOfficer: state.officer.id, eventCode: state.event.code, created: Date.now(), signals: [] };
-  existing.signals = existing.signals || [];
-  existing.signals.push({ ...payload, ts: Date.now() });
-  if(existing.signals.length > 40) existing.signals = existing.signals.slice(-40);
-  existing.state = broadcasting ? 'live' : 'ended';
-  await sbSet('video_signals', sigId, existing, state.event.code);
+async function cleanupVideoSignalRows(baseId){
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/video_signals?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,{headers:SB_HEADERS});
+    if(!res.ok)return;
+    const rows=await res.json();
+    for(const row of rows){if(row.id!==baseId&&String(row.id).startsWith(baseId+'_sig_'))await sbDelete('video_signals',row.id);}
+  }catch(e){console.warn('[VIDEO] Signal cleanup failed',e);}
 }
-
+async function addVideoSignal(baseId,sessionId,payload){
+  if(!state.event||!sessionId)return false;
+  const unique=uid('sig');
+  const id=baseId+'_sig_'+sessionId+'_'+payload.from+'_'+payload.type+'_'+unique;
+  const data=Object.assign({},payload,{sessionId,ts:Date.now()});
+  const ok=await sbSet('video_signals',id,data,state.event.code);
+  if(!ok)console.error('[VIDEO] Failed to write signal',data.type,data.from);
+  else console.debug('[VIDEO] Signal written',data.type,data.from,sessionId);
+  return ok;
+}
+async function readVideoSignals(baseId,sessionId){
+  if(!state.event||!sessionId)return [];
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/video_signals?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,{headers:SB_HEADERS});
+    if(!res.ok){console.warn('[VIDEO] Signal poll HTTP',res.status);return [];}
+    const rows=await res.json();
+    return rows.filter(row=>String(row.id).startsWith(baseId+'_sig_'+sessionId+'_')&&row.data&&row.data.sessionId===sessionId).map(row=>({id:row.id,...row.data})).sort((a,b)=>(a.ts||0)-(b.ts||0));
+  }catch(e){console.warn('[VIDEO] Signal poll failed',e);return [];}
+}
+async function pushSignal(payload){
+  if(!state.event||!state.officer||!broadcastSessionId)return;
+  const baseId=state.event.code+'_bc_'+state.officer.id;
+  await addVideoSignal(baseId,broadcastSessionId,payload);
+}
 async function pollForAnswer(){
-  if(!state.event || !state.officer || !myPeerConnection) return;
-  const sigId = state.event.code + '_bc_' + state.officer.id;
-  const data = await sbGet('video_signals', sigId);
-  if(!data || !data.signals) return;
-
-  const answers = data.signals.filter(s => s.from === 'commander' && s.type === 'answer');
-  const ices = data.signals.filter(s => s.from === 'commander' && s.type === 'ice_candidate');
-
-  if(answers.length && myPeerConnection.signalingState === 'have-local-offer'){
-    await myPeerConnection.setRemoteDescription({ type: 'answer', sdp: answers[answers.length-1].sdp });
-  }
-  for(const ice of ices){
-    try{ await myPeerConnection.addIceCandidate(ice.candidate); }catch(e){}
-  }
+  if(!state.event||!state.officer||!myPeerConnection||!broadcastSessionId)return;
+  const sessionId=broadcastSessionId,baseId=state.event.code+'_bc_'+state.officer.id;
+  try{
+    const signals=await readVideoSignals(baseId,sessionId);
+    const answer=signals.filter(s=>s.from==='commander'&&s.type==='answer').slice(-1)[0];
+    if(answer&&myPeerConnection.signalingState==='have-local-offer'&&officerAnswerAppliedSession!==sessionId){
+      await myPeerConnection.setRemoteDescription({type:'answer',sdp:answer.sdp});
+      officerAnswerAppliedSession=sessionId;
+      console.info('[VIDEO] Officer applied commander answer',sessionId);
+    }
+    if(!myPeerConnection.remoteDescription)return;
+    for(const ice of signals){
+      if(ice.from!=='commander'||ice.type!=='ice_candidate'||officerSeenRemoteIce.has(ice.id))continue;
+      try{await myPeerConnection.addIceCandidate(ice.candidate);officerSeenRemoteIce.add(ice.id);}
+      catch(e){console.warn('[VIDEO] Officer ICE rejected; will retry',ice.id,e);}
+    }
+  }catch(e){console.error('[VIDEO] Officer answer poll failed',e);}
 }
 
 async function stopGoLive(){
@@ -1216,6 +1370,7 @@ async function stopGoLive(){
     const data = await sbGet('video_signals', sigId);
     if(data){ data.state = 'ended'; data.endedAt = Date.now(); await sbSet('video_signals', sigId, data, state.event.code); }
   }
+  broadcastSessionId=null;officerSeenRemoteIce.clear();officerAnswerAppliedSession=null;
 
   const btn = document.getElementById('goLiveBtn');
   if(btn){ btn.classList.remove('broadcasting'); btn.innerHTML = '<span class="rec-dot"></span> GO LIVE'; }
@@ -1227,6 +1382,21 @@ async function stopGoLive(){
 let commanderBroadcastPoll = null;
 let commanderActiveBroadcast = null;
 let commanderLiveBroadcasts = [];
+let commanderSeenIce = new Set();
+let commanderConnectingKey = null;
+let commanderConnectWatchdog = null;
+window._commanderIcePoll=null;
+
+function videoStatus(message){
+  const el=document.getElementById('videoStatus');
+  if(el){el.textContent=message;el.style.display='block';}
+}
+function closeCommanderPeerConnection(){
+  if(window._commanderIcePoll){clearInterval(window._commanderIcePoll);window._commanderIcePoll=null;}
+  if(commanderConnectWatchdog){clearInterval(commanderConnectWatchdog);commanderConnectWatchdog=null;}
+  if(window._commanderPC){try{window._commanderPC.onicecandidate=null;window._commanderPC.close();}catch(e){}window._commanderPC=null;}
+  commanderConnectingKey=null;commanderSeenIce.clear();
+}
 
 function startCommanderBroadcastPolling(){
   if(commanderBroadcastPoll) return;
@@ -1309,70 +1479,94 @@ async function selectCommanderBroadcast(id){
 }
 
 async function connectToBroadcast(broadcast){
-  const video = document.getElementById('videoRemoteEl');
-  const sigId = broadcast.id;
+  if(!broadcast||!broadcast.id||!state.event)return;
+  const sigId=broadcast.id;
+  const data=broadcast.data||{};
+  const sessionId=data.sessionId||'legacy-'+String(data.created||'old');
+  const connectKey=sigId+'|'+sessionId;
+  if(commanderConnectingKey===connectKey&&window._commanderPC&&window._commanderPC.connectionState!=='closed')return;
+  closeCommanderPeerConnection();
+  commanderConnectingKey=connectKey;
+  const video=document.getElementById('videoRemoteEl');
+  if(!video)return;
+  video.srcObject=null;video.style.display='block';
+  videoStatus('Connecting to '+(data.fromOfficer||'officer')+'…');
+  console.info('[VIDEO] Connecting to broadcast',sigId,sessionId);
 
-  // Commander creates a peer connection and answers the officer's offer
-  const pc = new RTCPeerConnection({
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' }
-    ]
-  });
-
-  pc.ontrack = (event) => {
-    if(video && event.streams[0]){
-      video.srcObject = event.streams[0];
-      document.getElementById('videoModalOfficerName').textContent = broadcast.data.fromOfficer || 'Officer';
-      toast('🔴 LIVE FEED CONNECTED');
+  try{
+    // A live banner may arrive before the offer row is visible. Retry briefly rather than waiting forever.
+    let fresh=data,offerObj=null;
+    for(let attempt=0;attempt<10;attempt++){
+      const legacyOffers=(fresh.signals||[]).filter(s=>s.from==='officer'&&s.type==='offer');
+      offerObj=fresh.offer&&fresh.offer.sdp?fresh.offer:(legacyOffers.length?legacyOffers[legacyOffers.length-1]:null);
+      if(offerObj&&offerObj.sdp)break;
+      videoStatus('Waiting for officer offer… ('+(attempt+1)+'/10)');
+      await new Promise(resolve=>setTimeout(resolve,1500));
+      fresh=await sbGet('video_signals',sigId)||fresh;
+      if(fresh.sessionId&&fresh.sessionId!==sessionId){videoStatus('Broadcast restarted. Select the officer again.');return;}
     }
-  };
-
-  pc.onicecandidate = async (event) => {
-    if(event.candidate){
-      const data = await sbGet('video_signals', sigId) || broadcast.data;
-      data.signals = data.signals || [];
-      data.signals.push({ type: 'ice_candidate', candidate: event.candidate, from: 'commander', ts: Date.now() });
-      await sbSet('video_signals', sigId, data, state.event.code);
+    if(!offerObj||!offerObj.sdp){
+      console.error('[VIDEO] No offer found after retries',sigId,sessionId);
+      videoStatus('No video offer received. Ask the officer to stop and GO LIVE again.');
+      toast('Video offer missing — ask officer to restart GO LIVE');
+      commanderConnectingKey=null;
+      return;
     }
-  };
-
-  const offerSignals = (broadcast.data.signals || []).filter(s => s.from === 'officer' && s.type === 'offer');
-  if(offerSignals.length === 0){
-    if(video) video.parentElement.innerHTML = '<div class="placeholder">Officer hasn\'t sent video yet. Waiting…</div>';
-    return;
+    const activeSession=fresh.sessionId||sessionId;
+    const pc=new RTCPeerConnection({iceServers:[
+      {urls:'stun:stun.l.google.com:19302'},
+      {urls:'stun:stun1.l.google.com:19302'}
+    ]});
+    window._commanderPC=pc;
+    pc.ontrack=event=>{
+      if(!event.streams||!event.streams[0])return;
+      video.srcObject=event.streams[0];
+      videoStatus('');
+      const status=document.getElementById('videoStatus');if(status)status.style.display='none';
+      video.play().catch(e=>console.warn('[VIDEO] Video autoplay blocked',e));
+      const name=document.getElementById('videoModalOfficerName');if(name)name.textContent=(fresh.fromOfficer||'Officer');
+      console.info('[VIDEO] Commander received remote track',event.track.kind,activeSession);
+      toast('LIVE FEED CONNECTED');
+    };
+    pc.onconnectionstatechange=()=>{
+      console.info('[VIDEO] Commander peer state',pc.connectionState,activeSession);
+      if(pc.connectionState==='failed'||pc.connectionState==='disconnected'){
+        videoStatus('Connection '+pc.connectionState+'. Check signal/network, then reconnect.');
+      }else if(pc.connectionState==='connected'){videoStatus('');const st=document.getElementById('videoStatus');if(st)st.style.display='none';}
+    };
+    pc.onicecandidate=event=>{
+      if(event.candidate)addVideoSignal(sigId,activeSession,{type:'ice_candidate',candidate:event.candidate,from:'commander'});
+    };
+    await pc.setRemoteDescription({type:'offer',sdp:offerObj.sdp});
+    const answer=await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await addVideoSignal(sigId,activeSession,{type:'answer',sdp:answer.sdp,from:'commander'});
+    console.info('[VIDEO] Commander answer posted',activeSession);
+    // Poll only this session's officer ICE rows and process each row once.
+    window._commanderIcePoll=setInterval(async()=>{
+      const current=window._commanderPC;
+      if(!current||current!==pc||pc.connectionState==='closed'||!pc.remoteDescription)return;
+      const signals=await readVideoSignals(sigId,activeSession);
+      for(const ice of signals){
+        if(ice.from!=='officer'||ice.type!=='ice_candidate'||commanderSeenIce.has(ice.id))continue;
+        try{await pc.addIceCandidate(ice.candidate);commanderSeenIce.add(ice.id);}
+        catch(e){console.warn('[VIDEO] Commander ICE rejected; will retry',ice.id,e);}
+      }
+    },1500);
+  }catch(err){
+    console.error('[VIDEO] Commander connect failed',err);
+    videoStatus('Connection error: '+(err&&err.message?err.message:'unknown error'));
+    toast('Video connection failed. Check the console logs.');
+    commanderConnectingKey=null;
   }
-
-  await pc.setRemoteDescription({ type: 'offer', sdp: offerSignals[offerSignals.length-1].sdp });
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-
-  const data = broadcast.data;
-  data.signals = data.signals || [];
-  data.signals.push({ type: 'answer', sdp: answer.sdp, from: 'commander', ts: Date.now() });
-  await sbSet('video_signals', sigId, data, state.event.code);
-
-  window._commanderPC = pc;
-
-  // Poll for officer ICE candidates
-  const pollIce = setInterval(async () => {
-    if(pc.connectionState === 'connected' || pc.connectionState === 'failed'){
-      clearInterval(pollIce); return;
-    }
-    const fresh = await sbGet('video_signals', sigId);
-    if(!fresh || !fresh.signals) return;
-    const newIces = fresh.signals.filter(s => s.from === 'officer' && s.type === 'ice_candidate');
-    for(const ice of newIces){
-      try{ await pc.addIceCandidate(ice.candidate); }catch(e){}
-    }
-  }, 2000);
 }
 
 function closeVideoModal(){
-  document.getElementById('videoModal').classList.remove('show');
-  if(window._commanderPC){ try{ window._commanderPC.close(); }catch(e){} window._commanderPC = null; }
-  const video = document.getElementById('videoRemoteEl');
-  if(video) video.srcObject = null;
+  const modal=document.getElementById('videoModal');if(modal)modal.classList.remove('show');
+  closeCommanderPeerConnection();
+  const video=document.getElementById('videoRemoteEl');
+  if(video)video.srcObject=null;
+  const status=document.getElementById('videoStatus');if(status){status.style.display='block';status.textContent='Choose a live officer to connect.';}
 }
 
 function snapshotVideo(){
@@ -1452,7 +1646,8 @@ async function handleUrlParams(){
     showView('officer-join');
   }
   const intent=p.get('intent');
-  if(intent==='share'){ showView('share-location'); }
+  if(intent==='share'){ showView('share-location');return; }
+  if(!code)await offerSessionResume();
 }
 
 handleUrlParams();
