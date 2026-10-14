@@ -1,0 +1,19 @@
+{
+  "name": "InstantWay Events",
+  "short_name": "InstantWay",
+  "description": "Live operations platform for event security crews",
+  "start_url": "./events.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230d1117'/%3E%3Crect x='156' y='156' width='200' height='200' rx='36' fill='%23f59e0b'/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
