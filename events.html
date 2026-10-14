@@ -323,6 +323,66 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 .op-comms-log .op-msg.from-command{border-left:3px solid #f59e0b;}
 .op-comms-log .op-msg.from-officer{border-left:3px solid #10b981;}
 #officerChatLog{max-height:180px;overflow:auto;}
+/* Command center roster and map toolbar */
+#view-commander-dash #cmdMap{left:280px;right:0;width:calc(100% - 280px);height:100vh;}
+#view-commander-dash .cmd-topbar{left:280px;}
+#view-commander-dash .cmd-bottom{left:280px;}
+#view-commander-dash .cmd-loading{left:calc(50% + 140px);}
+.cmd-sidebar{position:absolute;z-index:30;left:0;top:0;bottom:0;width:280px;background:#0d141d;border-right:1px solid #263243;display:flex;flex-direction:column;color:#e5e7eb;font-family:var(--op-font-sans);}
+.cmd-sidebar-head{padding:14px 12px 11px;border-bottom:1px solid #263243;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#111820;}
+.cmd-sidebar-title{font:600 12px var(--op-font-cond);letter-spacing:1.2px;}
+.cmd-sidebar-sub{font:10px var(--op-font-mono);color:#8b98a9;margin-top:3px;}
+.cmd-mobile-roster-toggle{display:none;background:#1b2632;border:1px solid #374151;color:#e5e7eb;padding:6px 8px;cursor:pointer;border-radius:3px;}
+.cmd-search{margin:10px 10px 6px;padding:9px 10px;border:1px solid #2a3543;background:#080d13;color:#e5e7eb;border-radius:3px;outline:none;font:11px var(--op-font-sans);}
+.cmd-search:focus{border-color:#f59e0b;}
+.cmd-roster-legend{padding:4px 10px 10px;display:flex;flex-wrap:wrap;gap:7px;font:9px var(--op-font-mono);color:#9ca3af;border-bottom:1px solid #202b38;}
+.cmd-roster-legend span{display:flex;align-items:center;gap:4px;}
+.cmd-roster-legend .dot{width:7px;height:7px;display:inline-block;border-radius:50%;background:#6b7280;}
+.cmd-roster-legend .dot.emergency{background:#ef4444}.cmd-roster-legend .dot.available{background:#10b981}.cmd-roster-legend .dot.busy{background:#eab308}.cmd-roster-legend .dot.offline{background:#6b7280}
+.cmd-officer-roster{overflow-y:auto;overscroll-behavior:contain;flex:1;padding-bottom:10px;}
+.cmd-roster-empty{padding:20px 14px;color:#718096;font:11px var(--op-font-mono);line-height:1.5;}
+.cmd-roster-group{padding-top:8px;}
+.cmd-roster-group-title{display:flex;justify-content:space-between;padding:4px 12px 6px;color:#8491a1;text-transform:uppercase;letter-spacing:.8px;font:9px var(--op-font-mono);}
+.cmd-roster-group-title span{color:#d1d5db;}
+.cmd-roster-row{width:100%;display:flex;align-items:center;gap:8px;text-align:left;border:0;border-left:2px solid transparent;background:transparent;color:#e5e7eb;padding:9px 8px 9px 10px;cursor:pointer;min-width:0;}
+.cmd-roster-row:hover{background:#121c27;}
+.cmd-roster-row.selected{border-left-color:#f59e0b;background:rgba(245,158,11,.07);}
+.cmd-roster-status{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#10b981;}
+.cmd-roster-status.emergency{background:#ef4444;box-shadow:0 0 0 3px #ef444422}.cmd-roster-status.busy{background:#eab308}.cmd-roster-status.break{background:#3b82f6}.cmd-roster-status.offline{background:#6b7280}.cmd-roster-status.available{background:#10b981}
+.cmd-roster-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.cmd-roster-main b{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;}
+.cmd-roster-main small{font:9px var(--op-font-mono);color:#8390a0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cmd-roster-zone{max-width:58px;color:#8491a1;font:8px var(--op-font-mono);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.cmd-map-toolbar{position:absolute;z-index:20;top:65px;left:296px;display:flex;flex-wrap:wrap;gap:5px;max-width:calc(100% - 310px);pointer-events:auto;}
+.cmd-map-toolbar button{background:#101720;border:1px solid #354253;color:#e5e7eb;padding:7px 9px;border-radius:3px;font:10px var(--op-font-mono);cursor:pointer;box-shadow:0 3px 12px #0004;}
+.cmd-map-toolbar button:hover{border-color:#f59e0b;color:#fbbf24;}
+.cmd-broadcast-composer{position:absolute;z-index:40;top:110px;left:296px;width:min(380px,calc(100% - 310px));background:#111820;border:1px solid #364354;padding:12px;box-shadow:0 10px 28px #0008;}
+.cmd-compose-title{font:600 11px var(--op-font-cond);letter-spacing:1px;margin-bottom:8px;}
+.cmd-broadcast-composer textarea{width:100%;resize:vertical;background:#080d13;color:#e5e7eb;border:1px solid #354253;padding:9px;font:12px var(--op-font-sans);outline:none;}
+.cmd-compose-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:8px;}
+.cmd-compose-actions button{background:transparent;border:1px solid #354253;color:#e5e7eb;padding:7px 10px;cursor:pointer;border-radius:3px;font-size:11px;}
+.cmd-compose-actions button.primary{background:#f59e0b;border-color:#f59e0b;color:#111827;font-weight:700;}
+.iw-marker-host{background:transparent;border:0;}
+.iw-map-tag{height:25px;display:flex;align-items:center;justify-content:center;padding:0 6px;box-sizing:border-box;white-space:nowrap;max-width:230px;overflow:hidden;text-overflow:ellipsis;background:#0b1119ed;color:#f3f4f6;border:2px solid #10b981;border-radius:3px;font:700 10px var(--op-font-mono);box-shadow:0 2px 7px #0009;transition:opacity .15s;}
+.iw-map-tag.available{border-color:#10b981}.iw-map-tag.busy{border-color:#eab308}.iw-map-tag.break{border-color:#3b82f6}.iw-map-tag.emergency{border-color:#ef4444;animation:op-pulse 1s infinite}.iw-map-tag.offline{border-color:#6b7280}
+.iw-map-tag.selected{outline:2px solid #f59e0b;outline-offset:4px;}
+@media(max-width:760px){
+  #view-commander-dash #cmdMap{left:0;width:100%;height:100vh;}
+  #view-commander-dash .cmd-topbar{left:0;padding-left:10px;align-items:flex-start;gap:6px;}
+  #view-commander-dash .cmd-topbar .title{max-width:33vw;}
+  #view-commander-dash .cmd-topbar .stats{gap:4px;flex-wrap:wrap;justify-content:flex-end;}
+  #view-commander-dash .cmd-pill{font-size:9px;padding:4px 6px;}
+  #view-commander-dash .cmd-bottom{left:0;}
+  .cmd-mobile-roster-toggle{display:block;}
+  .cmd-sidebar{top:auto;left:0;right:0;bottom:0;width:100%;height:47vh;transform:translateY(calc(100% - 48px));transition:transform .18s ease;border-right:0;border-top:1px solid #263243;}
+  .cmd-sidebar.mobile-open{transform:translateY(0);}
+  .cmd-sidebar-head{min-height:48px;padding:8px 12px;}
+  .cmd-map-toolbar{left:8px;top:70px;max-width:calc(100% - 16px);gap:4px;}
+  .cmd-map-toolbar button{font-size:9px;padding:6px 7px;}
+  .cmd-broadcast-composer{left:8px;top:118px;width:calc(100% - 16px);}
+  .cmd-loading{left:50%!important;}
+  .cmd-topbar .cmd-pill.yellow{display:none;}
+}
 </style>
 </head>
 <body>
@@ -511,6 +571,15 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
 
 <div id="view-commander-dash" style="display:none;position:fixed;inset:0;">
   <div id="cmdMap"></div>
+  <aside class="cmd-sidebar" id="cmdSidebar">
+    <div class="cmd-sidebar-head">
+      <div><div class="cmd-sidebar-title">OFFICER ROSTER</div><div class="cmd-sidebar-sub" id="cmdRosterCount">0 assigned</div></div>
+      <button type="button" class="cmd-mobile-roster-toggle" onclick="toggleOfficerRoster()">Roster ▴</button>
+    </div>
+    <input id="cmdOfficerSearch" class="cmd-search" placeholder="Search callsign or name…" oninput="filterCommanderRoster(this.value)" aria-label="Search officers">
+    <div class="cmd-roster-legend"><span><i class="dot emergency"></i> SOS</span><span><i class="dot available"></i> Available</span><span><i class="dot busy"></i> Busy</span><span><i class="dot offline"></i> Offline</span></div>
+    <div id="cmdOfficerRoster" class="cmd-officer-roster"><div class="cmd-roster-empty">Waiting for officers to check in…</div></div>
+  </aside>
   <div class="cmd-overlay">
     <div class="cmd-topbar">
       <div class="title">
@@ -518,12 +587,25 @@ h1,h2,h3,.font-display{font-family:var(--font-display);}
         <span class="sub">Event code: <b id="cmdEventCode">------</b></span>
       </div>
       <div class="stats">
-        <div class="cmd-pill green" id="cmdOnlineCount">🟢 0 online</div>
-        <div class="cmd-pill red" id="cmdSosCount" style="display:none;">🆘 0 SOS</div>
-        <button class="btn small ghost" onclick="exitCommanderView()" style="background:rgba(0,0,0,0.5);">✕ Exit</button>
+        <div class="cmd-pill green" id="cmdOnlineCount">0 online</div>
+        <div class="cmd-pill red" id="cmdSosCount" style="display:none;">0 SOS</div>
+        <div class="cmd-pill yellow" id="cmdUnassignedCount">0 unassigned</div>
+        <div class="cmd-pill" id="cmdClock">--:--:--</div>
+        <button class="btn small ghost" onclick="leaveEvent()" style="background:rgba(0,0,0,0.5);">Leave event</button>
       </div>
     </div>
-    <div class="zone-help">ZONE SETUP: use the draw tools on the map to add a rectangle or polygon. Tap a zone to rename it.</div>
+    <div class="cmd-map-toolbar">
+      <button type="button" onclick="centerMap()">Fit all</button>
+      <button type="button" onclick="toggleZoneOverlay()" id="zoneToggleBtn">Hide zones</button>
+      <button type="button" onclick="toggleSatelliteView()" id="satelliteToggleBtn">Satellite view</button>
+      <button type="button" onclick="showBroadcastComposer()">Broadcast to all</button>
+    </div>
+    <div class="zone-help">DRAW ZONES: use the map tools to add polygons/rectangles. Click an officer in the roster or on the map for details.</div>
+    <div id="cmdBroadcastComposer" class="cmd-broadcast-composer" style="display:none;">
+      <div class="cmd-compose-title">MESSAGE ALL ONLINE OFFICERS</div>
+      <textarea id="cmdBroadcastText" rows="3" maxlength="500" placeholder="Enter instruction or event-wide update…"></textarea>
+      <div class="cmd-compose-actions"><button type="button" onclick="closeBroadcastComposer()">Cancel</button><button type="button" class="primary" onclick="sendBroadcastToAll()">Send to all</button></div>
+    </div>
     <div class="cmd-bottom">
       <div class="hint">Live map · draw venue zones from the map toolbar</div>
       <button class="btn small" onclick="centerMap()">🎯 Center all</button>
@@ -768,6 +850,15 @@ function copyText(text,successMsg){
 }
 function enterCommanderView(){ if(!state.event) return; state.role='commander';document.getElementById('cmdLoginTitle').textContent='Commander login — '+state.event.name; showView('commander-login'); }
 
+async function assignOfficerCallsign(code){
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/positions?event_id=eq.${encodeURIComponent(code)}&select=id,data`,{headers:SB_HEADERS});
+    if(!res.ok)return 'K-'+String(Date.now()%1000).padStart(3,'0');
+    const rows=await res.json();let max=0;
+    rows.forEach(row=>{const m=String(row.data&&row.data.callsign||'').match(/^K-(\\d+)$/);if(m)max=Math.max(max,Number(m[1]));});
+    return 'K-'+String(max+1).padStart(3,'0');
+  }catch(e){console.warn('Callsign assignment fallback',e);return 'K-'+String(Math.floor(Math.random()*900)+100);}
+}
 async function joinAsOfficer(){
   const codeEl=document.getElementById('joinCode'); const nameEl=document.getElementById('joinName'); const roleEl=document.getElementById('joinRole'); const errEl=document.getElementById('joinError'); errEl.innerHTML='';
   const code=codeEl.value.trim().toUpperCase(); const name=nameEl.value.trim(); const role=roleEl.value.trim();
@@ -778,7 +869,8 @@ async function joinAsOfficer(){
     const event=await sbGet('events',code);
     if(!event){ errEl.innerHTML='<div class="errbox">Event not found. Check code.</div>'; btn.disabled=false; btn.innerHTML='📍 Start broadcasting my location'; return; }
     state.event=event;state.role=null;
-    state.officer={ id:uid('off'),name,role:role||'Officer',status:'available',joinedAt:Date.now() };
+    const callsign=await assignOfficerCallsign(code);
+    state.officer={ id:uid('off'),name,role:role||'Officer',status:'available',callsign,joinedAt:Date.now() };
     document.getElementById('waitingMsg').textContent='Requesting location permission…';
     showView('officer-waiting');
     await startGeolocation();
@@ -830,7 +922,7 @@ async function broadcastPosition(coords){
   const zoneResult=findZoneForPosition(coords,state.event.zones||[]);
   const displayLat=zoneResult.zone&&!zoneResult.lowConfidence?zoneResult.zone.center.lat:coords.lat;
   const displayLng=zoneResult.zone&&!zoneResult.lowConfidence?zoneResult.zone.center.lng:coords.lng;
-  const positionData={ officerId:state.officer.id,name:state.officer.name,role:state.officer.role,status:state.officer.status,lat:displayLat,lng:displayLng,rawLat:coords.lat,rawLng:coords.lng,accuracy:coords.accuracy,zone:zoneResult.zone?zoneResult.zone.name:(zoneResult.lowConfidence?'Low confidence':'Outside zones'),zoneId:zoneResult.zone?zoneResult.zone.id:null,zoneConfidence:zoneResult.zone?(zoneResult.lowConfidence?'low':'high'):'low',ts:coords.ts };
+  const positionData={ officerId:state.officer.id,callsign:state.officer.callsign||'K-001',joinedAt:state.officer.joinedAt||coords.ts,name:state.officer.name,role:state.officer.role,status:state.officer.status,lat:displayLat,lng:displayLng,rawLat:coords.lat,rawLng:coords.lng,accuracy:coords.accuracy,zone:zoneResult.zone?zoneResult.zone.name:(zoneResult.lowConfidence?'Low confidence':'Outside zones'),zoneId:zoneResult.zone?zoneResult.zone.id:null,zoneConfidence:zoneResult.zone?(zoneResult.lowConfidence?'low':'high'):'low',ts:coords.ts };
   const ok=await sbSet('positions',positionId,positionData,state.event.code);
   if(ok){ const s=document.getElementById('lastSent'); if(s) s.textContent='Sent '+new Date().toLocaleTimeString(); }
 }
@@ -1021,6 +1113,77 @@ async function officerSendMessage(){
 }
 let cmdMap=null, cmdMarkers={}, cmdRefreshTimer=null;
 let cmdZoneLayers=null, cmdDrawnZones=null;
+let cmdStreetLayer=null,cmdSatelliteLayer=null,cmdSatelliteActive=false,cmdZonesVisible=true,cmdClockTimer=null;
+let commanderRosterData={};
+function updateCommanderClock(){const el=document.getElementById('cmdClock');if(el)el.textContent=new Date().toLocaleTimeString([], {hour12:false});}
+function toggleSatelliteView(){
+  if(!cmdMap)return;
+  if(cmdSatelliteActive){if(cmdMap.hasLayer(cmdSatelliteLayer))cmdMap.removeLayer(cmdSatelliteLayer);cmdStreetLayer.addTo(cmdMap);cmdSatelliteActive=false;}
+  else{if(cmdMap.hasLayer(cmdStreetLayer))cmdMap.removeLayer(cmdStreetLayer);cmdSatelliteLayer.addTo(cmdMap);cmdSatelliteActive=true;}
+  const btn=document.getElementById('satelliteToggleBtn');if(btn)btn.textContent=cmdSatelliteActive?'Street view':'Satellite view';
+}
+function toggleZoneOverlay(){
+  if(!cmdMap||!cmdZoneLayers||!cmdDrawnZones)return;
+  cmdZonesVisible=!cmdZonesVisible;
+  if(cmdZonesVisible){cmdZoneLayers.addTo(cmdMap);cmdDrawnZones.addTo(cmdMap);}
+  else{cmdMap.removeLayer(cmdZoneLayers);cmdMap.removeLayer(cmdDrawnZones);}
+  const btn=document.getElementById('zoneToggleBtn');if(btn)btn.textContent=cmdZonesVisible?'Hide zones':'Show zones';
+}
+function toggleOfficerRoster(){const el=document.getElementById('cmdSidebar');if(el)el.classList.toggle('mobile-open');}
+function filterCommanderRoster(query){
+  const q=String(query||'').trim().toLowerCase();
+  document.querySelectorAll('#cmdOfficerRoster .cmd-roster-row').forEach(row=>{row.style.display=!q||row.dataset.search.includes(q)?'flex':'none';});
+  document.querySelectorAll('#cmdOfficerRoster .cmd-roster-group').forEach(group=>{group.style.display=[...group.querySelectorAll('.cmd-roster-row')].some(row=>row.style.display!=='none')?'block':'none';});
+}
+function focusCommanderOfficer(id){
+  const data=commanderRosterData[id];if(!data)return;
+  const marker=cmdMarkers[id];if(marker&&cmdMap){cmdMap.setView(marker.getLatLng(),Math.max(17,cmdMap.getZoom()));marker.openPopup();}
+  openOfficerPanel(id,data);
+}
+function renderCommanderRoster(entries){
+  const wrap=document.getElementById('cmdOfficerRoster');if(!wrap)return;
+  const groups=[['emergency','Emergency'],['available','Available'],['busy','Busy'],['break','Break'],['offline','Offline']];
+  const count=document.getElementById('cmdRosterCount');if(count)count.textContent=entries.length+' assigned';
+  if(!entries.length){wrap.innerHTML='<div class="cmd-roster-empty">Waiting for officers to check in…</div>';return;}
+  let html='';
+  groups.forEach(([key,label])=>{
+    const members=entries.filter(o=>o.group===key);
+    if(!members.length)return;
+    html+='<div class="cmd-roster-group"><div class="cmd-roster-group-title">'+label+' <span>'+members.length+'</span></div>';
+    members.forEach(o=>{
+      const search=escHtml(((o.data.callsign||'')+' '+(o.data.name||'')+' '+(o.data.role||'')).toLowerCase());
+      html+='<button type="button" class="cmd-roster-row'+(currentOfficerId===o.id?' selected':'')+'" data-search="'+search+'" onclick="focusCommanderOfficer(\''+escHtml(o.id)+'\')"><span class="cmd-roster-status '+o.group+'"></span><span class="cmd-roster-main"><b>'+escHtml(o.data.callsign||'K-000')+' · '+escHtml(o.data.name||'Officer')+'</b><small>'+escHtml(o.data.role||'Officer')+' · '+escHtml(o.lastSeen)+'</small></span><span class="cmd-roster-zone">'+escHtml(o.data.zone||'No zone')+'</span></button>';
+    });
+    html+='</div>';
+  });
+  wrap.innerHTML=html;
+  filterCommanderRoster(document.getElementById('cmdOfficerSearch')?.value||'');
+}
+function showBroadcastComposer(){const el=document.getElementById('cmdBroadcastComposer');if(el){el.style.display='block';document.getElementById('cmdBroadcastText').focus();}}
+function closeBroadcastComposer(){const el=document.getElementById('cmdBroadcastComposer');if(el)el.style.display='none';}
+async function sendBroadcastToAll(){
+  const input=document.getElementById('cmdBroadcastText'),message=input&&input.value.trim();if(!message){toast('Write a message first');return;}
+  const targets=Object.entries(commanderRosterData).filter(([id,d])=>d&&Date.now()-(d.ts||0)<60000&&d.officerId);
+  if(!targets.length){toast('No online officers to message');return;}
+  let sent=0;
+  for(const [id,d] of targets){
+    const msgId=state.event.code+'_msg_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    if(await sbSet('positions',msgId,{type:'message',targetOfficerId:d.officerId,from:'command',text:message,ts:Date.now()},state.event.code))sent++;
+  }
+  closeBroadcastComposer();if(input)input.value='';toast('Broadcast sent to '+sent+' officer'+(sent===1?'':'s'));
+}
+function makeOfficerMapIcon(data,online,selected,id){
+  const zoom=cmdMap?cmdMap.getZoom():15;
+  const callsign=data.callsign||'K-000';let label=callsign;
+  if(zoom>=13)label+=' · '+String(data.name||'Officer').split(/\\s+/)[0];
+  if(zoom>15)label=callsign+' · '+String(data.name||'Officer')+' · '+String(data.role||'Officer');
+  const status=data.status||'available';const width=Math.max(58,Math.min(230,label.length*6.3+18));
+  const html='<div class="iw-map-tag '+escHtml(status)+' '+(selected?'selected':'')+'" style="width:'+width+'px;opacity:'+(online?1:.45)+'" title="'+escHtml((data.name||'Officer')+' · '+(data.role||'Officer'))+'"><span>'+escHtml(label)+'</span></div>';
+  return L.divIcon({html,className:'iw-marker-host',iconSize:[width,26],iconAnchor:[width/2,13]});
+}
+function updateOfficerMarkerLabels(){
+  Object.entries(cmdMarkers).forEach(([id,marker])=>{const meta=marker._instantMeta;if(meta)marker.setIcon(makeOfficerMapIcon(meta.data,meta.online,currentOfficerId===id,id));});
+}
 
 async function commanderLogin(){
   const pwEl=document.getElementById('cmdPassword'); const errEl=document.getElementById('cmdLoginError'); errEl.innerHTML='';
@@ -1038,7 +1201,10 @@ function initCommanderMap(){
   cmdMarkers={};
   const container=document.getElementById('cmdMap'); if(!container) return;
   cmdMap=L.map('cmdMap',{center:[-1.2864,36.8172],zoom:15,zoomControl:true});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(cmdMap);
+  cmdStreetLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(cmdMap);
+  cmdSatelliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics',maxZoom:19});
+  cmdMap.on('zoomend',updateOfficerMarkerLabels);
+  cmdClockTimer=setInterval(updateCommanderClock,1000);updateCommanderClock();
   cmdZoneLayers=L.layerGroup().addTo(cmdMap);cmdDrawnZones=new L.FeatureGroup().addTo(cmdMap);
   cmdMap.addControl(new L.Control.Draw({position:'topright',draw:{polyline:false,circle:false,circlemarker:false,marker:false,rectangle:{shapeOptions:{color:'#f59e0b',weight:2,fillOpacity:.12}},polygon:{allowIntersection:false,showArea:true,shapeOptions:{color:'#10b981',weight:2,fillOpacity:.12}},},edit:{featureGroup:cmdDrawnZones,edit:true,remove:true}}));
   cmdMap.on(L.Draw.Event.CREATED,async e=>{const name=prompt('Name this zone (e.g. Gate A, VIP Tent North):','Zone '+((state.event.zones||[]).length+1));if(!name||!name.trim())return;const zone=zoneFromGeometry(e.layer.toGeoJSON().geometry,name.trim());if(zone)await saveEventZones([...(state.event.zones||[]),zone]);});
@@ -1050,6 +1216,7 @@ function initCommanderMap(){
   startCommanderBroadcastPolling();
 }
 function exitCommanderView(){
+  if(cmdClockTimer){clearInterval(cmdClockTimer);cmdClockTimer=null;}
   if(cmdRefreshTimer){ clearInterval(cmdRefreshTimer); cmdRefreshTimer=null; }
   if(state.officerInboxTimer){clearInterval(state.officerInboxTimer);state.officerInboxTimer=null;}
   if(state.zoneRefreshTimer){clearInterval(state.zoneRefreshTimer);state.zoneRefreshTimer=null;}
@@ -1058,45 +1225,46 @@ function exitCommanderView(){
   commanderActiveBroadcast = null;commanderLiveBroadcasts=[];
 }
 async function refreshOfficerPositions(){
-  if(!state.event||!cmdMap) return;
+  if(!state.event||!cmdMap)return;
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/positions?event_id=eq.${encodeURIComponent(state.event.code)}&select=id,data`,{headers:SB_HEADERS});
-    if(!res.ok) return;
+    if(!res.ok)return;
     const rows=await res.json();
-    const seenIds=new Set(); let onlineCount=0; let sosCount=0;
-    rows.forEach(row=>{
-      const data=row.data; if(!data||!data.lat||!data.lng) return;
+    const valid=rows.filter(r=>r.data&&Number.isFinite(Number(r.data.lat))&&Number.isFinite(Number(r.data.lng)));
+    valid.sort((a,b)=>((a.data.joinedAt||a.data.ts||0)-(b.data.joinedAt||b.data.ts||0))||String(a.id).localeCompare(String(b.id)));
+    const fallback=new Map();let seq=0;
+    valid.forEach(r=>{seq++;fallback.set(r.id,'K-'+String(seq).padStart(3,'0'));});
+    const seenIds=new Set(),entries=[];let onlineCount=0,sosCount=0,unassignedCount=0;
+    commanderRosterData={};
+    valid.forEach(row=>{
+      const data=row.data;if(!data||!Number.isFinite(Number(data.lat))||!Number.isFinite(Number(data.lng)))return;
+      const callsign=data.callsign||fallback.get(row.id)||'K-000';data.callsign=callsign;
+      const ageSec=Math.max(0,Math.round((Date.now()-(data.ts||0))/1000));
+      const online=ageSec<60;if(online)onlineCount++;
+      if(data.status==='emergency'&&online)sosCount++;
+      if(!data.zoneId)unassignedCount++;
+      const group=!online?'offline':data.status==='emergency'?'emergency':['available','busy','break'].includes(data.status)?data.status:'available';
+      const lastSeen=ageSec<5?'LIVE':ageSec<60?ageSec+'s ago':Math.floor(ageSec/60)+'m ago';
+      entries.push({id:row.id,data,online,group,lastSeen});
+      commanderRosterData[row.id]=data;
       seenIds.add(row.id);
-      const ageSec=Math.round((Date.now()-data.ts)/1000);
-      const online=ageSec<60; if(online) onlineCount++;
-      if(data.status==='emergency'&&online) sosCount++;
-      let statusClass='available'; let statusEmoji='🟢';
-      if(data.status==='busy'){ statusClass='busy'; statusEmoji='🟡'; }
-      else if(data.status==='break'){ statusClass='break'; statusEmoji='🔵'; }
-      else if(data.status==='emergency'){ statusClass='emergency'; statusEmoji='🔴'; }
-      const opacity=online?1:0.35;
-      const initial=(data.name||'?').charAt(0).toUpperCase();
-      const iconHtml=`<div class="officer-marker ${statusClass}" style="opacity:${opacity};"><span class="initial">${initial}</span></div>`;
-      const icon=L.divIcon({html:iconHtml,className:'',iconSize:[26,26],iconAnchor:[13,13]});
-      const popupHtml=`<div class="officer-popup"><h4>${escHtml(data.name||'Officer')}</h4><div class="role">${escHtml(data.role||'Officer')}</div><div class="meta"><span>STATUS</span><b>${statusEmoji} ${escHtml(data.status||'available')}</b></div><div class="meta"><span>ZONE</span><b>${escHtml(data.zone||'Unassigned')}${data.zoneConfidence==='low'?' *':''}</b></div><div class="meta"><span>LAST SEEN</span><b>${ageSec<5?'just now':ageSec+'s ago'}</b></div><div class="meta"><span>GPS ACCURACY</span><b>±${Math.round(data.accuracy||0)}m</b></div></div>`;
+      const icon=makeOfficerMapIcon(data,online,currentOfficerId===row.id,row.id);
+      const popupHtml='<div class="officer-popup"><h4>'+escHtml(callsign)+' · '+escHtml(data.name||'Officer')+'</h4><div class="role">'+escHtml(data.role||'Officer')+'</div><div class="meta"><span>STATUS</span><b>'+escHtml(group.toUpperCase())+'</b></div><div class="meta"><span>ZONE</span><b>'+escHtml(data.zone||'Unassigned')+(data.zoneConfidence==='low'?' *':'')+'</b></div><div class="meta"><span>LAST SEEN</span><b>'+escHtml(lastSeen)+'</b></div><div class="meta"><span>GPS ACCURACY</span><b>±'+Math.round(data.accuracy||0)+'m</b></div></div>';
       if(cmdMarkers[row.id]){
-        cmdMarkers[row.id].setLatLng([data.lat,data.lng]);
-        cmdMarkers[row.id].setIcon(icon);
-        cmdMarkers[row.id].setPopupContent(popupHtml);
-        if(currentOfficerId===row.id){ currentOfficerData=data; updateOfficerPanel(data); }
-      } else {
-        const marker=L.marker([data.lat,data.lng],{icon}).addTo(cmdMap);
-        marker.bindPopup(popupHtml);
-        marker.on('click',()=>{ openOfficerPanel(row.id,data); });
-        cmdMarkers[row.id]=marker;
+        const marker=cmdMarkers[row.id];marker.setLatLng([Number(data.lat),Number(data.lng)]);marker.setIcon(icon);marker.setPopupContent(popupHtml);marker._instantMeta={data,online};
+        if(currentOfficerId===row.id){currentOfficerData=data;updateOfficerPanel(data);}
+      }else{
+        const marker=L.marker([Number(data.lat),Number(data.lng)],{icon}).addTo(cmdMap);
+        marker._instantMeta={data,online};marker.bindPopup(popupHtml);marker.on('click',()=>focusCommanderOfficer(row.id));cmdMarkers[row.id]=marker;
       }
     });
-    Object.keys(cmdMarkers).forEach(id=>{ if(!seenIds.has(id)){ cmdMap.removeLayer(cmdMarkers[id]); delete cmdMarkers[id]; } });
-    const onlineEl=document.getElementById('cmdOnlineCount'); if(onlineEl) onlineEl.textContent='🟢 '+onlineCount+' online';
-    const sosEl=document.getElementById('cmdSosCount');
-    if(sosEl){ if(sosCount>0){ sosEl.style.display='inline-block'; sosEl.textContent='🆘 '+sosCount+' SOS'; } else { sosEl.style.display='none'; } }
-    if(!cmdMap._fittedOnce&&Object.keys(cmdMarkers).length>0){ centerMap(); cmdMap._fittedOnce=true; }
-  }catch(err){ console.error('refreshOfficerPositions failed',err); }
+    Object.keys(cmdMarkers).forEach(id=>{if(!seenIds.has(id)){cmdMap.removeLayer(cmdMarkers[id]);delete cmdMarkers[id];delete commanderRosterData[id];}});
+    renderCommanderRoster(entries);
+    const onlineEl=document.getElementById('cmdOnlineCount');if(onlineEl)onlineEl.textContent=onlineCount+' online';
+    const sosEl=document.getElementById('cmdSosCount');if(sosEl){if(sosCount){sosEl.style.display='inline-block';sosEl.textContent=sosCount+' SOS';}else sosEl.style.display='none';}
+    const unEl=document.getElementById('cmdUnassignedCount');if(unEl)unEl.textContent=unassignedCount+' unassigned';
+    if(!cmdMap._fittedOnce&&Object.keys(cmdMarkers).length){centerMap();cmdMap._fittedOnce=true;}
+  }catch(err){console.error('refreshOfficerPositions failed',err);}
 }
 function centerMap(){
   if(!cmdMap) return;
@@ -1109,8 +1277,7 @@ let currentOfficerId=null;
 let currentOfficerData=null;
 function openOfficerPanel(officerId,officerData){
   currentOfficerId=officerId; currentOfficerData=officerData;
-  const idx=Object.keys(cmdMarkers).indexOf(officerId)+1;
-  const badge='K-'+String(idx).padStart(3,'0');
+  const badge=officerData.callsign||'K-000';
   document.getElementById('opIdBadge').textContent=badge;
   document.getElementById('opName').textContent=officerData.name||'Unknown';
   document.getElementById('opRole').textContent=officerData.role||'Officer';
