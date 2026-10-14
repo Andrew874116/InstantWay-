@@ -646,7 +646,8 @@ const state={ currentView:'landing', event:null, officer:null, role:null, share:
 function saveAppSession(role,screen){
   if(!state.event||!role)return;
   try{
-    const session={role,screen:screen||state.currentView,code:state.event.code,password:role==='commander'?(state.event.password||''):'',event:state.event,officer:role==='officer'?state.officer:null,savedAt:Date.now()};
+    const cachedEvent=Object.assign({},state.event);if(role==='officer')delete cachedEvent.password;
+    const session={role,screen:screen||state.currentView,code:state.event.code,password:role==='commander'?(state.event.password||''):'',event:cachedEvent,officer:role==='officer'?state.officer:null,savedAt:Date.now()};
     localStorage.setItem(SESSION_KEY,JSON.stringify(session));
   }catch(e){console.warn('Session could not be saved',e);}
 }
@@ -991,11 +992,19 @@ async function pollOfficerInbox(){
       const d=row.data||{};
       if(d.targetOfficerId!==officerId)continue;
       if(d.type==='message'&&d.from==='command'&&!officerSeenInbox.has(row.id)){officerSeenInbox.add(row.id);officerChatMessages.push({from:'command',text:d.text||'',ts:d.ts||Date.now()});}
-      if(d.type==='video_request'&&d.status==='pending'&&!officerSeenInbox.has(row.id)){
-        officerSeenInbox.add(row.id);
-        const accept=confirm('COMMAND REQUESTS LIVE VIDEO. Turn on your camera and microphone and share with command?');
-        if(accept){await sbSet('positions',row.id,Object.assign({},d,{status:'accepted',acceptedAt:Date.now()}),state.event.code);await startGoLive();}
-        else{await sbSet('positions',row.id,Object.assign({},d,{status:'declined',declinedAt:Date.now()}),state.event.code);toast('Video request declined');}
+      if(d.type==='video_request'&&d.status==='pending'){
+        const requestKey=row.id+':'+String(d.ts||0);
+        if(!officerSeenInbox.has(requestKey)){
+          officerSeenInbox.add(requestKey);
+          if(broadcasting||myPeerConnection){
+            await sbSet('positions',row.id,Object.assign({},d,{status:'busy',respondedAt:Date.now()}),state.event.code);
+            toast('Video request received, but you are already live');
+          }else{
+            const accept=confirm('COMMAND REQUESTS LIVE VIDEO. Turn on your camera and microphone and share with command?');
+            if(accept){await sbSet('positions',row.id,Object.assign({},d,{status:'accepted',acceptedAt:Date.now()}),state.event.code);await startGoLive();}
+            else{await sbSet('positions',row.id,Object.assign({},d,{status:'declined',declinedAt:Date.now()}),state.event.code);toast('Video request declined');}
+          }
+        }
       }
       if(d.type==='alert'&&!officerSeenInbox.has(row.id)){officerSeenInbox.add(row.id);toast('⚠ URGENT ALERT FROM COMMAND');}
     }
@@ -1484,7 +1493,7 @@ async function connectToBroadcast(broadcast){
   const data=broadcast.data||{};
   const sessionId=data.sessionId||'legacy-'+String(data.created||'old');
   const connectKey=sigId+'|'+sessionId;
-  if(commanderConnectingKey===connectKey&&window._commanderPC&&window._commanderPC.connectionState!=='closed')return;
+  if(commanderConnectingKey===connectKey&&window._commanderPC&&['new','connecting','connected'].includes(window._commanderPC.connectionState))return;
   closeCommanderPeerConnection();
   commanderConnectingKey=connectKey;
   const video=document.getElementById('videoRemoteEl');
@@ -1555,6 +1564,7 @@ async function connectToBroadcast(broadcast){
     },1500);
   }catch(err){
     console.error('[VIDEO] Commander connect failed',err);
+    closeCommanderPeerConnection();
     videoStatus('Connection error: '+(err&&err.message?err.message:'unknown error'));
     toast('Video connection failed. Check the console logs.');
     commanderConnectingKey=null;
